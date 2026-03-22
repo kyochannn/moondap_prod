@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+    <div class="container">
+    
+		<h1>게시글 목록</h1>
+	    <a href="/board/insert">글쓰기</a>
+	    <table border="1">
+	        <tr>
+	            <th width="50">번호</th>
+	            <th width="300">제목</th>
+	            <th width="100">작성자</th>
+	            <th width="200">등록일자</th>
+	            <th width="200">수정일자</th>
+	        </tr>
+	        <th:block th:each="board : ${boardList}">
+	            <tr>
+	                <td align="center" th:text="${board.no}"></td>
+	                <td>
+	                    <!-- th:???="|문자열+${표현식}|" -->
+	                    <a th:href="|/board/read?no=${board.no}|" 
+	                    th:text="${board.title}"></a>
+	                </td>
+	                <td align="center" th:text="${board.writer}"></td>
+	                <!-- 
+	                    유틸리티객체.메소드()
+	                    #dates.format( 날짜객체명, '날짜포맷' ) 
+	                    - #dates.format( board.regDate, 'yyyy-MM-dd HH:mm:ss' )
+	                -->
+	                <td align="center">
+	                    <span th:text="${ #dates.format( board.createdAt, 'yyyy-MM-dd HH:mm:ss' ) }"></span>
+	                </td>
+	                <td align="center">
+	                    <span th:text="${ #dates.format( board.updatedAt, 'yyyy-MM-dd HH:mm:ss' ) }"></span>
+	                </td>
+	            </tr>
+	        </th:block>
+	    </table>
+
+
+    </div>
+</body>
+</html>

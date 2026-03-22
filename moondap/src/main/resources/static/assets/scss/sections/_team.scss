@@ -1,0 +1,443 @@
+// main: ../main.scss
+/*--------------------------------------------------------------
+# Team Section
+--------------------------------------------------------------*/
+.team {
+  .team-intro {
+    .intro-content {
+      h3 {
+        font-size: 2.2rem;
+        margin-bottom: 20px;
+        color: var(--heading-color);
+      }
+
+      p {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        color: color-mix(in srgb, var(--default-color), transparent 15%);
+      }
+
+      .stats-row {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+
+        .stat-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+
+          .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            line-height: 1;
+            margin-bottom: 4px;
+          }
+
+          .stat-label {
+            font-size: 0.9rem;
+            color: color-mix(in srgb, var(--default-color), transparent 40%);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+        }
+      }
+    }
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+
+    .member-hexagon {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto;
+
+      &:nth-child(even) {
+        margin-top: 40px;
+      }
+
+      .hexagon-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        cursor: pointer;
+
+        &:hover {
+          border-radius: 20% 80% 80% 20% / 20% 20% 80% 80%;
+          transform: scale(1.05) rotate(5deg);
+
+          .member-overlay {
+            opacity: 1;
+            transform: translateY(0);
+          }
+
+          img {
+            transform: scale(1.1);
+          }
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.4s ease;
+        }
+
+        .member-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(45deg,
+              color-mix(in srgb, var(--accent-color), transparent 10%) 0%,
+              color-mix(in srgb, var(--accent-color), transparent 25%) 100%);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          color: var(--contrast-color);
+          opacity: 0;
+          transform: translateY(20px);
+          transition: all 0.4s ease;
+          padding: 20px;
+
+          h5 {
+            font-size: 1.1rem;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+            color: var(--contrast-color);
+          }
+
+          span {
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+          }
+
+          .social-icons {
+            display: flex;
+            gap: 8px;
+
+            a {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              background: var(--surface-color);
+              color: var(--accent-color);
+              display: grid;
+              place-items: center;
+              transition: all 0.3s ease;
+
+              &:hover {
+                background: var(--contrast-color);
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .team-carousel-wrapper {
+    .carousel-title {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 40px;
+      color: var(--heading-color);
+    }
+
+    .leadership-slider {
+      padding-bottom: 50px;
+
+      .swiper-slide {
+        padding: 15px;
+      }
+
+      .leader-card {
+        background: var(--surface-color);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+        transition: all 0.3s ease;
+        height: 100%;
+
+        &:hover {
+          transform: translateY(-8px);
+        }
+
+        .leader-image {
+          position: relative;
+          height: 200px;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+          }
+
+          &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                color-mix(in srgb, var(--accent-color), transparent 85%) 100%);
+          }
+        }
+
+        .leader-info {
+          padding: 25px;
+          text-align: center;
+
+          h5 {
+            font-size: 1.3rem;
+            margin: 0 0 5px 0;
+            color: var(--heading-color);
+          }
+
+          .position {
+            color: var(--accent-color);
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            display: block;
+          }
+
+          p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: color-mix(in srgb, var(--default-color), transparent 25%);
+            margin-bottom: 20px;
+          }
+
+          .leader-contact {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+
+            .contact-btn {
+              width: 40px;
+              height: 40px;
+              border-radius: 10px;
+              background: color-mix(in srgb, var(--accent-color), transparent 90%);
+              color: var(--accent-color);
+              display: grid;
+              place-items: center;
+              transition: all 0.3s ease;
+
+              &:hover {
+                background: var(--accent-color);
+                color: var(--contrast-color);
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+
+      .swiper-pagination {
+        .swiper-pagination-bullet {
+          background: color-mix(in srgb, var(--accent-color), transparent 70%);
+          opacity: 1;
+
+          &.swiper-pagination-bullet-active {
+            background: var(--accent-color);
+          }
+        }
+      }
+    }
+  }
+
+  .join-team-cta {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--accent-color), transparent 95%) 0%,
+        color-mix(in srgb, var(--accent-color), transparent 92%) 100%);
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 75%);
+    border-radius: 25px;
+    padding: 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle,
+          color-mix(in srgb, var(--accent-color), transparent 85%) 0%,
+          transparent 70%);
+      border-radius: 50%;
+    }
+
+    .cta-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--accent-color), transparent 85%);
+      color: var(--accent-color);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 25px;
+      position: relative;
+      z-index: 2;
+
+      i {
+        font-size: 2rem;
+      }
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 2;
+
+      h4 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        color: var(--heading-color);
+      }
+
+      p {
+        font-size: 1.05rem;
+        color: color-mix(in srgb, var(--default-color), transparent 15%);
+        margin-bottom: 30px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .cta-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+
+        .btn {
+          padding: 12px 24px;
+          border-radius: 12px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+
+          &.btn-primary {
+            background: var(--accent-color);
+            color: var(--contrast-color);
+            border: 1px solid var(--accent-color);
+
+            &:hover {
+              background: color-mix(in srgb, var(--accent-color), black 15%);
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-color), transparent 65%);
+            }
+          }
+
+          &.btn-outline {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+
+            &:hover {
+              background: var(--accent-color);
+              color: var(--contrast-color);
+              transform: translateY(-2px);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .swiper-wrapper {
+    height: auto !important;
+  }
+
+  @media (max-width: 1200px) {
+    .team-intro .intro-content h3 {
+      font-size: 1.9rem;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .team-grid {
+      max-width: 300px;
+
+      .member-hexagon {
+        width: 130px;
+        height: 130px;
+
+        &:nth-child(even) {
+          margin-top: 30px;
+        }
+      }
+    }
+
+    .join-team-cta {
+      padding: 30px 20px;
+
+      .cta-content h4 {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .team-intro .intro-content {
+      text-align: center;
+      margin-bottom: 40px;
+
+      .stats-row {
+        justify-content: center;
+        gap: 20px;
+      }
+    }
+
+    .team-grid {
+      grid-template-columns: 1fr;
+      max-width: 200px;
+
+      .member-hexagon {
+        width: 180px;
+        height: 180px;
+
+        &:nth-child(even) {
+          margin-top: 0;
+        }
+      }
+    }
+
+    .join-team-cta .cta-content .cta-actions {
+      flex-direction: column;
+      align-items: center;
+
+      .btn {
+        width: 200px;
+      }
+    }
+  }
+
+  @media (max-width: 576px) {
+    .team-carousel-wrapper .carousel-title {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+    }
+
+    .leadership-slider .leader-card .leader-info {
+      padding: 20px;
+    }
+  }
+}

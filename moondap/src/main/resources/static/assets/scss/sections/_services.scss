@@ -1,0 +1,193 @@
+// main: ../main.scss
+/*--------------------------------------------------------------
+# Services Section
+--------------------------------------------------------------*/
+.services {
+  .service-card {
+    background: var(--surface-color);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    position: relative;
+    height: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border-color: color-mix(in srgb, var(--accent-color), transparent 70%);
+
+      .service-icon {
+        transform: scale(1.1);
+      }
+
+      .service-link {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .service-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px;
+    background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #8b5cf6 30%));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    i {
+      font-size: 36px;
+      color: var(--contrast-color);
+    }
+  }
+
+  .service-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: var(--contrast-color);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  }
+
+  h4 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    font-weight: 700;
+
+    a {
+      color: var(--heading-color);
+      text-decoration: none;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: var(--accent-color);
+      }
+    }
+  }
+
+  p {
+    color: color-mix(in srgb, var(--default-color), transparent 30%);
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 15px;
+  }
+
+  .service-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+    font-weight: 600;
+    text-decoration: none;
+    opacity: 0.7;
+    transform: translateY(5px);
+    transition: all 0.3s ease;
+    font-size: 14px;
+
+    i {
+      font-size: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover {
+      color: var(--accent-color);
+
+      i {
+        transform: translateX(4px);
+      }
+    }
+  }
+
+  .services-cta {
+    background: linear-gradient(135deg, var(--surface-color), color-mix(in srgb, var(--surface-color), var(--accent-color) 3%));
+    border-radius: 24px;
+    padding: 50px 40px;
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%);
+
+    h3 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--heading-color);
+    }
+
+    p {
+      font-size: 16px;
+      color: color-mix(in srgb, var(--default-color), transparent 30%);
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #8b5cf6 30%));
+      border: none;
+      border-radius: 50px;
+      padding: 14px 32px;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--contrast-color);
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(54, 144, 231, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(54, 144, 231, 0.4);
+        color: var(--contrast-color);
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 40px 30px;
+
+      h3 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 15px;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .service-card {
+      padding: 30px 25px;
+      margin-bottom: 20px;
+    }
+
+    .service-icon {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 20px;
+
+      i {
+        font-size: 32px;
+      }
+    }
+
+    h4 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+}

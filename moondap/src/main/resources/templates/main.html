@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+    <div class="container">
+        <h1>SpringBoot x MyBatis</h1>    
+	    <h3>게시판 프로젝트</h3>
+	    <ul>
+	        <li>Spring Boot 3.x</li>
+	        <li>Thymeleaf</li>
+	        <li>MySQL 8.x</li>
+	        <li>MyBatis 3.0</li>
+	    </ul>
+	    <div>
+	        <a href="/mdBoard/list">게시판</a>
+	    </div>
+    </div>
+</body>
+</html>

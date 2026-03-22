@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+  <main class="main">
+  
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>이런 테스트 찾고 있나요?</h2>
+        <p>좋아하실 만한 테스트를 추천해드려요</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+          <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="200">
+            <li data-filter="*" class="filter-active">전체</li>
+            <li data-filter=".filter-man">남자</li>
+            <li data-filter=".filter-woman">여자</li>
+            <li data-filter=".filter-couple">커플용</li>
+            <li data-filter=".filter-unisex">남녀 공통</li>
+          </ul><!-- End Portfolio Filters -->
+
+          <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="300">
+          
+            <div class="col-xl-4 col-lg-6 isotope-item filter-couple">
+	            <a href="/balanceGame/selectBalanceGameListView" class="text-decoration-none d-block">
+		            <div class="portfolio-wrapper">
+		              <div class="">
+		                <img src="assets/img/testList/img1.png" alt="Creative Web Project" class="img-fluid" loading="lazy">
+		              </div>
+		              <div class="portfolio-content">
+		                <div class="portfolio-meta">
+		                  <span class="project-type">커플</span>
+		                  <div class="project-rating">
+		                    <i class="bi bi-eye-fill"></i>
+		                    <span>21</span>
+		                  </div>
+		                </div>
+		                <h3>밸런스 게임</h3>
+		                <p>다양한 밸런스 게임을 지금 문답에서 확인하세요!</p>
+		                <div class="portfolio-tech">
+		                  <span class="tech-badge">연애</span>
+		                  <span class="tech-badge">직장</span>
+		                  <span class="tech-badge">일상</span>
+		                </div>
+		              </div>
+		            </div>
+              	</a>
+            </div>
+
+            <div class="col-xl-4 col-lg-6 isotope-item filter-unisex">
+            	<a href="https://kckoo.co.kr" class="text-decoration-none d-block">
+	              <div class="portfolio-wrapper">
+	                <div class="">
+	                  <img src="assets/img/testList/img2.png" alt="Mobile App Project" class="img-fluid" loading="lazy">
+	                </div>
+	                <div class="portfolio-content">
+	                  <div class="portfolio-meta">
+	                    <span class="project-type">남녀 공통</span>
+	                    <div class="project-rating">
+	                      <i class="bi bi-eye-fill"></i>
+	                      <span>260,000</span>
+	                    </div>
+	                  </div>
+	                  <h3>에겐/테토 테스트</h3>
+	                  <p>넌 에겐이야? 테토야? - 현대남녀 구분법!</p>
+	                  <div class="portfolio-tech">
+	                    <span class="tech-badge">에겐녀</span>
+	                    <span class="tech-badge">테토녀</span>
+	                    <span class="tech-badge">에겐남</span>
+	                    <span class="tech-badge">테토남</span>
+	                  </div>
+	                </div>
+	              </div>
+            	</a>
+            </div>
+
+            <div class="col-xl-4 col-lg-6 isotope-item filter-man">
+              <div class="portfolio-wrapper">
+                <div class="">
+                  <img src="assets/img/testList/img3.png" alt="Mobile App Project" class="img-fluid" loading="lazy">
+                </div>
+                <div class="portfolio-content">
+                  <div class="portfolio-meta">
+                    <span class="project-type">남자</span>
+                    <div class="project-rating">
+                      <i class="bi bi-eye-fill"></i>
+                      <span>12</span>
+                    </div>
+                  </div>
+                  <h3>OO 테스트</h3>
+                  <p>테스트 설명입니다.</p>
+                  <div class="portfolio-tech">
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-6 isotope-item filter-woman">
+              <div class="portfolio-wrapper">
+                <div class="">
+                  <img src="assets/img/testList/img4.png" alt="UI/UX Project" class="img-fluid" loading="lazy">
+                </div>
+                <div class="portfolio-content">
+                  <div class="portfolio-meta">
+                    <span class="project-type">여자</span>
+                    <div class="project-rating">
+                      <i class="bi bi-eye-fill"></i>
+                      <span>13</span>
+                    </div>
+                  </div>
+                  <h3>OO 테스트</h3>
+                  <p>테스트 설명입니다.</p>
+                  <div class="portfolio-tech">
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-6 isotope-item filter-couple">
+              <div class="portfolio-wrapper">
+                <div class="">
+                  <img src="assets/img/testList/img5.png" alt="E-commerce Platform" class="img-fluid" loading="lazy">
+                </div>
+                <div class="portfolio-content">
+                  <div class="portfolio-meta">
+                    <span class="project-type">커플</span>
+                    <div class="project-rating">
+                      <i class="bi bi-eye-fill"></i>
+                      <span>14</span>
+                    </div>
+                  </div>
+                  <h3>OO 테스트</h3>
+                  <p>테스트 설명입니다.</p>
+                  <div class="portfolio-tech">
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-6 isotope-item filter-unisex">
+              <div class="portfolio-wrapper">
+                <div class="">
+                  <img src="assets/img/testList/img6.png" alt="Fintech Mobile App" class="img-fluid" loading="lazy">
+                </div>
+                <div class="portfolio-content">
+                  <div class="portfolio-meta">
+                    <span class="project-type">남녀 공통</span>
+                    <div class="project-rating">
+                      <i class="bi bi-eye-fill"></i>
+                      <span>11</span>
+                    </div>
+                  </div>
+                  <h3>OO 테스트</h3>
+                  <p>테스트 설명입니다.</p>
+                  <div class="portfolio-tech">
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                    <span class="tech-badge">test</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div><!-- End Portfolio Items Container -->
+
+        </div>
+
+        <div class="portfolio-cta text-center" data-aos="fade-up" data-aos-delay="400">
+          <h4>다른 테스트도 해보실래요?</h4>
+          <p>다양한 테스트를 통해 나를 더 알아보세요!</p>
+          <div class="cta-buttons">
+            <a href="#" class="btn btn-primary">모든 테스트 보기</a>
+            <!--  -->
+            <a href="#" class="btn btn-outline">문답 인스타그램</a>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Portfolio Section -->
+    
+    <!-- Hero Section -->
+    <section id="hero" class="hero section">
+
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="100">
+            <div class="hero-content">
+              <h1>묻고 답하다, 문답</h1>
+              <p>
+              	세상의 모든 궁금증을 테스트로 만듭니다. <br><br>              	
+              	복잡한 과정 없이 쉽고 빠르게, 당신이 원하는 모든 '문답'을 여기서 경험하세요.
+			  </p>
+              <div class="hero-buttons">
+                <a href="#" class="btn btn-primary">테스트 하러가기</a>
+                <a href="https://www.instagram.com/moondap_com/" class="btn btn-outline">문답 인스타그램</a>
+              </div>
+              <div class="hero-stats">
+                <div class="stat-item">
+                  <span class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="260000" data-purecounter-duration="1"></span>
+                  <span class="stat-label">총 참여자 수</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="24" data-purecounter-duration="1"></span>
+                  <span class="stat-label">오늘 방문자 수</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="6" data-purecounter-duration="1"></span>
+                  <span class="stat-label">문답 테스트 개수</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="200">
+            <div class="hero-visual">
+              <div class="hero-image">
+                <!-- fade in/out 효과 -->
+				<!--                 
+				<div id="carouselExampleSlidesOnly" class="carousel slide carousel-fade" data-bs-ride="carousel"> 
+				-->
+                <!-- slide 효과 -->
+                <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+                
+				  <div class="carousel-inner">
+				    <div class="carousel-item active" data-bs-interval="10000">
+				      <img src="assets/img/main_img_G.png" alt="Digital Agency Hero" class="img-fluid">
+				    </div>
+				    <div class="carousel-item" data-bs-interval="10000">
+				      <img src="assets/img/main_img_B.png" alt="Digital Agency Hero" class="img-fluid">
+				    </div>
+				  </div>
+				</div>
+				
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-bg-elements">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-particles"></div>
+      </div>
+
+    </section><!-- /Hero Section -->    
+    
+  </main>
+</body>
+</html>

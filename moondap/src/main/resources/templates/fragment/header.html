@@ -1,0 +1,51 @@
+<th:block th:fragment="header">
+  <header id="header" class="header d-flex align-items-center sticky-top">
+    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+
+      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
+        <!-- Uncomment the line below if you also wish to use an image logo -->
+        <!-- <img src="assets/img/logo.webp" alt=""> -->
+        <img style="width: 20px;" src="/assets/img/logo.webp" alt="">
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+<!--           <li class="dropdown"><a href="#"><span>인기 테스트</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a> -->
+<!--             <ul> -->
+<!--               <li><a href="#">Dropdown 1</a></li> -->
+<!--               <li><a href="#">Dropdown 2</a></li> -->
+<!--               <li><a href="#">Dropdown 3</a></li> -->
+<!--               <li><a href="#">Dropdown 4</a></li> -->
+<!--             </ul> -->
+<!--           </li> -->
+          <li class="dropdown"><a href="#"><span>밸런스 게임</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="/balanceGame/insertBalanceGameView">밸런스 게임 등록</a></li>
+<!--               <li><a href="#">밸런스 게임 수정</a></li> -->
+            </ul>
+          </li>          
+<!--           <li class="dropdown"><a href="#"><span>성격 검사</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a> -->
+<!--             <ul> -->
+<!--               <li><a href="#">Dropdown 1</a></li> -->
+<!--               <li><a href="#">Dropdown 2</a></li> -->
+<!--               <li><a href="#">Dropdown 3</a></li> -->
+<!--               <li><a href="#">Dropdown 4</a></li> -->
+<!--             </ul> -->
+<!--           </li> -->
+          <li class="dropdown"><a href="#"><span>소통</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="#">문의 사항</a></li>
+              <li><a href="#">공지 사항</a></li>
+            </ul>
+          </li>
+          <li class="dropdown"><a href="/login"><span>로그인</span></a>
+          </li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+      
+      <a class="btn-getstarted" href="#about">모든 테스트 보기</a>
+
+    </div>
+  </header>
+</th:block>

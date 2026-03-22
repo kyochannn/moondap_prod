@@ -1,0 +1,209 @@
+// main: ../main.scss
+/*--------------------------------------------------------------
+# Hero Section
+--------------------------------------------------------------*/
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--background-color) 0%, color-mix(in srgb, var(--accent-color), transparent 95%) 100%);
+  padding: 120px 0;
+
+  .hero-content {
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+
+      @media (max-width: 768px) {
+        font-size: 2.5rem;
+      }
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: color-mix(in srgb, var(--default-color), transparent 20%);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+
+    .btn {
+      padding: 15px 30px;
+      font-weight: 600;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+
+      &.btn-primary {
+        background: var(--accent-color);
+        color: var(--contrast-color);
+        border: 2px solid var(--accent-color);
+
+        &:hover {
+          background: color-mix(in srgb, var(--accent-color), black 10%);
+          border-color: color-mix(in srgb, var(--accent-color), black 10%);
+          transform: translateY(-2px);
+        }
+      }
+
+      &.btn-outline {
+        background: transparent;
+        color: var(--accent-color);
+        border: 2px solid var(--accent-color);
+
+        &:hover {
+          background: var(--accent-color);
+          color: var(--contrast-color);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+
+    .stat-item {
+      text-align: center;
+
+      .stat-number {
+        display: block;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        line-height: 1;
+      }
+
+      .stat-label {
+        display: block;
+        font-size: 0.9rem;
+        color: color-mix(in srgb, var(--default-color), transparent 30%);
+        margin-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      justify-content: center;
+      gap: 1.5rem;
+    }
+  }
+
+  .hero-visual {
+    position: relative;
+
+    .hero-image {
+      position: relative;
+      z-index: 2;
+
+      img {
+        border-radius: 20px;
+      }
+    }
+  }
+
+  .hero-bg-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color), transparent 90%), color-mix(in srgb, var(--accent-color), transparent 95%));
+
+      &.shape-1 {
+        width: 300px;
+        height: 300px;
+        top: -150px;
+        right: -150px;
+        animation: rotate 20s linear infinite;
+      }
+
+      &.shape-2 {
+        width: 200px;
+        height: 200px;
+        bottom: -100px;
+        left: -100px;
+        animation: rotate 15s linear infinite reverse;
+      }
+    }
+
+    .bg-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: radial-gradient(circle, color-mix(in srgb, var(--accent-color), transparent 85%) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: moveParticles 30s linear infinite;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes moveParticles {
+    0% {
+      transform: translate(0, 0);
+    }
+
+    100% {
+      transform: translate(50px, 50px);
+    }
+  }
+
+  @media (max-width: 992px) {
+    .hero-content {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-buttons {
+      justify-content: center;
+    }
+
+    .hero-stats {
+      .stat-item {
+        .stat-number {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+}

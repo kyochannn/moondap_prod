@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+    <style type="text/css">
+		.bg-unselected {
+		    background-color: #383838 !important;
+		    background-image: none !important;
+		}
+    </style> 
+    <script> 
+        // 서버에서 넘겨준 현재 게임 ID
+        const gameId = '[[${balanceGame.id}]]';
+        const spicyFilter = '[[${balanceGame.isSpicy}]]' === true ? 1 : 0;
+        const category = '[[${balanceGame.category}]]';
+        
+    	// 재투표 제한 시간 설정 : 약 20초
+    	const VOTE_LIMIT_MIN = 1/4 * 60000 ;
+    	// 사용자 nickname
+       	let nickname = '';
+    	
+    
+    	document.addEventListener('DOMContentLoaded', function() {
+			
+    		// 화면이 처음 로드될 때 최상단으로 이동하도록 설정
+    		if ('scrollRestoration' in history) {
+    		    history.scrollRestoration = 'manual';
+    		}
+    		window.scrollTo(0, 0);
+    		
+	        if (isAlreadyVoted()) {
+	    		// 투표를 진행한 이력이 있다면
+	            // 선택 창 클릭 금지
+	            $('.option1Content, .option2Content').css('pointer-events', 'none'); 
+	            
+	            // 사용자가 이전에 뭘 했는지 정보 가져오기
+	            const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+	            const side = votedGames[gameId].side;
+		        
+	            // 예전 투표 결과 디스플레이
+    			applyVoteResultStyle(side);
+    			
+    			// 다시하기 버튼 활성화
+    			$('#resetVoteBtn').fadeIn();
+    			
+    			// 결과 퍼센트 바 활성화
+    			$('#balance-game-progressbar-container').fadeIn();
+    			
+    			// 채팅창 활성화
+    			$('#balance-game-chat-container').fadeIn();
+    			
+    			// 댓글 그리기
+    	        selectBalanceGameComment();
+    			
+    			// 댓글 실시간 연동
+//     	        setInterval(function() {
+//    	                selectBalanceGameComment();
+//     	        }, 10000);
+    			
+	        } else {
+	        	
+	        	// 투표를 진행한 이력이 없다면
+	        	// 다시하기 버튼 비활성화
+	        	$('#resetVoteBtn').hide();
+	        	
+	        	// 결과 퍼센트 바 비활성화
+	        	$('#balance-game-progressbar-container').hide();
+	        	
+    			// 채팅창 비활성화
+    			$('#balance-game-chat-container').hide();
+	        }
+	        
+			// 엔터키 지원
+			$('#chat-content').on('keypress', function(e) {
+			    if (e.which == 13) {
+			    	insertBalanceGameComment();
+			    }
+			});
+			
+			$('#userNicknameInput').on('keypress', function(e) {
+			    if (e.which == 13) {
+			    	saveNickname();
+			    }
+			});
+	        
+	    });
+    	
+		// [2] 투표 여부 확인
+		function isAlreadyVoted() {
+			
+		    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+		    const voteData = votedGames[gameId];
+		    console.log(voteData);
+		    
+		    // a. localstorage에 밸런스 게임 정보가 없을 때
+		    if (!voteData) return false;
+		    
+		    return true;
+		}
+		
+		function applyVoteResultStyle(side) {
+		    if (side === 'left') {
+		    	// [카드 스타일]
+		        // 선택된 항목
+		        $('.option1Content').css('transition', 'transform 0.3s ease');
+		        $('.option1Content').css('border', '6px solid #3876f2');
+		        
+		        // 선택되지 않은 항목
+		        $('.option2Content').css('transform', 'scale(0.9)');
+		        $('.option2Content').css('opacity', '0.7');
+		        
+		        // [프로그레스 바 스타일]
+		        $('.bg-balance-left').removeClass('bg-unselected');
+		        $('.bg-balance-right').addClass('bg-unselected');
+		    } else {
+		        // [카드 스타일]
+		        // 선택된 항목
+		        $('.option1Content').css('transition', 'transform 0.3s ease');
+		        $('.option2Content').css('border', '6px solid #de66e9');
+		        
+		        // 선택되지 않은 항목
+		        $('.option1Content').css('transform', 'scale(0.9)');
+		        $('.option1Content').css('opacity', '0.7');
+		        
+		     	// [프로그레스 바 스타일]
+		        $('.bg-balance-right').removeClass('bg-unselected');
+		        $('.bg-balance-left').addClass('bg-unselected');
+		    }
+	        $('.option1Content').css('pointer-events', 'none');
+	        $('.option2Content').css('pointer-events', 'none');
+		}
+    
+		function selectOption(element, side) {
+			
+		    $.ajax({
+		        url: '/balanceGame/vote',
+		        type: 'POST',
+		        contentType: 'application/json',
+		        data: JSON.stringify({ 
+		            id: '[[${balanceGame.id}]]', 
+		            side: side 
+		        }),
+		        success: function(data) {
+		            // 1. UI 고정
+		            element.classList.add('selected');
+		            
+					// 2. side에 따라 클래스 부여
+				    applyVoteResultStyle(side);
+					
+		            // 3. 결과 반영 (데이터 받아와서 처리)
+		            $('.total-count-text').text(data.totalCount);
+		            
+					$('.option-bar-left').css('width', data.option1Percent + '%');
+		            $('.bg-balance-left').text(data.option1Percent + '% (' + data.option1Count + '명)');
+		            
+					$('.option-bar-right').css('width', data.option2Percent + '%');
+		            $('.bg-balance-right').text(data.option2Percent + '% (' + data.option2Count + '명)');
+
+		            // 4. 로컬 스토리지에 사용자의 밸런스 게임 정보 저장
+		            saveVoteLocalStorage(side);
+		            
+		            // 5. 다시하기 버튼 활성화
+					$('#resetVoteBtn').fadeIn();
+		            
+					// 6. 댓글 그리기
+			        selectBalanceGameComment();
+					
+					// 7. 댓글 숨기기로 변경
+			        $('.comment-view-hide-text').html('댓글 숨기기 <i class="bi bi-chevron-up"></i>');
+					
+	    			// 8. 결과 퍼센트 바 활성화
+	    			$('#balance-game-progressbar-container').show();
+	    			
+	    			// 9. 투표 성공 시 채팅창과 결과 바를 부드럽게 보여줌
+					$('#balance-game-chat-container').fadeIn(500, function() {
+					    // 1. 첫 번째 댓글 요소 선택 (renderCommentList가 실행된 후여야 함)
+					    const $firstComment = $('.comment-list > div').first();
+					
+					    if ($firstComment.length > 0) {
+					        // 2. 계산: (댓글의 상단 위치 + 댓글의 높이) - 브라우저 창의 높이
+					        // 이렇게 하면 댓글의 '하단'이 화면의 '최하단'에 위치하게 됩니다.
+					        const scrollPos = $firstComment.offset().top + $firstComment.outerHeight() - $(window).height();
+					
+					        $('html, body').animate({
+					            scrollTop: scrollPos
+					        }, 0);
+					    }
+					});
+	                
+	                // 10. 댓글 데이터 가져오기
+	                selectBalanceGameComment();
+	                
+				    // 11. 폭죽 효과 실행
+				    const rect = element.getBoundingClientRect();
+    
+				    const centerX = (rect.left + rect.width / 2) / window.innerWidth;
+				    const centerY = (rect.top + rect.height / 2) / window.innerHeight;
+				    
+				    confetti({
+		                particleCount: 150,
+		                spread: 70,
+		                origin: { x: centerX, y: centerY },
+		                colors: ['#524FD0', '#ffffff', '#3876f2'],
+		                zIndex: 9999
+		            });
+		        },
+		        error: function(xhr, status, error) {
+		        	console.log("Status: " + status);
+		            console.log("Error: " + error);
+		            console.log("ResponseText: " + xhr.responseText);
+		            alert("투표 중 오류가 발생했습니다.");
+		        }
+		    });
+		}
+		
+		// [1] 투표 저장 (LocalStorage 활용)
+		function saveVoteLocalStorage(side) {
+		    // 1. 기존 데이터 가져오기 (없으면 빈 객체)
+		    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+		    
+		    // 2. 새 데이터 추가
+		    votedGames[gameId] = {
+		        side: side,
+		        time: new Date().getTime()
+		    };
+		    
+		    // 3. 다시 저장
+		    sessionStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
+		}
+
+    	// 재투표 기능
+    	function resetVote() {
+    		
+    		if (isAlreadyVoted()) {
+    		    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+    		    const voteData = votedGames[gameId];
+	    		
+		    	const now = new Date().getTime();
+		    	const limitMs = VOTE_LIMIT_MIN;
+		    	
+		    	const remainMs = limitMs - (now - voteData.time);
+
+// 		    	const minutes = Math.floor(remainMs / 60000);
+		    	const seconds = Math.floor((remainMs % 60000) / 1000);
+
+// 		    	alert(minutes + "분 " + seconds + "초 뒤 다시할 수 있습니다.");
+		    	 
+		    	if (remainMs > 0) {
+			    	alert(seconds + "초 뒤 다시할 수 있습니다.");
+		    	} else {	
+				 	delete votedGames[gameId];
+	 		        sessionStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
+			        
+				 	location.reload();
+				 	
+	 		        return;
+		    	}
+
+    		} else {
+			 	console.log("현재는 테스트 가능함.");
+			 	location.reload();
+    		}
+    	}
+    	
+    	// 댓글 조회
+    	function selectBalanceGameComment() {
+    		
+	    	$.ajax({
+		        url: '/balanceGame/selectBalanceGameComment',
+		        type: 'POST',
+		        contentType: 'application/json',
+		        data: JSON.stringify({ 
+		            id: '[[${balanceGame.id}]]'
+		        }),
+		        success: function(commentList) {
+		        	renderCommentList(commentList);
+		        },
+		        error: function(xhr, status, error) {
+		        	console.log("Status: " + status);
+		            console.log("Error: " + error);
+		            console.log("ResponseText: " + xhr.responseText); // 여기가 핵심입니다!
+		            alert("댓글 조회 중 오류가 발생했습니다.");
+		        }
+		    });
+    	}
+    	
+    	// 댓글 달기
+		function insertBalanceGameComment() {
+			if (isAlreadyVoted()) {
+				
+				let content = $('#chat-content').val();
+				
+			    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+			    const voteData = votedGames[gameId];
+				let voteSide = voteData.side;
+				
+	            // 1. 유효성 검사 (50자 이내 입력 가능)
+		        if (!content || content.trim() === "") {
+		            alert("메시지를 입력해주세요.");
+		            return;
+		        }
+		        if (content.length > 50) {
+		            alert("50자 이내로 입력 가능합니다.");
+		            return;
+		        }
+		        if (content == '시발') {
+		            alert("욕설 금지");
+		            return;
+		        }
+	    			
+		        // 2. nickname - session에 저장되어있는지 확인
+		        if (isNicknameSet()) {
+		            // 3. 서버로 요청
+				    $.ajax({
+				        url: '/balanceGame/insertBalanceGameComment',
+				        type: 'POST',
+				        contentType: 'application/json',
+				        data: JSON.stringify({ 
+				            id: '[[${balanceGame.id}]]', 
+				            nickname: nickname,
+				            side: voteSide,
+				            content: content
+				        }),
+				        success: function(commentList) {
+				        	if (commentList && commentList.length > 0) {
+					        	renderCommentList(commentList);
+								
+					            $('html, body').stop().animate({
+					                scrollTop: $('#share-container').offset().top - 20
+					            }, 0);
+					            
+					        	$('#chat-content').val('');
+					            $('#chat-content').focus();
+				        	} else {
+					            alert("댓글 입력 중 오류가 발생했습니다.");
+					            return;
+				        	}
+				        },
+				        error: function(xhr, status, error) {
+				        	console.log("Status: " + status);
+				            console.log("Error: " + error);
+				            console.log("ResponseText: " + xhr.responseText);
+				            alert("댓글 입력 중 오류가 발생했습니다.");
+				        }
+				    });
+		        } else {
+		            // 닉네임이 없는 경우 -> 팝업(모달) 띄우기
+		            const nicknameModal = new bootstrap.Modal(document.getElementById('nicknameModal'));
+		            nicknameModal.show();
+		            $('#nicknameModal').on('shown.bs.modal', function () {
+		                $('#userNicknameInput').trigger('focus');
+		            });
+		        }
+		        
+			} else {
+				alert("선택 후 댓글을 달 수 있습니다.");
+			}
+		}
+		
+    	// nickname 체크 함수
+		function isNicknameSet() {
+		    nickname = sessionStorage.getItem('moondap_comment_nickname');
+		    return (nickname !== null && nickname.trim() !== "");
+		}
+    	
+    	// nickname 저장 함수
+    	function saveNickname() {
+		    const nicknameInput = $('#userNicknameInput').val().trim();
+		    
+		    if (nicknameInput === "") {
+		        alert("닉네임을 입력해 주세요!");
+		        return;
+		    }
+		    
+		    if (nicknameInput.length >= 8) {		    	
+		        alert("닉네임을 8자 이내로 설정해 주세요.");
+		        return;
+		    }
+		
+		    // 로컬 스토리지에 저장
+		    sessionStorage.setItem('moondap_comment_nickname', nicknameInput);
+		    
+		    // 모달 닫기
+		    const nicknameModal = bootstrap.Modal.getInstance(document.getElementById('nicknameModal'));
+		    nicknameModal.hide();
+		    
+		    // 댓글 추가
+		    insertBalanceGameComment();
+		}
+    	
+    	// nickname 팝업창 취소 버튼 시
+    	function cancelNickname() {
+    	    $('#userNicknameInput').val('');
+    	    
+    	    const nicknameModalEl = document.getElementById('nicknameModal');
+    	    const modalInstance = bootstrap.Modal.getInstance(nicknameModalEl);
+    	    
+    	    if (modalInstance) {
+    	        modalInstance.hide();
+    	    }
+    	    
+    	    $('#chat-content').focus();
+    	}
+    	
+    	// 댓글 그리기
+		function renderCommentList(commentList) {
+		    const $commentContainer = $('.comment-list');
+		    $commentContainer.empty(); // 기존에 있던 정적 HTML(또는 이전 댓글) 삭제
+
+		 	// 1. 전체 좋아요 데이터 객체 가져오기
+		    const allLikedData = JSON.parse(sessionStorage.getItem('moondap_liked_comments') || '{}');
+		    // 2. 현재 게임의 좋아요 리스트만 가져오기
+		    const likedComments = allLikedData[gameId] || [];
+		    
+		    // 댓글이 하나도 없을 경우 처리
+		    if (!commentList || commentList.length === 0) {
+	            const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+	            const side = votedGames[gameId].side;
+		        // $commentContainer.append('<p class="text-muted my-4">첫 번째 댓글을 남겨보세요!</p>');
+		        
+		        if (side === 'left') {
+		        	$commentContainer.append(`
+		                <div class="d-flex flex-column align-items-start mb-3" data-aos="fade-up">
+		                    <div class="p-3"
+		                        style="background: #1e213a; border: 1px solid #3876f2; border-radius: 2px 15px 15px 15px; max-width: 80%; text-align: left;">
+		                        <p class="mb-0" style="color: #e9ecef; font-size: 0.95rem;">첫 번째 댓글을 남겨보세요!</p>
+		                    </div>
+		                </div>
+		                `);
+		        } else {
+		        	$commentContainer.append(`
+		                <div class="d-flex flex-column align-items-end mb-3" data-aos="fade-up">
+		                    <div class="p-3"
+		                        style="background: #251b3a; border: 1px solid #de66e9; border-radius: 15px 2px 15px 15px; max-width: 80%; text-align: left;">
+		                        <p class="mb-0" style="color: #e9ecef; font-size: 0.95rem;">첫 번째 댓글을 남겨보세요!</p>
+		                    </div>
+		                </div>
+		                `);
+		        }
+		        
+		        return;
+		    }
+
+		    commentList.forEach(comment => {
+		    	
+		        let commentHtml = '';
+		        
+		    	let isLiked = likedComments.includes(comment.no);
+		    	
+		        const heartClass = isLiked ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary';
+		        const countColor = isLiked ? '#ef4444' : '#6c757d';
+		        
+		        // 1. 선택한 진영에 따른 스타일 설정
+		        if (comment.selectedSide === 'left') {
+		            // 왼쪽 정렬 (예: 콜라 파)
+		        	let commentHtml = `
+		                <div class="d-flex flex-column mb-1">
+		                    <div class="d-flex flex-row align-items-center">
+		                        <div class="d-flex flex-column flex-grow-1">
+		                            <div class="d-flex align-items-center mb-1 ms-1">
+		                                <span style="color: #3876f2; font-weight: bold; font-size: 0.8rem;">${comment.nickname}</span>
+		                            </div>
+		                            <div class="d-flex align-items-center">
+			                            <div class="px-3 py-2" 
+			                                style="background: #1e213a; 
+			                                       border: 1px solid #3876f2; 
+			                                       border-radius: 2px 15px 15px 15px; 
+			                                       max-width: 85%;
+			                                       word-break: break-all;
+			                                       overflow-wrap: break-word;">
+			                                <p class="mb-0" style="color: #e9ecef; font-size: 0.95rem; white-space: pre-wrap;">${comment.content}</p>
+			                            </div>
+		                                <div class="d-flex align-items-center ms-2 gap-1 like-wrapper" style="cursor: pointer; min-width: 20px;" 
+		                                     onclick="toggleLike(this, ${comment.no})">
+		                                    <i class="bi ${heartClass} fs-6 like-icon"></i>
+		                                    <span class="like-count" style="font-size: 0.75rem; color: ${countColor};">
+		                                        ${comment.likeCount || 0}
+		                                    </span>
+		                                </div>
+		                            </div>
+		                            <small class="mt-1 ms-1" style="color: #6c757d; font-size: 0.7rem;">${timeSince(comment.createdAt)}</small>
+		                        </div>
+		                    </div>
+		                </div>`;
+		            $commentContainer.append(commentHtml);
+		        } else {
+		            // 오른쪽 정렬 (예: 사이다 파)
+		            let commentHtml = `
+		                <div class="d-flex flex-column mb-1">
+		            		<div class="d-flex flex-column" style="max-width: 100%;">
+		            			<div class="d-flex flex-column flex-grow-1">
+		                            <div class="d-flex align-items-center justify-content-end mb-1 me-1">
+		                                <span style="color: #de66e9; font-weight: bold; font-size: 0.8rem;">${comment.nickname}</span>
+		                            </div>
+		                            <div class="d-flex align-items-center justify-content-end">
+		                                <div class="d-flex align-items-center me-2 gap-1 like-wrapper"
+		                                     style="cursor: pointer; min-width: 20px; line-height:1;"
+		                                     onclick="toggleLike(this, ${comment.no})">
+		                                    <i class="bi ${heartClass} fs-6 like-icon"></i>
+		                                    <span class="like-count"
+		                                          style="font-size: 0.75rem; color: ${countColor};">
+		                                        ${comment.likeCount || 0}
+		                                    </span>
+		                                </div>
+		                                <!-- 말풍선 -->
+		                                <div class="px-3 py-2" 
+		                                    style="background: #251b3a; 
+		                                		   border: 1px solid #de66e9; 
+		                                           border-radius: 15px 2px 15px 15px; 
+		                                           max-width: 85%; 
+		                                           word-break: break-all; 
+		                                           overflow-wrap: break-word; 
+		                                           text-align: left;">
+		                                   <p class="mb-0" style="color: #e9ecef; font-size: 0.95rem; white-space: pre-wrap;">${comment.content}</p>
+		                               </div>
+		                            </div>
+		                            <small class="mt-1 me-1 text-end"
+		                                   style="color: #6c757d; font-size: 0.7rem;">
+		                                ${timeSince(comment.createdAt)}
+		                            </small>
+		                        </div>
+		                    </div>
+		                </div>`;
+
+		            $commentContainer.append(commentHtml);
+		        }
+		    });
+
+		    // 만약 AOS 애니메이션을 사용 중이라면 새 요소에 적용하기 위해 재초기화
+		    if (typeof AOS !== 'undefined') {
+		        AOS.refresh();
+		    }
+		}
+
+		
+		/**
+		 * 좋아요 토글 함수
+		 */
+		 function toggleLike(element, commentNo) {
+			if (isAlreadyVoted()) {
+			    const $icon = $(element).find('.like-icon');
+			    const $countSpan = $(element).find('.like-count');
+			    let currentCount = parseInt($countSpan.text());
+			    const targetNo = Number(commentNo);
+			    
+			    // 1. 전체 좋아요 데이터(객체) 가져오기
+			    let allLikedData = JSON.parse(sessionStorage.getItem('moondap_liked_comments') || '{}');
+			    
+			    // 2. 현재 게임에 해당하는 좋아요 리스트만 추출 (없으면 빈 배열)
+			    let currentLikedList = allLikedData[gameId] || [];
+			    
+			    const isAlreadyLiked = currentLikedList.includes(targetNo);
+			    let setting = '';
+	
+			    if (!isAlreadyLiked) {
+			        // [좋아요 누름]
+			        currentLikedList.push(targetNo);
+			        setting = 'UP';
+			        $icon.removeClass('bi-heart text-secondary').addClass('bi-heart-fill text-danger');
+			        $countSpan.text(currentCount + 1).css('color', '#ef4444');
+			    } else {
+			        // [좋아요 취소]
+			        currentLikedList = currentLikedList.filter(no => no !== targetNo);
+			        setting = 'DOWN';
+			        $icon.removeClass('bi-heart-fill text-danger').addClass('bi-heart text-secondary');
+			        $countSpan.text(currentCount - 1).css('color', '#6c757d');
+			    }
+	
+			    // 3. 현재 게임 리스트를 전체 데이터에 다시 저장 후 로컬 스토리지 반영
+			    allLikedData[gameId] = currentLikedList;
+			    sessionStorage.setItem('moondap_liked_comments', JSON.stringify(allLikedData));
+	
+			    // 4. 서버 전송
+	   			$.ajax({
+			        url: '/balanceGame/updateBalanceGameCommentLikeCount',
+			        type: 'POST',
+			        contentType: 'application/json',
+			        data: JSON.stringify({ 
+			        	no: commentNo,
+			            id: '[[${balanceGame.id}]]',
+			            setting: setting
+			        }),
+			        success: function(commentList) {
+			        	renderCommentList(commentList);
+			        },
+			        error: function(xhr, status, error) {
+			        	console.log("Status: " + status);
+			            console.log("Error: " + error);
+			            console.log("ResponseText: " + xhr.responseText); // 여기가 핵심입니다!
+			            alert("좋아요 입력 중 오류가 발생했습니다.");
+			        }
+			    });
+			} else {
+				alert("선택 후 좋아요를 누를 수 있습니다.");
+				return;
+			}
+		}
+		
+		/**
+		 * 시간을 '방금 전', 'n분 전' 형태로 변환하는 유틸 함수
+		 */
+		function timeSince(date) {
+		    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+		    let interval = seconds / 31536000;
+
+		    if (interval > 1) return Math.floor(interval) + "년 전";
+		    interval = seconds / 2592000;
+		    if (interval > 1) return Math.floor(interval) + "달 전";
+		    interval = seconds / 86400;
+		    if (interval > 1) return Math.floor(interval) + "일 전";
+		    interval = seconds / 3600;
+		    if (interval > 1) return Math.floor(interval) + "시간 전";
+		    interval = seconds / 60;
+		    if (interval > 1) return Math.floor(interval) + "분 전";
+		    return "방금 전";
+		}
+    	
+		function goToNextOrPrevGame(direction) {
+			
+			// 세션에 저장되어있는 검색 조건
+	    	let listCategory = sessionStorage.getItem('moondap_balancegame_category');
+	    	let listSpicyFilter = sessionStorage.getItem('moondap_balancegame_spicyfilter');
+	    	
+		    $.ajax({
+		        url: '/balanceGame/nextOrPrevBalanceGameIdSelect',
+		        type: 'POST',
+		        contentType: 'application/json',
+		        data: JSON.stringify({ 
+		            id: '[[${balanceGame.id}]]',
+		            direction: direction,
+		            spicyFilter: listSpicyFilter,
+		            category: listCategory
+		        }),
+		        success: function(gameId) {
+		            if (gameId) {
+		                location.href = '/balanceGame/selectBalanceGameView?id=' + gameId + '&spicyFilter=' + listSpicyFilter + '&category=' + listCategory;
+		            }
+		        },
+		        error: function() {
+		            alert("질문을 가져오는 데 실패했습니다.");
+		        }
+		    });
+		}
+		
+		function testComment() {
+			if (isAlreadyVoted()) {
+			    const $balanceGameChatContainer = $('#balance-game-chat-container');
+			    const $btn = $('.comment-view-hide-text');
+			    const $chatInputContainer = $('.chat-input-container');
+	
+			    // 1. 입력창과 리스트를 동시에 부드럽게 토글 (시간을 300으로 일치)
+			    
+			    $balanceGameChatContainer.slideToggle(300, function() {
+			        
+			        // 2. 애니메이션 완료 후 버튼 상태만 변경
+			        if ($balanceGameChatContainer.is(':visible')) {
+			            $btn.html('댓글 숨기기 <i class="bi bi-chevron-up"></i>');
+			        } else {
+			            $btn.html('댓글 보기 <i class="bi bi-chevron-down"></i>');
+			        }
+			    });
+			} else {
+				alert("투표 진행 후 댓글을 볼 수 있습니다.");
+			}
+		}
+		
+		function updateBalanceGameView() {
+			location.href = '/balanceGame/updateBalanceGameView?id=' + gameId;
+		}
+		
+		function balanceGameListView() {
+			location.href = '/balanceGame/selectBalanceGameListView';
+		}
+		
+		function shareKakao(userName) {
+		  Kakao.init('35c06e8ab8214c9d9e45d761f4483fe6'); // 카카오 JavaScript 키			
+		  Kakao.Link.sendDefault({
+		    objectType: 'feed',
+		    content: {
+		      title: '[[${balanceGame.title}]]',
+		      description: userName + '님은 ' + '(__들어갈 값__)' + '를 선택했어요!',
+		      imageUrl: '##',
+		      link: {
+		        mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + + '[[${balanceGame.id}]]',
+		        webUrl: 'https://moondap.com/balanceGame/select?userNo=' + + '[[${balanceGame.id}]]'
+		      }
+		    },
+		    buttons: [
+		      {
+		        title: '결과 보러가기',
+		        link: {
+		          mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + + '[[${balanceGame.id}]]',
+		          webUrl: 'https://moondap.com/balanceGame/select?userNo=' + + '[[${balanceGame.id}]]'
+		        }
+		      }
+		    ]
+		  });
+		}
+    </script>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+    <div class="container">
+
+		<!-- Balance Game Section -->
+		<section id="team" class="team section py-1 z-1">
+			<div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+
+				<div class="row">
+					<div class="col-12">
+						<div class="team-carousel-wrapper" data-aos="fade-up"
+							data-aos-delay="100">
+							<div class="mt-3">
+<!-- 								<p class="text-center" style="color: var(--accent-color);"> -->
+<!-- 								    <i class="bi bi-eye-fill"></i>  -->
+<!-- 								    <span class="total-count-text" th:text="${balanceGame.totalCount}"></span> -->
+<!-- 								</p> -->
+								<h4 class="carousel-title mb-0 p-2" th:text="${balanceGame.title}"></h4>
+							</div>
+							
+							<!-- Share Section -->
+							<section id="share-container" class="py-1 my-1 position-relative z-2 overflow-visible">
+								<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+									<div>
+									<button type="button"
+										class="btn btn-outline-light d px-3 bord-radius-20"
+										onclick="balanceGameListView()" >
+										<i class="bi bi-list-task"></i> 리스트로 이동
+									</button>
+									<button type="button"
+										class="btn btn-outline-light d px-3 bord-radius-20"
+										onclick="updateBalanceGameView()" >
+										<i class="bi bi-pencil-fill"></i> 편집하기
+									</button>
+									</div>
+									<div class="btn-group dropdown">
+										<button type="button"
+											class="btn btn-outline-light d px-3 bord-radius-20 dropdown-toggle"
+											data-bs-toggle="dropdown" aria-expanded="false">
+											<i class="bi bi-share-fill"></i>
+										</button>
+										<ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark text-nowrap">
+											<li>
+												<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2"
+													onclick="shareKakao('testUser')"
+													style="min-height: 32px;">
+													<label class="form-check-label text-white small mb-0"
+														for="newQuestionOnly" style="cursor: pointer;">
+														<i class="bi bi-chat-fill"></i> 카카오톡 공유</label>
+												</div>
+											</li>
+											<li>
+												<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2"
+													onclick=""
+													style="min-height: 32px;">
+													<label class="form-check-label text-white small mb-0"
+														for="newQuestionOnly" style="cursor: pointer;">
+														<i class="bi bi-clipboard-fill"></i> 링크 복사</label>
+												</div>
+											</li>
+											<!-- 
+											<li>
+												<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2"
+													style="min-height: 32px;">
+													<label class="form-check-label text-white small mb-0"
+														for="newQuestionOnly" style="cursor: pointer;">
+														<i class="bi bi-instagram"></i> 인스타용 이미지 다운로드 </label>
+												</div>
+											</li>
+											 -->
+										</ul>
+									</div>
+								</div>
+							</section>
+							
+							<div class="row leadership-slider py-0">
+								
+								<div class="col-6 pe-1">
+								    <div class="leader-card selection-card option1Content" onclick="selectOption(this, 'left')">
+								        <div class="leader-image">
+											<img th:src="@{'/uploads/' + ${balanceGame.option1ImagePath}}" alt="선택지1">
+								            <div class="overlay"></div> 
+								        </div>
+								        <div class="leader-info">
+								            <h5 th:text="${balanceGame.option1Text}">선택지 1</h5>
+								        </div>
+								    </div>
+								</div>
+								
+								<div class="col-6 ps-1">
+								    <div class="leader-card selection-card option2Content" onclick="selectOption(this, 'right')">
+								        <div class="leader-image">
+											<img th:src="@{'/uploads/' + ${balanceGame.option2ImagePath}}" alt="선택지2">
+								            <div class="overlay"></div> 
+								        </div>
+								        <div class="leader-info">
+								            <h5 th:text="${balanceGame.option2Text}">선택지 2</h5>
+								        </div>
+								    </div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+		</section>
+		<!-- /Balance Game Section -->
+
+		<!-- Share Section -->
+		<section id="share-container" class="py-1 my-1 position-relative z-2 overflow-visible">
+			<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+				<button type="button"
+					class="btn btn-outline-light d px-3 bord-radius-20"
+					onclick="goToNextOrPrevGame('PREV')">
+					<i class="bi bi-arrow-left-circle-fill"></i> 이전 질문
+				</button>
+
+				<button type="button"
+					class="btn btn-outline-light d bord-radius-20" id="resetVoteBtn"
+					onclick="resetVote()">
+					<i class="bi bi-arrow-counterclockwise"></i>
+				</button>
+				<button type="button"
+					class="btn btn-outline-light d px-3 bord-radius-20"
+					onclick="goToNextOrPrevGame('NEXT')">
+					다음 질문 <i class="bi bi-arrow-right-circle-fill"></i>
+				</button>
+			</div>
+		</section>
+		<!-- /Share Section -->
+		
+		<!-- progress bar Section -->
+		<section id="balance-game-progressbar-container" class="py-2 my-2">
+			<div class="progress-stacked bord-radius-20" style="height: 35px;">
+				<div class="progress option-bar-left" role="progressbar"
+					th:style="'width: ' + ${balanceGame.option1Percent} + '%; height: 35px;'">
+					<div class="progress-bar bg-unselected bg-balance-left">[[${balanceGame.option1Percent}]]% ([[${balanceGame.option1Count}]]명)</div>
+				</div>
+				<div class="progress option-bar-right" role="progressbar"
+					th:style="'width: ' + ${balanceGame.option2Percent} + '%; height: 35px;'">
+					<div class="progress-bar bg-unselected bg-balance-right">[[${balanceGame.option2Percent}]]% ([[${balanceGame.option2Count}]]명)</div>
+				</div>
+			</div>
+		</section>
+		<!-- /progress bar Section -->
+		
+		<!-- Chat Section -->
+		<section id="balance-game-chat-container" class="py-1 mb-3">
+				
+			<!-- 댓글 창 -->
+			<section class="chat-input-container pt-0 pb-3">
+				<div class="chat-input-wrapper p-2"
+					style="background: #131428; border: 1px solid #333447; border-radius: 30px;">
+					<div class="d-flex align-items-center">
+	
+						<button type="button" class="btn p-1 ms-2"
+							style="color: #6c757d; border: none;">
+							<i class="bi bi-chat-dots-fill"></i>
+						</button>
+	
+						<input type="text"
+							id="chat-content"
+							class="form-control border-0 bg-transparent text-white shadow-none px-3"
+							placeholder="댓글 추가" style="font-size: 0.95rem;" >
+	
+						<button type="button"
+							onclick="insertBalanceGameComment()"
+							class="btn d-flex align-items-center justify-content-center p-0"
+							style="width: 40px; height: 40px; min-width: 40px; background-color: #524FD0; color: white; border-radius: 50% !important;">
+							<i class="bi bi-send-fill"
+								style="font-size: 1rem; transform: translateX(-1px);"></i>
+						</button>
+					</div>
+				</div>
+			</section>
+			
+			<!-- 댓글을 보여줄 영역 -->
+			<div class="comment-list">
+				
+			</div>
+		</section>
+		<!-- /Chat Section -->
+	</div>
+
+
+	<div class="modal fade" id="nicknameModal" tabindex="-1"
+		aria-labelledby="nicknameModalLabel" aria-hidden="true"
+		data-bs-backdrop="static" data-bs-keyboard="false">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content"
+				style="background-color: #05071e; color: white; border-radius: 20px;">
+				<div class="modal-header border-0">
+					<h5 class="modal-title w-100 text-center" id="nicknameModalLabel">댓글 닉네임을 설정합니다.</h5>
+				</div>
+				<div class="modal-body py-0">
+						
+					<div class="chat-input-wrapper p-2"
+						style="background: #131428; border: 1px solid #333447; border-radius: 30px;">
+						<div class="d-flex align-items-center">
+		
+							<button type="button" class="btn p-1 ms-2"
+								style="color: #6c757d; border: none;">
+								<i class="bi bi-person-circle"></i>
+							</button>
+		
+							<input type="text"
+								id="userNicknameInput"
+								class="form-control border-0 bg-transparent text-white shadow-none px-3"
+								placeholder="닉네임을 입력하세요 (최대 8자)" style="font-size: 0.95rem;" maxlength="8">
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer border-0 justify-content-center gap-2">
+				    <button type="button" class="btn px-4 bord-radius-20"
+				        style="background-color: transparent; border: 1px solid #4a4d6d; color: #a1a1a1; font-size: 0.9rem;"
+				        onclick="cancelNickname()">취소</button>
+				        
+				    <button type="button" class="btn px-4 bord-radius-20"
+				        style="background-color: #524FD0; color: #ffffff; border: 1px solid #524FD0; font-size: 0.9rem; font-weight: 600;"
+				        onclick="saveNickname()">등록</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

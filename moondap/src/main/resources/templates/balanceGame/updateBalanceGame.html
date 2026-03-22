@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+    <style>
+		.expand-btn {
+		    width: 40px; 
+		    height: 40px;
+		    border-radius: 20px !important;
+		    overflow: hidden;
+		    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		    display: flex;
+		    flex-direction: row; /* 정방향: 아이콘 - 텍스트 순서 */
+		    align-items: center;
+		    justify-content: flex-start; /* 왼쪽 정렬 */
+		    border: none;
+		    white-space: nowrap;
+		}
+		
+		/* 아이콘 영역: 항상 버튼의 시작점(왼쪽) 근처에 위치 */
+		.expand-btn i {
+		    width: 40px;
+		    min-width: 40px;
+		    height: 40px;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    font-size: 1rem;
+		    flex-shrink: 0;
+		}
+		
+		/* 텍스트 영역: 아이콘 바로 오른쪽에 밀착 */
+		.btn-text {
+		    opacity: 0;
+		    max-width: 0;
+		    overflow: hidden;
+		    transition: all 0.3s ease-out;
+		    font-size: 0.85rem;
+		    font-weight: 600;
+		    margin-left: -5px; /* 아이콘과 더 바짝 붙이기 위해 음수 마진 활용 */
+		}
+		
+		/* 확장 상태: 버튼이 왼쪽으로 늘어남 */
+		.expand-btn:hover, .expand-btn:active {
+		    width: 150px; /* 늘어나는 너비 */
+		}
+		
+		/* 확장 시 텍스트 스타일 */
+		.expand-btn:hover .btn-text, .expand-btn:active .btn-text {
+		    opacity: 1;
+		    max-width: 110px;
+		    margin-left: 0px; /* 확장 시 살짝 간격을 벌림 */
+		    padding-right: 15px; /* 오른쪽 끝 여백 */
+		}
+		
+		
+		
+		/* 드롭존 기본 스타일 */
+		.drop-zone.active-upload {
+		    position: relative;
+		    border: 2px dashed rgba(255, 255, 255, 0.4); /* 기본 점선 */
+		    border-radius: 20px;
+		    background: #1a1b2e;
+		    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		
+		/* 이미지 위에 얹어지는 가이드 레이어 */
+		.upload-guide-layer {
+		    position: absolute;
+		    inset: 0;
+		    z-index: 2;
+		    background: rgba(0, 0, 0, 0.4); /* 이미지 위를 어둡게 눌러줌 */
+		    border-radius: 20px;
+		    backdrop-filter: blur(2px); /* 약간의 블러로 텍스트 집중도 향상 */
+		    opacity: 1;
+		    transition: background 0.3s;
+		}
+		
+		/* 이미지가 있을 때 호버하면 더 밝아지게 */
+		.drop-zone:hover .upload-guide-layer {
+		    background: rgba(82, 79, 208, 0.6); /* 교찬님 포인트 컬러로 변경 */
+		}
+		
+		/* 안내 텍스트 스타일 */
+		.guide-text {
+		    color: white;
+		    font-size: 0.9rem;
+		    font-weight: 600;
+		    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+		}
+		
+		.guide-sub-text {
+		    color: rgba(255, 255, 255, 0.7);
+		    font-size: 0.75rem;
+		}
+		
+		/* 아이콘 주변 원형 강조 */
+		.icon-circle {
+		    width: 50px;
+		    height: 50px;
+		    background: rgba(255, 255, 255, 0.2);
+		    border-radius: 50%;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    border: 1px solid rgba(255, 255, 255, 0.3);
+		}
+		
+		/* 드래그 앤 드롭 시 애니메이션 */
+		@keyframes dash-move {
+		    to { stroke-dashoffset: -20; }
+		}
+		
+		.drop-zone.drag-over {
+		    border: 2px dashed #ffffff;
+		    transform: scale(0.98);
+		    box-shadow: inset 0 0 30px rgba(255,255,255,0.2);
+		}
+	</style>
+	
+	<!-- dragAndDrop.js에는 이미지 유효성 검사, 파일 압축, 이미지명 uuid 변경, drag and drop 기능이 포함 -->
+	<script th:src="@{/assets/js/dragAndDrop.js}"></script>
+    <script>
+    	document.addEventListener('DOMContentLoaded', function() {
+			// 화면이 처음 로드될 때 최상단으로 이동하도록 설정
+			if ('scrollRestoration' in history) {
+			    history.scrollRestoration = 'manual';
+			}
+			window.scrollTo(0, 0);
+			
+			// 텍스트 박스 길이 초과하면 다음 줄로 처리
+			$(document).on('input', '#option1Text', function() {
+			    this.style.height = 'auto';
+			    this.style.height = (this.scrollHeight) + 'px';
+			});
+			
+			$(document).on('input', '#option2Text', function() {
+			    this.style.height = 'auto';
+			    this.style.height = (this.scrollHeight) + 'px';
+			});
+			
+    	});
+
+    	// 밸런스 게임 저장
+		function submitUpdateForm() {
+			
+		   	let id = $('#id').val().trim();
+		   	let title = $('#title').val().trim();
+		   	let spicyFilter = $('#spicyFilter').is(':checked');
+		   	let category = $('#category').val().trim();
+		   	let option1Text = $('#option1Text').val().trim();
+		   	let option2Text = $('#option2Text').val().trim();
+		   	let oldOption1ImagePath = $('#oldOption1ImagePath').val().trim();
+		   	let oldOption2ImagePath = $('#oldOption2ImagePath').val().trim();
+
+		    const file1 = $('#file-input-1')[0].files[0];
+		    const file2 = $('#file-input-2')[0].files[0];
+
+// 		    let file1_old = $('#file-input-1-old')[0].files[0];
+// 		    let file2_old = $('#file-input-2-old')[0].files[0];
+		    
+		   	if (title === "") {
+		        alert("제목을 입력해주세요!");
+		        $('#title').focus();
+		        return;
+		    }
+		   	
+		   	if (title.length > 30) {
+		        alert("제목의 길이가 30자를 초과했어요!");
+		        $('#title').focus();
+		        return;
+		   	}
+		    
+		    if (category === "") {
+		        alert("카테고리를 선택해주세요!");
+		        $('#category').focus();
+		        return;
+		    }
+
+		    if (option1Text === "") {		    	
+		        alert("왼쪽 선택지 내용을 입력해주세요!");
+		        $('#option1Text').focus();
+		        return;
+		    }
+		    	
+		    if (option2Text === "") {
+		        alert("오른쪽 선택지 내용을 입력해주세요!");
+		        $('#option2Text').focus();
+		        return;
+		    }
+		    
+		   	if (option1Text.length > 20) {
+		        alert("왼쪽 선택지의 길이가 20자를 초과했어요!");
+		        $('#option1Text').focus();
+		        return;
+		   	}
+		   	
+		   	if (option2Text.length > 20) {
+		        alert("오른쪽 선택지의 길이가 20자를 초과했어요!");
+		        $('#option2Text').focus();
+		        return;
+		   	}
+		   	
+// 		    if (!file1 || !file2) {
+// 		        alert("기존 이미지로 사용");
+// 		    }
+		    
+		   	// 
+			const formData = new FormData();
+		   	
+		    formData.append('id', id);
+		    formData.append('title', title);
+		    formData.append('spicyFilter', spicyFilter);
+		    formData.append('category', category);
+		    formData.append('option1Text', option1Text);
+		    formData.append('option2Text', option2Text);
+		    formData.append('oldOption1ImagePath', oldOption1ImagePath);
+		    formData.append('oldOption2ImagePath', oldOption2ImagePath);
+		    if (file1) formData.append('option1Image', file1);
+		    if (file2) formData.append('option2Image', file2);
+			
+		    $.ajax({
+		        url: '/balanceGame/updateBalanceGame',
+		        type: 'POST',
+		        data: formData,
+		        processData: false,
+		        contentType: false,
+		        success: function(response) {
+		            if (response.flag === "success") {
+			            alert("밸런스 게임이 수정되었어요!");		            	
+			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + '1' + '&category=' + 'all');
+		            } else {
+		            	alert("밸런스 게임 수정 중에 데이터를 불러오면서 문제가 발생했어요.");
+		            }
+		        },
+		        error: function(xhr) {
+		        	alert("밸런스 게임 수정 중에 문제가 발생했어요.");
+		            console.error(xhr);
+		        }
+		    });
+		}
+    	
+		function submitDeleteForm() {
+			
+			if (!confirm("해당 게임을 삭제하실 건가요?")) {
+				return;
+			}
+			
+		   	let id = $('#id').val().trim();
+		   	let oldOption1ImagePath = $('#oldOption1ImagePath').val().trim();
+		   	let oldOption2ImagePath = $('#oldOption2ImagePath').val().trim();
+		    
+		   	// 
+			const formData = new FormData();
+		   	
+		    formData.append('id', id);
+		    formData.append('oldOption1ImagePath', oldOption1ImagePath);
+		    formData.append('oldOption2ImagePath', oldOption2ImagePath);
+			
+		    $.ajax({
+		        url: '/balanceGame/deleteBalanceGame',
+		        type: 'POST',
+		        data: formData,
+		        processData: false,
+		        contentType: false,
+		        success: function(response) {
+		            if (response.flag === "success") {
+			            alert("밸런스 게임이 삭제되었어요!");		            	
+			            location.replace("/");
+		            } else {
+		            	alert("밸런스 게임 삭제 중에 데이터를 불러오면서 문제가 발생했어요.");
+		            }
+		        },
+		        error: function(xhr) {
+		        	alert("밸런스 게임 삭제 중에 문제가 발생했어요.");
+		            console.error(xhr);
+		        }
+		    });
+		}
+    </script>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+    <div class="container">
+		<!-- Balance Game Section -->
+		<section id="team" class="team section py-1 mb-5">
+			<div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+<!-- 				<form id="gameUpdateForm" th:object="${gameForm}"> -->
+				
+				<input type="hidden" id="id" th:value="${balanceGame.id}">
+				<input type="hidden" id="oldOption1ImagePath" th:value="${balanceGame.option1ImagePath}">
+				<input type="hidden" id="oldOption2ImagePath" th:value="${balanceGame.option2ImagePath}">
+				
+				<div class="row">
+					<div class="col-12">
+						<div class="team-carousel-wrapper" data-aos="fade-up"
+							data-aos-delay="100">
+							
+							<div class="pt-3 text-center">
+							    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 px-2 py-3">
+							        <h5 class="text-white mb-0 fw-bold">
+							            밸런스 게임 편집
+							        </h5>
+							
+							        <button onclick="submitDeleteForm()" type="button" class="btn btn-danger expand-btn d-flex align-items-center shadow-sm p-0">
+							            <i class="bi bi-trash3-fill"></i>
+							            <span class="btn-text">밸런스 게임 삭제</span>
+							        </button>
+							    </div>
+							</div>
+							
+							<div class="row leadership-slider pb-4">
+							    <div class="col-12">
+								    <p class="text-start ms-2 text-primary small mb-2">
+								        <i class="bi bi-info-circle-fill"></i> 질문을 여기서 수정할 수 있어요
+								    </p>
+								    <input id="title" class="form-control bord-radius-20 text-light py-2 mb-0" 
+								           style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
+								           th:value="${balanceGame.title}" maxlength="30"
+								           placeholder="밸런스 게임 질문을 입력해주세요.">
+							    </div>
+							</div>
+							
+							
+							<div class="row leadership-slider pb-4">
+							    <div class="col-12">
+							    	<p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 민감한 질문이라면 필터를 적용해주세요</p>
+							        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+							            <!-- 매운맛 질문 필터 -->
+							            <div>
+								            <div class="form-check form-switch custom-switch d-flex align-items-center bord-radius-20 px-3 py-2 d">
+								                <label class="form-check-label text-white small mb-0 me-5" for="spicyFilter" style="cursor: pointer;">
+								                    <i class="bi bi-suit-heart-fill"></i> 매운맛 필터
+								                </label> 
+								                <input class="form-check-input mt-0" type="checkbox" role="switch" id="spicyFilter" style="cursor: pointer;"
+								                	th:checked="${balanceGame.isSpicy}">
+								            </div>
+							            </div>
+							            
+							        </div>
+							    </div>
+							</div>
+						
+							<div class="row leadership-slider pb-4">
+							    <div class="col-12">
+							    	<p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 카테고리를 변경할 수 있어요</p>
+							        <div class="">
+							            <!-- 카테고리 선택 -->
+										<div>
+							                <select class="form-select text-white bord-radius-20 d px-3 py-2" 
+							                        aria-label="Category select" id="category">
+						                        <option value="">📦 카테고리 선택</option>
+											    <option value="love"
+												        th:selected="${balanceGame.category == 'love'}">
+												    💖 연애/결혼
+												</option>
+												<option value="food"
+												        th:selected="${balanceGame.category == 'food'}">
+												    🍕 음식/맛집
+												</option>
+												<option value="work"
+												        th:selected="${balanceGame.category == 'work'}">
+												    💼 직장/진로
+												</option>
+												<option value="daily"
+												        th:selected="${balanceGame.category == 'daily'}">
+												    🏠 일상/생활
+												</option>
+												<option value="money"
+												        th:selected="${balanceGame.category == 'money'}">
+												    💰 경제/자산
+												</option>
+												<option value="hobby"
+												        th:selected="${balanceGame.category == 'hobby'}">
+												    🎮 취미/게임
+												</option>
+												<option value="school"
+												        th:selected="${balanceGame.category == 'school'}">
+												    📚 학교/공부
+												</option>
+												<option value="travel"
+												        th:selected="${balanceGame.category == 'travel'}">
+												    ✈️ 여행/휴식
+												</option>
+												<option value="fashion"
+												        th:selected="${balanceGame.category == 'fashion'}">
+												    💄 패션/뷰티
+												</option>
+												<option value="fantasy"
+												        th:selected="${balanceGame.category == 'fantasy'}">
+												    ⚡️ 판타지/IF
+												</option>
+												<option value="adult"
+												        th:selected="${balanceGame.category == 'adult'}">
+												    🔞 매운맛/19금
+												</option>
+												<option value="etc"
+												        th:selected="${balanceGame.category == 'etc'}">
+												    🧩 기타/랜덤
+												</option>
+							                </select>
+							            </div>
+				            
+				            		</div>
+				            	</div>
+				            </div>
+						
+							<div class="row leadership-slider pb-4">	
+								<p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 질문 이미지 및 선택지를 변경할 수 있어요</p>							
+								
+								<div class="col-6 pe-1">
+								    <div class="leader-card selection-card">
+								        <div class="leader-image drop-zone active-upload" id="drop-zone-1" onclick="document.getElementById('file-input-1').click()">
+								            <img id="preview-1"  
+								            	th:src="@{'/uploads/' + ${balanceGame.option1ImagePath}}" alt="선택지1" class="preview-img">
+								            <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+								                <div class="icon-circle mb-2">
+								                    <i class="bi bi-plus-circle-fill text-white fs-3"></i>
+								                </div>
+								                <p class="guide-text mb-0">첫 번째 이미지 업로드</p>
+								                <p class="guide-sub-text">(드래그 또는 클릭)</p>
+								            </div>
+								
+								            <div class="drag-overlay">
+								                <div class="drag-message">여기에 놓으세요!</div>
+								            </div>
+								            
+								            <input type="file" id="file-input-1" style="display: none;" accept="image/*" onchange="previewImage(this, 'preview-1')">
+								        </div>
+								
+								        <div class="leader-info px-0">
+								            <textarea class="d-block bord-radius-20 text-center text-light mx-auto py-2 mt-2" 
+									          style="width: 95%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+							                  word-break: break-all; overflow-wrap: break-word; resize: none; height: auto;" 
+									          id="option1Text" rows="1" placeholder="선택지 입력" maxlength="20"
+									          th:text="${balanceGame.option1Text}"></textarea>
+									          
+								        </div>
+								    </div>
+								</div>
+
+								<div class="col-6 ps-1">
+								    <div class="leader-card selection-card">
+								        <div class="leader-image drop-zone active-upload" id="drop-zone-2" onclick="document.getElementById('file-input-2').click()">
+								            <img id="preview-2"  
+								            	th:src="@{'/uploads/' + ${balanceGame.option2ImagePath}}" alt="선택지2" class="preview-img">
+								            <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+								                <div class="icon-circle mb-2">
+								                    <i class="bi bi-plus-circle-fill text-white fs-3"></i>
+								                </div>
+								                <p class="guide-text mb-0">두 번째 이미지 업로드</p>
+								                <p class="guide-sub-text">(드래그 또는 클릭)</p>
+								            </div>
+								
+								            <div class="drag-overlay">
+								                <div class="drag-message">여기에 놓으세요!</div>
+								            </div>
+								            
+								            <input type="file" id="file-input-2" style="display: none;" accept="image/*" onchange="previewImage(this, 'preview-2')">
+								        </div>
+								
+								        <div class="leader-info px-0">
+								            <textarea class="d-block bord-radius-20 text-center text-light mx-auto py-2 mt-2" 
+									          style="width: 95%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+							                  word-break: break-all; overflow-wrap: break-word; resize: none; height: auto;" 
+									          id="option2Text" rows="1" placeholder="선택지 입력" maxlength="20"
+											  th:text="${balanceGame.option2Text}"></textarea>
+								        </div>
+								    </div>
+								</div>
+								
+								
+
+							</div>
+						</div>
+					</div>
+				</div>
+<!-- 				</form> -->
+					
+				<!-- 반영 -->
+		        <div class="row mt-4">
+		        	<div class="col-lg-8 offset-lg-2">
+			            <div class="join-team-cta" data-aos="fade-up" data-aos-delay="300">
+			            	<div class="cta-icon">
+			                	<i class="bi bi-rocket-takeoff-fill"></i>
+<!-- 			                	<i class="bi bi-moon-stars-fill"></i> -->
+			              	</div>
+			              	<div class="cta-content text-center">
+							    <h4>밸런스 게임을 수정할까요?</h4>
+							    <p>세상의 모든 테스트, 문답!</p>
+							
+							    <div class="cta-actions d-grid d-sm-flex justify-content-sm-center gap-2">
+							        <a class="btn btn-outline-secondary px-5" onclick="history.back()">취소</a>
+							        <a class="btn btn-danger px-5" onclick="submitDeleteForm()">삭제</a>
+							        <a class="btn btn-primary px-5" onclick="submitUpdateForm()">수정</a>
+							    </div>
+							</div>
+			            </div>
+		          	</div>
+        		</div>
+				
+				
+			</div>
+
+		</section>
+		<!-- /Balance Game Section -->
+	</div>
+	
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+  <main class="main">
+
+	    <!-- Error 404 Section -->
+	    <section id="error-404" class="error-404 section">
+	
+	      <div class="container" data-aos="fade-up" data-aos-delay="100">
+	
+	        <div class="row justify-content-center">
+	          <div class="col-lg-8 text-center">
+	
+	            <div class="error-number" data-aos="zoom-in" data-aos-delay="200">
+	              500
+	            </div>
+	
+	            <h1 class="error-title" data-aos="fade-up" data-aos-delay="300">
+	              이 페이지에 접근할 권한이 없습니다.
+	            </h1>
+	
+	            <p class="error-description" data-aos="fade-up" data-aos-delay="400">
+				  요청하신 페이지는 접근이 제한되어 있어요.<br>
+				  올바른 계정으로 로그인했는지 확인해 주세요.
+	            </p>
+	
+	            <div class="error-actions" data-aos="fade-up" data-aos-delay="500">
+	              <a href="/" class="btn-secondary">
+	                <i class="bi bi-house"></i>
+	                메인으로 바로가기
+	              </a>
+	              
+	              <!-- 
+	              <a href="/" class="btn-primary">
+	                <i class="bi bi-house"></i>
+	                메인 페이지
+	              </a>
+	            </div>
+	               -->
+	
+	            </div>
+	          </div>
+	        </div>
+		  </div>
+	    </section><!-- /Error 404 Section -->
+	
+	</main>
+</body>
+</html>

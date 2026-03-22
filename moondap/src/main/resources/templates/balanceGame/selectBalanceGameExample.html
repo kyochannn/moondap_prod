@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세상의 모든 테스트, 문답</title>
+</head>
+
+<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
+<body layout:fragment="content">
+    <div class="container">
+
+		<!-- Balance Game Section -->
+		<section id="team" class="team section py-1 z-1">
+			<div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+
+				<div class="row">
+					<div class="col-12">
+						<div class="team-carousel-wrapper" data-aos="fade-up"
+							data-aos-delay="100">
+							<div class="mt-3">
+								<p class="text-center" style="color: var(--accent-color);"><i class="bi bi-eye-fill"></i> 1000</p>
+								<h4 class="carousel-title">둘 중 한 음료만 평생 마셔야 한다면?</h4>
+							</div>
+							<div class="row leadership-slider py-0">
+
+								<section class="py-1 my-3 position-relative z-2 overflow-visible">
+									<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+										<!-- 컨텐츠 필터 -->
+										<div class="btn-group dropdown">
+											<button type="button"
+												class="btn btn-outline-light d px-3 bord-radius-20 dropdown-toggle"
+												data-bs-toggle="dropdown">
+												<i class="bi bi-funnel-fill"></i> 컨텐츠 필터
+											</button>
+											<ul class="dropdown-menu dropdown-menu-dark text-nowrap">
+												<li>
+													<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2 mb-2"
+														style="min-height: 32px;">
+														<label class="form-check-label text-white small mb-0"
+															for="spicyFilter" style="cursor: pointer;">
+															<i class="bi bi-suit-heart-fill"></i> 매운맛 질문 보기 
+														</label> 
+														<input class="form-check-input mt-0 ms-2"
+															type="checkbox" role="switch" id="spicyFilter" checked
+															style="cursor: pointer; margin-left: 0;">
+													</div>
+												</li>
+												<li>
+													<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2 mb-2"
+														style="min-height: 32px;">
+														<label class="form-check-label text-white small mb-0"
+															for="newQuestionOnly" style="cursor: pointer;">
+															<i class="bi bi-stopwatch-fill"></i> 새로운 질문만 보기   
+														</label> 
+														<input class="form-check-input mt-0 ms-2"
+															type="checkbox" role="switch" id="newQuestionOnly"
+															checked style="cursor: pointer; margin-left: 0;">
+													</div>
+												</li>
+											</ul>
+										</div>
+										
+										<div class="btn-group dropdown">
+											<button type="button"
+												class="btn btn-outline-light d px-3 bord-radius-20 dropdown-toggle"
+												data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="bi bi-share-fill"></i> 공유
+											</button>
+											<ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark text-nowrap">
+												<li>
+													<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2 mb-2"
+														style="min-height: 32px;">
+														<label class="form-check-label text-white small mb-0"
+															for="newQuestionOnly" style="cursor: pointer;">
+															<i class="bi bi-chat-fill"></i> 카카오톡 공유</label>
+													</div>
+												</li>
+												<li>
+													<div class="form-check form-switch custom-switch d-flex justify-content-between align-items-center px-2 mb-2"
+														style="min-height: 32px;">
+														<label class="form-check-label text-white small mb-0"
+															for="newQuestionOnly" style="cursor: pointer;">
+															<i class="bi bi-instagram"></i> 인스타용 이미지 다운로드 </label>
+													</div>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</section>
+								<div class="col-6">
+								    <div class="leader-card selection-card" onclick="selectOption(this, 'left')">
+								        <div class="leader-image">
+								            <img src="/assets/img/balanceGameImg/coke.jpg" alt="Coke">
+								            <div class="overlay"></div> </div>
+								        <div class="leader-info">
+								            <h5>콜라</h5>
+								        </div>
+								    </div>
+								</div>
+								
+								<div class="col-6">
+								    <div class="leader-card selection-card" onclick="selectOption(this, 'right')">
+								        <div class="leader-image">
+								            <img src="/assets/img/balanceGameImg/soda.webp" alt="Soda">
+								            <div class="overlay"></div> </div>
+								        <div class="leader-info">
+								            <h5>사이다</h5>
+								        </div>
+								    </div>
+								</div>
+								<script>
+								function selectOption(element, side) {
+								    // 1. 이미 선택했다면 중복 실행 방지
+								    if (document.body.classList.contains('selected-mode')) return;
+								
+								    // 2. 전체적인 모드 변경 (둘 다 어둡게 설정 준비)
+								    document.body.classList.add('selected-mode');
+								    
+								    // 3. 클릭한 카드에 'selected' 클래스 추가
+								    element.classList.add('selected');
+								
+								    // 4. 폭죽 효과 실행
+								    const xPos = (side === 'left') ? 0.25 : 0.75; // 화면 왼쪽/오른쪽 좌표 설정
+								    
+								    confetti({
+								        particleCount: 150,
+								        spread: 70,
+								        origin: { x: xPos, y: 0.6 }, // 클릭한 카드 위치 근처에서 발사
+								        colors: ['#524FD0', '#ffffff', '#3876f2'] // 교찬님의 포인트 컬러 조합
+								    });
+								}
+								</script>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+		</section>
+		<!-- /Balance Game Section -->
+
+		<section class="py-1 my-3 position-relative z-2 overflow-visible">
+			<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+				<button type="button"
+					class="btn btn-outline-light d px-3 bord-radius-20"
+					data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">
+					<i class="bi bi-exclamation-diamond-fill"></i> 문의
+				</button>
+				<button type="button"
+					class="btn btn-outline-light d px-3 bord-radius-20">
+					<i class="bi bi-arrow-right-circle-fill"></i> 이번 질문 패스
+				</button>
+			</div>
+		</section>
+
+		<section class="py-1 my-3">
+			<div class="progress-stacked bord-radius-20" style="height: 35px;">
+				<div class="progress" role="progressbar"
+					style="width: 55%; height: 35px;">
+					<div class="progress-bar bg-balance-left">55% (550명)</div>
+				</div>
+				<div class="progress" role="progressbar"
+					style="width: 45%; height: 35px;">
+					<div class="progress-bar bg-balance-right">45% (450명)</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- chat -->
+		<section class="py-1">
+			<div class="chat-input-wrapper p-2"
+				style="background: #131428; border: 1px solid #333447; border-radius: 30px;">
+				<div class="d-flex align-items-center">
+
+					<button type="button" class="btn p-1 ms-2"
+						style="color: #6c757d; border: none;">
+						<i class="bi bi-emoji-smile fs-5"></i>
+					</button>
+
+					<input type="text"
+						class="form-control border-0 bg-transparent text-white shadow-none px-3"
+						placeholder="채팅에 참여하세요!" style="font-size: 0.95rem;">
+
+					<button type="button"
+						class="btn d-flex align-items-center justify-content-center p-0"
+						style="width: 40px; height: 40px; min-width: 40px; background-color: #524FD0; color: white; border-radius: 50% !important;">
+						<i class="bi bi-send-fill"
+							style="font-size: 1rem; transform: translateX(-1px);"></i>
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<section class="py-1 my-3">
+			<div class="text-center" data-aos="fade-up" data-aos-delay="100">
+
+				<div class="comment-list">
+
+					<div class="d-flex flex-column align-items-start mb-3">
+						<div class="d-flex align-items-center mb-1 ms-1">
+							<span style="color: #3876f2; font-weight: bold; font-size: 0.8rem;">콜라 파</span>
+						</div>
+						<div class="p-3"
+							style="background: #1e213a; border: 1px solid #3876f2; border-radius: 2px 15px 15px 15px; max-width: 80%; text-align: left;">
+							<p class="mb-0" style="color: #e9ecef; font-size: 0.95rem;">당연히
+								콜라 아닌가요? 톡 쏘는 탄산이 최고임! 🥤</p>
+						</div>
+						<small class="mt-1 ms-1"
+							style="color: #6c757d; font-size: 0.7rem;">방금 전</small>
+					</div>
+
+					<div class="d-flex flex-column align-items-end mb-3">
+						<div class="d-flex align-items-center mb-1 me-1">
+							<span
+								style="color: #de66e9; font-weight: bold; font-size: 0.8rem;">사이다 파</span>
+						</div>
+						<div class="p-3"
+							style="background: #251b3a; border: 1px solid #de66e9; border-radius: 15px 2px 15px 15px; max-width: 80%; text-align: left;">
+							<p class="mb-0" style="color: #e9ecef; font-size: 0.95rem;">
+								깔끔한 건 사이다죠. 음식 맛 안 해치고 좋음. 🍏</p>
+						</div>
+						<small class="mt-1 me-1"
+							style="color: #6c757d; font-size: 0.7rem;">2분 전</small>
+					</div>
+
+				</div>
+				<button class="btn btn-link text-decoration-none m-2"
+					style="color: #6c757d; font-size: 0.85rem;">
+					댓글 12개 모두 보기 <i class="bi bi-chevron-down"></i>
+				</button>
+			</div>
+		</section>
+
+	</div>
+	
+	<!-- 문의사항 모달 창 -->
+	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-theme="dark">
+	  <div class="modal-dialog modal-lg bord-radius-20">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h1 class="modal-title fs-5" id="exampleModalLabel">
+	        	<i class="bi bi-exclamation-diamond-fill"></i> 이용 중 문의사항이 있으신가요?
+	        </h1>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <div class="modal-body">
+	        <form>
+	          <div class="mb-3">
+	            <select class="form-select bord-radius-20" id="recipient-type">
+				  <option selected>문의 유형을 선택해주세요.</option>
+				  <option value="1">지나친 폭력성</option>
+				  <option value="2">지나친 음란함</option>
+				  <option value="3">혐오 발언 및 욕설</option>
+				</select>
+	          </div>
+	          <div class="mb-3">
+	            <textarea class="form-control bord-radius-20" id="message-text" placeholder="문의 내용을 입력해주세요."></textarea>
+	          </div>
+	        </form>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary px-3 bord-radius-20">문의</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+</body>
+</html>

@@ -1,0 +1,76 @@
+// main: ../main.scss
+/*--------------------------------------------------------------
+# Global Header
+--------------------------------------------------------------*/
+.header {
+  --background-color: rgba(255, 255, 255, 0);
+  --surface-color: #1b1933;
+  color: var(--default-color);
+  background-color: var(--background-color);
+  padding: 20px 0;
+  transition: all 0.5s;
+  z-index: 997;
+
+  .header-container {
+    background: var(--surface-color);
+    border-radius: 50px;
+    padding: 5px 25px;
+    box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.10);
+  }
+
+  .logo {
+    line-height: 1;
+
+    img {
+      max-height: 36px;
+      margin-right: 8px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0;
+      font-weight: 500;
+      color: var(--heading-color);
+    }
+  }
+
+  .btn-getstarted,
+  .btn-getstarted:focus {
+    color: var(--contrast-color);
+    background: var(--accent-color);
+    font-size: 14px;
+    padding: 8px 20px;
+    margin: 0 0 0 30px;
+    border-radius: 50px;
+    transition: 0.3s;
+
+    &:hover {
+      color: var(--contrast-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 15%);
+    }
+  }
+
+  @media (max-width: 1200px) {
+    padding-top: 10px;
+
+    .header-container {
+      margin-left: 10px;
+      margin-right: 10px;
+      padding: 10px 5px 10px 15px;
+    }
+
+    .logo {
+      order: 1;
+    }
+
+    .btn-getstarted {
+      order: 2;
+      margin: 0 10px 0 0;
+      padding: 6px 15px;
+    }
+
+    .navmenu {
+      order: 3;
+    }
+  }
+}

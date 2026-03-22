@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace="매퍼 인터페이스 경로" --> 
+<mapper namespace="com.moondap.mapper.BalanceGameMapper">
+    <!-- 밸런스 게임 목록 -->
+	<select id="selectBalanceGameList" resultType="BalanceGameDTO">
+	    SELECT *
+	    FROM moondap.balance_questions
+	    <where>
+	        <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
+	            AND is_spicy = 0
+	        </if>
+	        <if test="category != null and category != '' and category != 'all'">
+	            AND category = #{category}
+	        </if>
+	    </where>
+	    ORDER BY created_at DESC
+	</select>
+
+    <!-- 밸런스 게임 개별 조회 -->
+	<select id="selectBalanceGame" resultType="BalanceGameDTO">
+	    SELECT *
+	    FROM moondap.balance_questions
+	    <where>
+	        AND id = #{id}
+	        <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
+	            AND is_spicy = 0
+	        </if>
+	        
+	        <if test="category != null and category != '' and category != 'all'">
+	            AND category = #{category}
+	        </if>
+	    </where>
+	</select>
+
+    <!-- 밸런스 게임 최댓값 조회 - 등록 시 쓰임. -->
+    <select id="selectMaxBalanceGameId" resultType="string">
+        SELECT MAX(id)
+        FROM moondap.balance_questions
+        <where>
+        	<if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
+	            AND is_spicy = 0
+	        </if>
+	        
+	        <if test='category != null and category != "" and !category.equals("all")'>
+	            AND category = #{category}
+	        </if>
+        </where>
+    </select>
+    
+    <!-- 밸런스 게임 최솟값 조회 -->
+    <select id="selectMinBalanceGameId" resultType="string">
+        SELECT MIN(id)
+        FROM moondap.balance_questions
+    </select>
+    
+    <!-- 이전 / 다음 밸런스 게임 개별 조회 -->
+	<select id="nextOrPrevBalanceGameIdSelect" resultType="string">
+	    <choose>
+	        <when test='direction == "PREV"'>
+	            SELECT COALESCE(
+	                (SELECT id FROM moondap.balance_questions 
+	                 WHERE id &gt; #{id} 
+	                 <include refid="balanceFilterCondition"/>
+	                 ORDER BY id ASC LIMIT 1),
+	                (SELECT id FROM moondap.balance_questions 
+	                 <where><include refid="balanceFilterCondition"/></where>
+	                 ORDER BY id ASC LIMIT 1)
+	            )
+	        </when>
+	        
+	        <otherwise>
+	            SELECT COALESCE(
+	                (SELECT id FROM moondap.balance_questions 
+	                 WHERE id &lt; #{id} 
+	                 <include refid="balanceFilterCondition"/>
+	                 ORDER BY id DESC LIMIT 1),
+	                (SELECT id FROM moondap.balance_questions 
+	                 <where><include refid="balanceFilterCondition"/></where>
+	                 ORDER BY id DESC LIMIT 1)
+	            )
+	        </otherwise>
+	    </choose>
+	</select>
+	
+	<sql id="balanceFilterCondition">
+	    <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
+	        AND is_spicy = 0
+	    </if>
+	    <if test="category != null and category != '' and category != 'all'">
+	        AND category = #{category}
+	    </if>
+	</sql>
+
+	<!-- 밸런스 게임 투표 -->
+    <update id="vote">
+        UPDATE moondap.balance_questions
+           SET option_1_count = option_1_count + #{option1Count}
+              ,option_2_count = option_2_count + #{option2Count}
+              ,total_count = option_1_count + option_2_count 
+        WHERE id = #{id}
+    </update>
+	
+	<!-- 밸런스 게임 댓글 -->
+    <insert id="insertBalanceGameComment">
+        INSERT INTO moondap.balance_comments(question_id, nickname, selected_side ,content)
+        VALUES (#{id}, #{nickname}, #{side}, #{content})
+    </insert>
+    
+	<!-- 밸런스 게임 댓글 개수 -->
+    <select id="selectBalanceGameCount" resultType="int">
+        SELECT COUNT(*)
+        FROM moondap.balance_comments
+		WHERE question_id = #{id}
+    </select>
+    
+    <!-- 밸런스 게임 댓글 조회 -->
+    <select id="selectBalanceGameComment" resultType="BalanceGameCommentDTO">
+        SELECT *
+        FROM moondap.balance_comments
+        WHERE question_id = #{id}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 밸런스 게임 관련 댓글 삭제 -->
+    <delete id="deleteBalanceGameComment">
+        DELETE FROM moondap.balance_comments
+        WHERE question_id = #{id}
+    </delete>
+
+	<!-- 밸런스 게임 좋아요 -->
+    <update id="updateBalanceGameCommentLikeCount">
+        UPDATE moondap.balance_comments
+           SET like_count = like_count + #{cnt}
+        WHERE no = #{no} AND question_id = #{id} 
+    </update>
+
+    <!-- 밸런스 게임 등록 -->
+    <insert id="insertBalanceGame">
+        INSERT INTO moondap.balance_questions(id, title, is_spicy, category, 
+        option_1_text, option_1_image_path, option_2_text, option_2_image_path, user_id)
+        VALUES (#{id}, #{title}, #{isSpicy}, #{category}, 
+        #{option1Text}, #{option1ImagePath}, #{option2Text}, #{option2ImagePath}, #{userId});
+    </insert>
+
+    <!-- 밸런스 게임 수정 -->
+    <update id="updateBalanceGame">
+        UPDATE moondap.balance_questions
+           SET title = #{title}
+              ,is_spicy = #{isSpicy}
+              ,category = #{category}
+              ,option_1_text = #{option1Text}
+              ,option_1_image_path = #{option1ImagePath}
+              ,option_2_text = #{option2Text}
+              ,option_2_image_path = #{option2ImagePath}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 밸런스 게임 삭제 -->
+    <delete id="deleteBalanceGame">
+        DELETE FROM moondap.balance_questions
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 게시글 번호 최댓값 -->
+<!--     <select id="maxPk" resultType="int"> -->
+<!--         SELECT MAX(no) -->
+<!--         FROM MdBoard -->
+<!--     </select> -->
+</mapper>
