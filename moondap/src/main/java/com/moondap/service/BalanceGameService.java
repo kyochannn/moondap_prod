@@ -32,5 +32,5 @@ public interface BalanceGameService {
 
 	public String deleteBalanceGame(Map<String, String> params) throws Exception;
 
-
+	public long getTotalParticipantCount();
 }

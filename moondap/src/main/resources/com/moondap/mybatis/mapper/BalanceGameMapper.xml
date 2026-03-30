@@ -169,5 +169,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <!--     <select id="maxPk" resultType="int"> -->
 <!--         SELECT MAX(no) -->
 <!--         FROM MdBoard -->
-<!--     </select> -->
+    <!-- 전체 참여자 수 합계 -->
+    <select id="selectTotalParticipantCount" resultType="long">
+        SELECT COALESCE(SUM(total_count), 0)
+        FROM moondap.balance_questions
+    </select>
 </mapper>

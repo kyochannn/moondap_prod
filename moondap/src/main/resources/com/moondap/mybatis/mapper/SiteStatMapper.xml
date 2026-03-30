@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moondap.mapper.SiteStatMapper">
+    <!-- 오늘 날짜의 방문자 수를 증가 (없으면 생성, 있으면 1 증가) -->
+    <insert id="upsertVisitCount">
+        INSERT INTO moondap.site_statistics (visit_date, visit_count)
+        VALUES (#{visitDate}, 1)
+        ON DUPLICATE KEY UPDATE visit_count = visit_count + 1
+    </insert>
+
+    <!-- 특정 날짜의 방문자 수 조회 -->
+    <select id="selectVisitCount" resultType="long">
+        SELECT COALESCE(MAX(visit_count), 0)
+        FROM moondap.site_statistics
+        WHERE visit_date = #{visitDate}
+    </select>
+</mapper>

@@ -10,6 +10,9 @@ import com.moondap.service.StandardMdUserService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
 @Slf4j
 @Controller
 public class MdUserController {
@@ -19,23 +22,26 @@ public class MdUserController {
 	
 	/**
 	 * 로그인 화면 접근
-	 * 
-	 * @return
 	 */
 	@GetMapping("/loginView")
 	public String loginView() {
-		
 		return "/user/login";
+	}
+
+	/**
+	 * 회원가입 권한 선택 화면
+	 */
+	@GetMapping("/joinSelectView")
+	public String joinSelectView() {
+		return "/user/joinSelect";
 	}
 	
 	/**
-	 * 회원가입
-	 * 
-	 * @return
+	 * 회원가입 화면 (권한 정보를 POST로 받음)
 	 */
-	@GetMapping("/joinView")
-	public String joinView() {
-		
+	@PostMapping("/joinView")
+	public String joinView(@RequestParam("role") String role, Model model) {
+		model.addAttribute("role", role);
 		return "/user/join";
 	}
 	

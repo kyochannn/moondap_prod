@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문답 - 권한 선택</title>
+    
+    <script>
+        function selectRole(role) {
+            $('#roleInput').val(role);
+            document.roleForm.submit();
+        }
+    </script>
+</head>
+
+<body layout:fragment="content">
+    <div class="container">
+        <!-- Role Selection Section -->
+        <section id="team" class="team section py-1 mb-5">
+            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+                
+                <div class="pt-3 text-center">
+                    <div class="d-flex justify-content-center align-items-center flex-wrap mb-4 px-2 py-3">
+                        <h5 class="text-white mb-0 fw-bold">
+                            회원가입 권한을 선택해주세요
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row leadership-slider">
+                    <!-- 일반 회원 카드 -->
+                    <div class="col-6 pe-1">
+                        <div class="leader-card selection-card" onclick="selectRole('ROLE_USER')" style="cursor: pointer;">
+                            <div class="leader-image d-flex align-items-center justify-content-center" 
+                                 style="background: #1e213a; height: 200px; border-radius: 20px; border: 1px solid #333447;">
+                                <i class="bi bi-person-fill text-primary" style="font-size: 5rem;"></i>
+                            </div>
+                            <div class="leader-info text-center mt-3">
+                                <h5 class="text-white">일반 회원 가입</h5>
+                                <p class="text-white-50 small">테스트를 즐기고 싶으신가요?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 관리자 카드 -->
+                    <div class="col-6 ps-1">
+                        <div class="leader-card selection-card" onclick="selectRole('ROLE_ADMIN')" style="cursor: pointer;">
+                            <div class="leader-image d-flex align-items-center justify-content-center" 
+                                 style="background: #251b3a; height: 200px; border-radius: 20px; border: 1px solid #333447;">
+                                <i class="bi bi-shield-lock-fill text-danger" style="font-size: 5rem;"></i>
+                            </div>
+                            <div class="leader-info text-center mt-3">
+                                <h5 class="text-white">관리자 가입</h5>
+                                <p class="text-white-50 small">콘텐츠를 관리하고 싶으신가요?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden Form for POST -->
+                <form action="/joinView" method="POST" name="roleForm" style="display: none;">
+                    <input type="hidden" id="roleInput" name="role" value="">
+                </form>
+
+                <div class="row mt-5">
+                    <div class="col-12 text-center">
+                        <a href="/loginView" class="btn btn-outline-light px-5 bord-radius-20">로그인으로 돌아가기</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+</body>
+</html>

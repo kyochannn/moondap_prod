@@ -1,4 +1,4 @@
-<th:block th:fragment="header">
+<th:block th:fragment="header" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
   <header id="header" class="header d-flex align-items-center sticky-top">
     <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
@@ -38,8 +38,19 @@
               <li><a href="#">공지 사항</a></li>
             </ul>
           </li>
-          <li class="dropdown"><a href="/login"><span>로그인</span></a>
+          
+          <!-- 로그인하지 않은 경우 -->
+          <li sec:authorize="isAnonymous()" class="dropdown"><a href="/loginView"><span>로그인</span></a></li>
+          <li sec:authorize="isAnonymous()" class="dropdown"><a href="/joinSelectView"><span>회원가입</span></a></li>
+          
+          <!-- 로그인한 경우 -->
+          <li sec:authorize="isAuthenticated()" class="dropdown">
+            <a href="#">
+              <span class="text-primary fw-bold" sec:authentication="name">사용자명</span>
+              <span>님 환영합니다</span>
+            </a>
           </li>
+          <li sec:authorize="isAuthenticated()" class="dropdown"><a href="/logout"><span>로그아웃</span></a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>

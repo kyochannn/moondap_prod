@@ -4,15 +4,114 @@
       layout:decorate="~{/layout/main_layout}"
       >
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문답 - 회원가입</title>
+    
+    <script>
+        function joinProc() {
+            let username = $('#username').val().trim();
+            let password = $('#password').val().trim();
+            let passwordConfirm = $('#passwordConfirm').val().trim();
+
+            if (username === "") {
+                alert("아이디를 입력해주세요.");
+                $('#username').focus();
+                return;
+            }
+            
+            if (password === "") {
+                alert("비밀번호를 입력해주세요.");
+                $('#password').focus();
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                alert("비밀번호가 일치하지 않습니다.");
+                $('#passwordConfirm').focus();
+                return;
+            }
+
+            // 폼 데이터 전송
+            document.joinForm.submit();
+        }
+    </script>
 </head>
 
 <body layout:fragment="content">
-	<h1>test~!</h1>
-	<form action="/joinProc" method="post" name="joinForm">
-	    <input type="text" name="username" placeholder="Username"/>
-	    <input type="password" name="password" placeholder="Password"/>
-	    
-		<input type="submit" value="Join"/>
-	</form>
+    <div class="container">
+        <!-- Join Section -->
+        <section id="team" class="team section py-1 mb-5">
+            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="team-carousel-wrapper" data-aos="fade-up" data-aos-delay="100">
+                            
+                            <!-- Header -->
+                            <div class="pt-3 text-center">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 px-2 py-3">
+                                    <h5 class="text-white mb-0 fw-bold">
+                                        새로운 시작, 문답 회원가입
+                                    </h5>
+                                </div>
+                            </div>
+                            
+                            <!-- ID Input -->
+                            <div class="row leadership-slider pb-4">
+                                <div class="col-12">
+                                    <p class="text-start ms-2 text-primary small mb-2">
+                                        <i class="bi bi-person-fill"></i> 사용하실 아이디를 입력하세요
+                                    </p>
+                                    <form action="/joinProc" method="POST" name="joinForm">
+                                        <input type="hidden" name="role" th:value="${role}">
+                                        <input type="text" id="username" name="username" 
+                                               class="form-control bord-radius-20 text-light py-3 mb-4" 
+                                               style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
+                                               placeholder="아이디 (로그인에 사용됩니다.)" required>
+                                        
+                                        <p class="text-start ms-2 text-primary small mb-2">
+                                            <i class="bi bi-key-fill"></i> 비밀번호를 입력하세요
+                                        </p>
+                                        <input type="password" id="password" name="password" 
+                                               class="form-control bord-radius-20 text-light py-3 mb-4" 
+                                               style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
+                                               placeholder="비밀번호" required>
+                                        
+                                        <p class="text-start ms-2 text-primary small mb-2">
+                                            <i class="bi bi-check-circle-fill"></i> 비밀번호를 한 번 더 확인하세요
+                                        </p>
+                                        <input type="password" id="passwordConfirm"
+                                               class="form-control bord-radius-20 text-light py-3 mb-0" 
+                                               style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
+                                               placeholder="비밀번호 확인" required>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CTA Action Section -->
+                <div class="row mt-4">
+                    <div class="col-lg-8 offset-lg-2">
+                        <div class="join-team-cta" data-aos="fade-up" data-aos-delay="300">
+                            <div class="cta-icon">
+                                <i class="bi bi-rocket-takeoff-fill"></i>
+                            </div>
+                            <div class="cta-content">
+                                <h4>회원가입을 완료할까요?</h4>
+                                <p>세상의 모든 테스트, 문답!</p>
+                                <div class="cta-actions">
+                                    <a class="btn btn-outline px-5" onclick="history.back()">취소</a>
+                                    <a class="btn btn-primary px-5" onclick="joinProc()">가입하기</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+    </div>
 </body>
 </html>

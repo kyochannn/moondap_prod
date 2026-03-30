@@ -1,13 +1,16 @@
 package com.moondap.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
+import lombok.Data;
+
+@Data
 public class MdUserDTO {
 
+	private Integer no;
 	private String username;
 	private String password;
+	private String role;
+	private LocalDateTime createdAt;
 	 
 }

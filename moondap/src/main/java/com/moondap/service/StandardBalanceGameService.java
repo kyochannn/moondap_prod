@@ -40,14 +40,15 @@ public class StandardBalanceGameService implements BalanceGameService {
 
             List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category);
 
-            for (BalanceGameDTO balanceGame : balanceGameList) {
-            	balanceGame.setCommentCnt(balanceGameMapper.selectBalanceGameCount(balanceGame.getId(), null, null));
-			}
-            
             if (balanceGameList == null || balanceGameList.isEmpty()) {
                 log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}", isSpicy, category);
                 return Collections.emptyList();
             }
+
+            for (BalanceGameDTO balanceGame : balanceGameList) {
+            	balanceGame.setCommentCnt(balanceGameMapper.selectBalanceGameCount(balanceGame.getId(), null, null));
+			}
+            
             return balanceGameList;
         } catch (DataAccessException e) {
             log.error("데이터베이스 접근 중 오류 발생: {}", e.getMessage());
@@ -72,6 +73,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	
     	if (balanceGame == null) {
     		System.out.println("밸런스 게임이 존재하지 않습니다.");
+    		return null;
     	}
     	
     	// Service 계산 로직
@@ -431,5 +433,10 @@ public class StandardBalanceGameService implements BalanceGameService {
         // %05d: 5자리 정수이며, 빈 자리는 0으로 채움
         return String.format("%s%05d", prefix, nextNumber);
     }
+
+	@Override
+	public long getTotalParticipantCount() {
+		return balanceGameMapper.selectTotalParticipantCount();
+	}
     
 }

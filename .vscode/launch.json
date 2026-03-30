@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MoondapApplication<moondap>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.moondap.MoondapApplication",
+            "projectName": "moondap",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

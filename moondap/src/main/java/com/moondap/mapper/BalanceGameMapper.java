@@ -51,6 +51,6 @@ public interface BalanceGameMapper {
 	
 	// 밸런스 게임 삭제
 	public int deleteBalanceGame(String id) throws Exception;
-	
-	
+
+	public long selectTotalParticipantCount();
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{/layout/main_layout}"
       >
 <!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
@@ -736,7 +737,8 @@
 									</button>
 									<button type="button"
 										class="btn btn-outline-light d px-3 bord-radius-20"
-										onclick="updateBalanceGameView()" >
+										onclick="updateBalanceGameView()" 
+										sec:authorize="hasRole('ADMIN')">
 										<i class="bi bi-pencil-fill"></i> 편집하기
 									</button>
 									</div>
