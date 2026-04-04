@@ -1,49 +1,50 @@
 <th:block th:fragment="header" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
   <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+    <div
+      class="header-container container-fluid container-xl position-relative d-flex align-items-center">
 
-      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.webp" alt=""> -->
-        <img style="width: 20px;" src="/assets/img/logo.webp" alt="">
-      </a>
+      <div class="header-left d-flex align-items-center" style="flex: 1;">
+        <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
+          <img style="width: 20px;" src="/assets/img/logo.webp" alt="">
+        </a>
+      </div>
 
-      <nav id="navmenu" class="navmenu">
+      <nav id="navmenu" class="navmenu mx-auto">
         <ul>
-<!--           <li class="dropdown"><a href="#"><span>인기 테스트</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a> -->
-<!--             <ul> -->
-<!--               <li><a href="#">Dropdown 1</a></li> -->
-<!--               <li><a href="#">Dropdown 2</a></li> -->
-<!--               <li><a href="#">Dropdown 3</a></li> -->
-<!--               <li><a href="#">Dropdown 4</a></li> -->
-<!--             </ul> -->
-<!--           </li> -->
-          <li class="dropdown"><a href="#"><span>밸런스 게임</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-            <ul>
-              <li><a href="/balanceGame/insertBalanceGameView">밸런스 게임 등록</a></li>
-<!--               <li><a href="#">밸런스 게임 수정</a></li> -->
-            </ul>
-          </li>          
-<!--           <li class="dropdown"><a href="#"><span>성격 검사</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a> -->
-<!--             <ul> -->
-<!--               <li><a href="#">Dropdown 1</a></li> -->
-<!--               <li><a href="#">Dropdown 2</a></li> -->
-<!--               <li><a href="#">Dropdown 3</a></li> -->
-<!--               <li><a href="#">Dropdown 4</a></li> -->
-<!--             </ul> -->
-<!--           </li> -->
-          <li class="dropdown"><a href="#"><span>소통</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <!--           <li class="dropdown"><a href="#"><span>인기 테스트</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a> -->
+          <!--             <ul> -->
+          <!--               <li><a href="#">Dropdown 1</a></li> -->
+          <!--               <li><a href="#">Dropdown 2</a></li> -->
+          <!--               <li><a href="#">Dropdown 3</a></li> -->
+          <!--               <li><a href="#">Dropdown 4</a></li> -->
+          <!--             </ul> -->
+          <!--           </li> -->
+          <!--           <li class="dropdown"><a href="#"><span>성격 검사</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a> -->
+            <!--             <ul> -->
+              <!--               <li><a href="#">Dropdown 1</a></li> -->
+          <!--               <li><a href="#">Dropdown 2</a></li> -->
+          <!--               <li><a href="#">Dropdown 3</a></li> -->
+          <!--               <li><a href="#">Dropdown 4</a></li> -->
+          <!--             </ul> -->
+          <!--           </li> -->
+          <!-- <li class="dropdown"><a href="#"><span>소통</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
             <ul>
               <li><a href="#">문의 사항</a></li>
               <li><a href="#">공지 사항</a></li>
             </ul>
-          </li>
-          
+          </li> -->
+
           <!-- 로그인하지 않은 경우 -->
           <li sec:authorize="isAnonymous()" class="dropdown"><a href="/loginView"><span>로그인</span></a></li>
           <li sec:authorize="isAnonymous()" class="dropdown"><a href="/joinSelectView"><span>회원가입</span></a></li>
           
           <!-- 로그인한 경우 -->
+          <li sec:authorize="isAuthenticated()" class="dropdown"><a href="#"><span>밸런스 게임</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="/balanceGame/insertBalanceGameView">밸런스 게임 등록</a></li>
+              <!--               <li><a href="#">밸런스 게임 수정</a></li> -->
+            </ul>
+          </li>
           <li sec:authorize="isAuthenticated()" class="dropdown">
             <a href="#">
               <span class="text-primary fw-bold" sec:authentication="name">사용자명</span>
@@ -54,9 +55,9 @@
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
-      
-      <a class="btn-getstarted" href="#about">모든 테스트 보기</a>
-
+      <div class="header-right d-flex justify-content-end" style="flex: 1;">
+        <!-- <a class="btn-getstarted" href="#about">모든 테스트 보기</a> -->
+      </div>
     </div>
   </header>
 </th:block>

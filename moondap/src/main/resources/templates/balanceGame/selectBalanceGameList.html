@@ -18,8 +18,8 @@
 			listSpicyFilter = $('#spicyFilter').is(':checked') ? 1 : 0;
 
 			searchBalanceGameList();
-			sessionStorage.setItem('moondap_balancegame_category', listCategory);
-			sessionStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
+			localStorage.setItem('moondap_balancegame_category', listCategory);
+			localStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
 
 			console.log("리스트 최초 카테고리: ", listCategory);
 			console.log("리스트 최초 매운맛 필터: ", listSpicyFilter);
@@ -27,7 +27,7 @@
 			$('#category').on('change', function () {
 				searchBalanceGameList();
 				listCategory = $('#category').val();
-				sessionStorage.setItem('moondap_balancegame_category', listCategory);
+				localStorage.setItem('moondap_balancegame_category', listCategory);
 				console.log("리스트 선택된 카테고리: ", listCategory);
 				console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
 			});
@@ -35,7 +35,7 @@
 			$('#spicyFilter').on('change', function () {
 				searchBalanceGameList();
 				listSpicyFilter = $('#spicyFilter').is(':checked') ? 1 : 0;
-				sessionStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
+				localStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
 				console.log("리스트 선택된 카테고리: ", listCategory);
 				console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
 			});
@@ -185,8 +185,8 @@
 
 		function startBalanceGame() {
 			// 세션에 저장되어있는 검색 조건
-			let listCategory = sessionStorage.getItem('moondap_balancegame_category');
-			let listSpicyFilter = sessionStorage.getItem('moondap_balancegame_spicyfilter');
+			let listCategory = localStorage.getItem('moondap_balancegame_category');
+			let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter');
 
 			location.href = '/balanceGame/selectBalanceGameView?spicyFilter=' + listSpicyFilter + '&category=' + listCategory;
 		}

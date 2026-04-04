@@ -14,29 +14,41 @@
 --------------------------------------------------------------*/
 /* Fonts */
 :root {
-  --default-font: "Roboto",  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --heading-font: "Quicksand",  sans-serif;
-  --nav-font: "Poppins",  sans-serif;
+  --default-font: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --heading-font: "Quicksand", sans-serif;
+  --nav-font: "Poppins", sans-serif;
 }
 
 /* Global Colors - The following color variables are used throughout the website. Updating them here will change the color scheme of the entire website */
-:root { 
-  --background-color: #05071e; /* Background color for the entire website, including individual sections */
-  --default-color: #e8e7f7; /* Default color used for the majority of the text content across the entire website */
-  --heading-color: #ffffff; /* Color for headings, subheadings and title throughout the website */
-  --accent-color: #524dd3; /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
-  --surface-color: #131428; /* The surface color is used as a background of boxed elements within sections, such as cards, icon boxes, or other elements that require a visual separation from the global background. */
-  --contrast-color: #ffffff; /* Contrast color for text, ensuring readability against backgrounds of accent, heading, or default colors. */
+:root {
+  --background-color: #05071e;
+  /* Background color for the entire website, including individual sections */
+  --default-color: #e8e7f7;
+  /* Default color used for the majority of the text content across the entire website */
+  --heading-color: #ffffff;
+  /* Color for headings, subheadings and title throughout the website */
+  --accent-color: #524dd3;
+  /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
+  --surface-color: #131428;
+  /* The surface color is used as a background of boxed elements within sections, such as cards, icon boxes, or other elements that require a visual separation from the global background. */
+  --contrast-color: #ffffff;
+  /* Contrast color for text, ensuring readability against backgrounds of accent, heading, or default colors. */
 }
 
 /* Nav Menu Colors - The following color variables are used specifically for the navigation menu. They are separate from the global colors to allow for more customization options */
 :root {
-  --nav-color: #c8c6e3;  /* The default color of the main navmenu links */
-  --nav-hover-color: #ffffff; /* Applied to main navmenu links when they are hovered over or active */
-  --nav-mobile-background-color: #03051f; /* Used as the background color for mobile navigation menu */
-  --nav-dropdown-background-color: #1f2240; /* Used as the background color for dropdown items that appear when hovering over primary navigation items */
-  --nav-dropdown-color: #c8c6e3; /* Used for navigation links of the dropdown items in the navigation menu. */
-  --nav-dropdown-hover-color: #ffffff; /* Similar to --nav-hover-color, this color is applied to dropdown navigation links when they are hovered over. */
+  --nav-color: #c8c6e3;
+  /* The default color of the main navmenu links */
+  --nav-hover-color: #ffffff;
+  /* Applied to main navmenu links when they are hovered over or active */
+  --nav-mobile-background-color: #03051f;
+  /* Used as the background color for mobile navigation menu */
+  --nav-dropdown-background-color: #1f2240;
+  /* Used as the background color for dropdown items that appear when hovering over primary navigation items */
+  --nav-dropdown-color: #c8c6e3;
+  /* Used for navigation links of the dropdown items in the navigation menu. */
+  --nav-dropdown-hover-color: #ffffff;
+  /* Similar to --nav-hover-color, this color is applied to dropdown navigation links when they are hovered over. */
 }
 
 /* Color Presets - These classes override global colors when applied to any section or element, providing reuse of the sam color scheme. */
@@ -1450,7 +1462,7 @@ section,
 .portfolio .portfolio-wrapper .portfolio-image {
   position: relative;
   overflow: hidden;
-  height: 240px;
+  height: 400px;
 }
 
 .portfolio .portfolio-wrapper .portfolio-image img {
@@ -2274,9 +2286,9 @@ section,
 /* kckoo new > PC에서 호버 시 위로 올라가는 효과 */
 @media (hover: hover) {
   .team .team-carousel-wrapper .leadership-slider .leader-card:hover {
-/*     transform: translateY(-8px); */
+    /*     transform: translateY(-8px); */
 
-transform: scale(0.98);
+    transform: scale(0.98);
     transition: transform 0.1s;
   }
 }
@@ -2536,7 +2548,7 @@ transform: scale(0.98);
   }
 
   .team .join-team-cta .cta-content .cta-actions {
-/*     flex-direction: column; */
+    /*     flex-direction: column; */
     align-items: center;
   }
 
@@ -4254,7 +4266,7 @@ transform: scale(0.98);
 
 .bg-balance-right {
   --bs-bg-opacity: 1;
-  background-color: #de66e9 !important; 
+  background-color: #de66e9 !important;
 }
 
 /* 곡률 n px */
@@ -4270,8 +4282,8 @@ transform: scale(0.98);
 
 /* d > input 태그로 정리하기 (여기부터) */
 .d {
-	--bs-bg-opacity: 1;
-	background-color: var(--surface-color);
-    border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
-    color: #fff;
+  --bs-bg-opacity: 1;
+  background-color: var(--surface-color);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+  color: #fff;
 }

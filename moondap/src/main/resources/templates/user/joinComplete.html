@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/main_layout}"
+      >
+<head>
+    <meta charset="UTF-8">
+    <title>문답 - 가입 완료</title>
+</head>
+
+<body layout:fragment="content">
+    <div class="container">
+        <!-- Success Section -->
+        <section id="team" class="team section py-1 mb-5">
+            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+                
+                <div class="row pt-5 mt-5">
+                    <div class="col-12 text-center" data-aos="zoom-in" data-aos-delay="200">
+                        <!-- Success Icon -->
+                        <div class="mb-4">
+                            <i class="bi bi-patch-check-fill text-primary" style="font-size: 6rem; filter: drop-shadow(0 0 15px rgba(13, 110, 253, 0.5));"></i>
+                        </div>
+                        
+                        <!-- Welcome Message -->
+                        <h2 class="text-white fw-bold mb-3">
+                            <span th:text="${nickname}" class="text-primary">사용자</span>님, 환영합니다!
+                        </h2>
+                        <h5 class="text-white-50 mb-5">
+                            문답 회원가입을 완료하였습니다.
+                        </h5>
+                    </div>
+                </div>
+
+                <!-- Action Cards -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <div class="join-team-cta text-center" data-aos="fade-up" data-aos-delay="300" style="background: rgba(255,255,255,0.03); border: 1px solid #333447; padding: 3rem;">
+                            <div class="cta-icon mb-4">
+                                <i class="bi bi-rocket-takeoff-fill text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <div class="cta-content">
+                                <h4 class="text-white mb-3">이제 새로운 모험을 시작할까요?</h4>
+                                <p class="text-white-50 mb-4 px-lg-5">
+                                    세상의 모든 테스트, 문답
+                                </p>
+                                <div class="cta-actions d-grid gap-3 d-sm-flex justify-content-center">
+                                    <a href="/loginView" class="btn btn-primary px-5 py-3 bord-radius-20 fw-bold">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>로그인하러 가기
+                                    </a>
+                                    <a href="/" class="btn btn-outline-light px-5 py-3 bord-radius-20">
+                                        <i class="bi bi-house-door-fill me-2"></i>메인으로 이동
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+    </div>
+</body>
+</html>

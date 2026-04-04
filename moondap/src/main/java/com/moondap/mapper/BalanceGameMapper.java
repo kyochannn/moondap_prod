@@ -3,6 +3,7 @@ package com.moondap.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
@@ -11,28 +12,32 @@ import com.moondap.dto.BalanceGameDTO;
 public interface BalanceGameMapper {
 
 	// 밸런스 게임 목록 조회
-	public List<BalanceGameDTO> selectBalanceGameList(String isSpicy, String category) throws Exception;
+	public List<BalanceGameDTO> selectBalanceGameList(@Param("isSpicy") String isSpicy, @Param("category") String category, @Param("offset") int offset, @Param("limit") int limit) throws Exception;
 	
 	// 밸런스 게임 개별 조회
-	public BalanceGameDTO selectBalanceGame(String id, String isSpicy, String category) throws Exception;
+	public BalanceGameDTO selectBalanceGame(@Param("id") String id, @Param("isSpicy") String isSpicy, @Param("category") String category) throws Exception;
 	
 	// 밸런스 게임 ID 가장 큰 값 조회
-	public String selectMaxBalanceGameId(String isSpicy, String category) throws Exception;
+	public String selectMaxBalanceGameId(@Param("isSpicy") String isSpicy, @Param("category") String category) throws Exception;
 		
 	// 밸런스 게임 ID 가장 작은 값 조회
 	public String selectMinBalanceGameId() throws Exception;
 	
 	// 이전 / 다음 밸런스 게임 ID 조회
-	public String nextOrPrevBalanceGameIdSelect(String id, String direction, String isSpicy, String category) throws Exception;
+	public String nextOrPrevBalanceGameIdSelect(
+			@Param("id") String id, 
+			@Param("direction") String direction, 
+			@Param("isSpicy") String isSpicy, 
+			@Param("category") String category) throws Exception;
 	
 	// 밸런스 게임 투표
-	public int vote(String id, int option1Count, int option2Count);
+	public int vote(@Param("id") String id, @Param("option1Count") int option1Count, @Param("option2Count") int option2Count);
 	
 	// 밸런스 게임 댓글 추가
-	public int insertBalanceGameComment(String id, String nickname, String side, String content);
+	public int insertBalanceGameComment(@Param("id") String id, @Param("nickname") String nickname, @Param("side") String side, @Param("content") String content);
 
 	// 밸런스 게임 댓글 개수
-	public int selectBalanceGameCount(String id, String isSpicy, String category);
+	public int selectBalanceGameCount(@Param("id") String id, @Param("isSpicy") String isSpicy, @Param("category") String category);
 	
 	// 밸런스 게임 관련 댓글 삭제
 	public int deleteBalanceGameComment(String id) throws Exception;
@@ -41,7 +46,7 @@ public interface BalanceGameMapper {
 	public List<BalanceGameCommentDTO> selectBalanceGameComment(String id) throws Exception;
 	
 	// 밸런스 게임 좋아요 수 수정
-	public int updateBalanceGameCommentLikeCount(int no, String id, int cnt) throws Exception;
+	public int updateBalanceGameCommentLikeCount(@Param("no") int no, @Param("id") String id, @Param("cnt") int cnt) throws Exception;
 
 	// 밸런스 게임 등록
 	public int insertBalanceGame(BalanceGameDTO balanceGame) throws Exception;

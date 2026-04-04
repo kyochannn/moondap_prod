@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.moondap.common.CommonUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
@@ -32,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
  * [GET] - 밸런스 게임 수정 화면
  * [POST] - 밸런스 게임 수정 처리
  * [POST] - 밸런스 게임 삭제 처리
+ * 
+ * 예외는 GlobalExceptionHandler에서 처리
  */
 @Slf4j
 @Controller
@@ -49,11 +53,11 @@ public class BalanceGameController {
 	 * @throws Exception
 	 */
 	@GetMapping("/selectBalanceGameListView")
-	public String selectBalanceGameListView(Model model) {
+	public String selectBalanceGameListView(Model model) throws Exception {
 
 		Map<String, String> request = new HashMap<String, String>();
 		request.put("isSpicy", "0");
-		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request);
+		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request, 0, 10);
 
 		model.addAttribute("balanceGameList", balanceGameList);
 
@@ -73,7 +77,10 @@ public class BalanceGameController {
 
 		log.info("조회 요청 데이터: {}", request);
 
-		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request);
+		int offset = Integer.parseInt(request.getOrDefault("offset", "0"));
+		int limit = Integer.parseInt(request.getOrDefault("limit", "10"));
+
+		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request, offset, limit);
 
 		// 데이터가 없을 경우 204 No Content 혹은 빈 리스트 반환
 		if (balanceGameList.isEmpty()) {
@@ -97,7 +104,12 @@ public class BalanceGameController {
 			@RequestParam(required = false) String id,
 			@RequestParam(required = false) String spicyFilter,
 			@RequestParam(required = false) String category,
-			Model model) {
+			HttpServletRequest request,
+			Model model) throws Exception {
+
+		String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "");
+		model.addAttribute("baseUrl", baseUrl);
+		model.addAttribute("fullUrl", request.getRequestURL().toString() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
 
 		System.out.println("id :::::::::::" + id);
 		System.out.println("spicyFilter :::::::::::" + spicyFilter);
@@ -105,30 +117,15 @@ public class BalanceGameController {
 
 		// 리스트에서 조회 시 get 방식으로 넘겨주는데, 게임시작 버튼을 눌렀을 때 어떻게 처리해야 할지 고민 후 구현부터 시작!!
 
-		try {
-			BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, spicyFilter, category);
+		BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, spicyFilter, category);
 
-			// 데이터가 없는 경우(null) 처리
-			if (balanceGame == null) {
-
-				return "error/500";
-			}
-
-			model.addAttribute("balanceGame", balanceGame);
-			return "balanceGame/selectBalanceGame";
-
-		} catch (RuntimeException e) {
-			// 비즈니스 로직 에러 (데이터 없음 등)
-			e.printStackTrace();
-			model.addAttribute("errorMessage", e.getMessage());
-			System.out.println("데이터베이스 관련 문제가 발생하였습니다.");
-			return "error/404";
-		} catch (Exception e) {
-			// 시스템 에러 (DB 연결 장애 등)
-			e.printStackTrace();
-			System.out.println("시스템 에러가 발생하였습니다.");
-			return "error/500";
+		// 데이터가 없는 경우(null) 처리
+		if (balanceGame == null) {
+			throw new RuntimeException("해당 게임을 찾을 수 없습니다.");
 		}
+
+		model.addAttribute("balanceGame", balanceGame);
+		return "balanceGame/selectBalanceGame";
 	}
 
 	/**
@@ -146,6 +143,25 @@ public class BalanceGameController {
 
 			return balanceGameId;
 
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * 밸런스 게임 투표 현황 조회 (실시간 갱신용)
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/getVoteStatus")
+	@ResponseBody
+	public BalanceGameDTO getVoteStatus(@RequestBody Map<String, String> request) {
+		try {
+			String id = request.get("id");
+			BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
+			return balanceGame;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -286,31 +302,16 @@ public class BalanceGameController {
 	 * @return
 	 */
 	@GetMapping("/updateBalanceGameView")
-	public String updateBalanceGameView(@RequestParam String id, Model model) {
+	public String updateBalanceGameView(@RequestParam String id, Model model) throws Exception {
 		System.out.println("updateBalanceGameView ID :::::::::::" + id);
-		try {
-			BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
-			// 데이터가 없는 경우(null) 처리
-			if (balanceGame == null) {
-				// 커스텀 예외를 던져서 catch 블록으로 이동시킬 수도 있습니다.
-				// throw new RuntimeException("게임을 찾을 수 없습니다.");
-				return "error/500";
-			}
-
-			model.addAttribute("balanceGame", balanceGame);
-			return "balanceGame/updateBalanceGame";
-
-		} catch (RuntimeException e) {
-			// 비즈니스 로직 에러 (데이터 없음 등)
-			model.addAttribute("errorMessage", e.getMessage());
-			System.out.println("데이터베이스 관련 문제가 발생하였습니다.");
-			return "error/404";
-		} catch (Exception e) {
-			// 시스템 에러 (DB 연결 장애 등)
-			e.printStackTrace();
-			System.out.println("시스템 에러가 발생하였습니다.");
-			return "error/500";
+		BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
+		// 데이터가 없는 경우(null) 처리
+		if (balanceGame == null) {
+			throw new RuntimeException("수정할 게임을 찾을 수 없습니다.");
 		}
+
+		model.addAttribute("balanceGame", balanceGame);
+		return "balanceGame/updateBalanceGame";
 	}
 
 	/**

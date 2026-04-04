@@ -21,9 +21,12 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests((auth) -> auth
-        	.requestMatchers("/", "/loginView", "/joinView", "/joinSelectView", "/joinProc", "/assets/**").permitAll()
+        	.requestMatchers("/", "/loginView", "/joinView", "/joinSelectView", "/joinProc", "/joinCompleteView", "/joinViewAfterError", "/assets/**").permitAll()
+        	.requestMatchers("/checkUsername", "/checkNickname").permitAll()
         	.requestMatchers("/uploads/**").permitAll()
         	.requestMatchers("/balanceGame/**").permitAll()
+        	.requestMatchers("/profile/**").permitAll()
+        	.requestMatchers("/.well-known/**").permitAll()
             .requestMatchers("/admin").hasRole("ADMIN")
 //            .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
             .anyRequest().authenticated()
@@ -31,7 +34,7 @@ public class SecurityConfig {
 
         http.formLogin((auth) -> auth.loginPage("/loginView")
             .loginProcessingUrl("/loginProc")
-            .defaultSuccessUrl("/")
+            .defaultSuccessUrl("/", true)
             .permitAll()
         );
 

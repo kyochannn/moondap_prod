@@ -41,7 +41,7 @@
 	            $('.option1Content, .option2Content').css('pointer-events', 'none'); 
 	            
 	            // 사용자가 이전에 뭘 했는지 정보 가져오기
-	            const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+	            const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
 	            const side = votedGames[gameId].side;
 		        
 	            // 예전 투표 결과 디스플레이
@@ -95,7 +95,7 @@
 		// [2] 투표 여부 확인
 		function isAlreadyVoted() {
 			
-		    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+		    const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
 		    const voteData = votedGames[gameId];
 		    console.log(voteData);
 		    
@@ -223,7 +223,7 @@
 		// [1] 투표 저장 (LocalStorage 활용)
 		function saveVoteLocalStorage(side) {
 		    // 1. 기존 데이터 가져오기 (없으면 빈 객체)
-		    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+		    const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
 		    
 		    // 2. 새 데이터 추가
 		    votedGames[gameId] = {
@@ -232,14 +232,14 @@
 		    };
 		    
 		    // 3. 다시 저장
-		    sessionStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
+		    localStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
 		}
 
     	// 재투표 기능
     	function resetVote() {
     		
     		if (isAlreadyVoted()) {
-    		    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+    		    const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
     		    const voteData = votedGames[gameId];
 	    		
 		    	const now = new Date().getTime();
@@ -256,7 +256,7 @@
 			    	alert(seconds + "초 뒤 다시할 수 있습니다.");
 		    	} else {	
 				 	delete votedGames[gameId];
-	 		        sessionStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
+	 		        localStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
 			        
 				 	location.reload();
 				 	
@@ -297,7 +297,7 @@
 				
 				let content = $('#chat-content').val();
 				
-			    const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+			    const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
 			    const voteData = votedGames[gameId];
 				let voteSide = voteData.side;
 				
@@ -308,10 +308,6 @@
 		        }
 		        if (content.length > 50) {
 		            alert("50자 이내로 입력 가능합니다.");
-		            return;
-		        }
-		        if (content == '시발') {
-		            alert("욕설 금지");
 		            return;
 		        }
 	    			
@@ -347,7 +343,9 @@
 				        	console.log("Status: " + status);
 				            console.log("Error: " + error);
 				            console.log("ResponseText: " + xhr.responseText);
-				            alert("댓글 입력 중 오류가 발생했습니다.");
+				            // 서버에서 반환한 메시지가 있으면 우선 표시 (금칙어 안내 등)
+				            const serverMsg = xhr.responseJSON && xhr.responseJSON.message;
+				            alert(serverMsg || "댓글 입력 중 오류가 발생했습니다.");
 				        }
 				    });
 		        } else {
@@ -366,7 +364,7 @@
 		
     	// nickname 체크 함수
 		function isNicknameSet() {
-		    nickname = sessionStorage.getItem('moondap_comment_nickname');
+		    nickname = localStorage.getItem('moondap_comment_nickname');
 		    return (nickname !== null && nickname.trim() !== "");
 		}
     	
@@ -385,7 +383,7 @@
 		    }
 		
 		    // 로컬 스토리지에 저장
-		    sessionStorage.setItem('moondap_comment_nickname', nicknameInput);
+		    localStorage.setItem('moondap_comment_nickname', nicknameInput);
 		    
 		    // 모달 닫기
 		    const nicknameModal = bootstrap.Modal.getInstance(document.getElementById('nicknameModal'));
@@ -415,13 +413,13 @@
 		    $commentContainer.empty(); // 기존에 있던 정적 HTML(또는 이전 댓글) 삭제
 
 		 	// 1. 전체 좋아요 데이터 객체 가져오기
-		    const allLikedData = JSON.parse(sessionStorage.getItem('moondap_liked_comments') || '{}');
+		    const allLikedData = JSON.parse(localStorage.getItem('moondap_liked_comments') || '{}');
 		    // 2. 현재 게임의 좋아요 리스트만 가져오기
 		    const likedComments = allLikedData[gameId] || [];
 		    
 		    // 댓글이 하나도 없을 경우 처리
 		    if (!commentList || commentList.length === 0) {
-	            const votedGames = JSON.parse(sessionStorage.getItem('moondap_voted_games') || '{}');
+	            const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
 	            const side = votedGames[gameId].side;
 		        // $commentContainer.append('<p class="text-muted my-4">첫 번째 댓글을 남겨보세요!</p>');
 		        
@@ -551,7 +549,7 @@
 			    const targetNo = Number(commentNo);
 			    
 			    // 1. 전체 좋아요 데이터(객체) 가져오기
-			    let allLikedData = JSON.parse(sessionStorage.getItem('moondap_liked_comments') || '{}');
+			    let allLikedData = JSON.parse(localStorage.getItem('moondap_liked_comments') || '{}');
 			    
 			    // 2. 현재 게임에 해당하는 좋아요 리스트만 추출 (없으면 빈 배열)
 			    let currentLikedList = allLikedData[gameId] || [];
@@ -575,7 +573,7 @@
 	
 			    // 3. 현재 게임 리스트를 전체 데이터에 다시 저장 후 로컬 스토리지 반영
 			    allLikedData[gameId] = currentLikedList;
-			    sessionStorage.setItem('moondap_liked_comments', JSON.stringify(allLikedData));
+			    localStorage.setItem('moondap_liked_comments', JSON.stringify(allLikedData));
 	
 			    // 4. 서버 전송
 	   			$.ajax({
@@ -625,8 +623,8 @@
 		function goToNextOrPrevGame(direction) {
 			
 			// 세션에 저장되어있는 검색 조건
-	    	let listCategory = sessionStorage.getItem('moondap_balancegame_category');
-	    	let listSpicyFilter = sessionStorage.getItem('moondap_balancegame_spicyfilter');
+	    	let listCategory = localStorage.getItem('moondap_balancegame_category');
+	    	let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter');
 	    	
 		    $.ajax({
 		        url: '/balanceGame/nextOrPrevBalanceGameIdSelect',

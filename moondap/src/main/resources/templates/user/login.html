@@ -1,110 +1,111 @@
 <!DOCTYPE html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세상의 모든 테스트, 문답</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>세상의 모든 테스트, 문답</title>
 	<style>
 		.login-body {
-		  background: #05071e;
+			background: #05071e;
 		}
-		
+
 		.login-box {
-		  position: absolute;
-		  top: 45%;
-		  left: 50%;
-		  width: 400px;
-		  padding: 40px;
-		  transform: translate(-50%, -50%);
-		  background: #131428;
-		  backdrop-filter: blur(10px);
-		  box-sizing: border-box;
-		  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-		  border-radius: 12px;
-		  text-align: center;
-		  color: #ffffff;
+			position: absolute;
+			top: 45%;
+			left: 50%;
+			width: 400px;
+			padding: 40px;
+			transform: translate(-50%, -50%);
+			background: #131428;
+			backdrop-filter: blur(10px);
+			box-sizing: border-box;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+			border-radius: 12px;
+			text-align: center;
+			color: #ffffff;
 		}
-		
+
 		.login-box h2 {
-		  margin: 0 0 30px;
-		  padding: 0;
-		  color: #ffffff;
-		  text-align: center;
+			margin: 0 0 30px;
+			padding: 0;
+			color: #ffffff;
+			text-align: center;
 		}
-		
+
 		.login-box .user-box {
-		  position: relative;
+			position: relative;
 		}
-		
+
 		.login-box .user-box input {
-		  width: 100%;
-		  padding: 10px 0;
-		  font-size: 16px;
-		  color: #ffffff;
-		  margin-bottom: 30px;
-		  border: none;
-		  border-bottom: 1px solid grey;
-		  outline: none;
-		  background: transparent;
+			width: 100%;
+			padding: 10px 0;
+			font-size: 16px;
+			color: #ffffff;
+			margin-bottom: 30px;
+			border: none;
+			border-bottom: 1px solid grey;
+			outline: none;
+			background: transparent;
 		}
+
 		.login-box .user-box label {
-		  position: absolute;
-		  top:0;
-		  left: 0;
-		  padding: 10px 0;
-		  font-size: 16px;
-		  color: #ffffff;
-		  pointer-events: none;
-		  transition: .2s;
+			position: absolute;
+			top: 0;
+			left: 0;
+			padding: 10px 0;
+			font-size: 16px;
+			color: #ffffff;
+			pointer-events: none;
+			transition: .2s;
 		}
-		
-		.login-box .user-box input:focus ~ label,
-		.login-box .user-box input:valid ~ label {
-		  top: -20px;
-		  left: 0;
-		  color: #ffffff;
-		  font-size: 12px;
+
+		.login-box .user-box input:focus~label,
+		.login-box .user-box input:valid~label {
+			top: -20px;
+			left: 0;
+			color: #ffffff;
+			font-size: 12px;
 		}
-		
+
 		.login-box form a {
-		  position: relative;
-		  display: inline-block;
-		  padding: 10px 20px;
-		  color: #ffffff;
-		  font-size: 16px;
-		  text-decoration: none;
-		  text-transform: uppercase;
-		  overflow: hidden;
-		  transition: .5s;
-		  margin-top: 40px;
-		  letter-spacing: 4px
+			position: relative;
+			display: inline-block;
+			padding: 10px 20px;
+			color: #ffffff;
+			font-size: 16px;
+			text-decoration: none;
+			text-transform: uppercase;
+			overflow: hidden;
+			transition: .5s;
+			margin-top: 10px;
+			letter-spacing: 4px
 		}
-		
+
 		.login-btn {
-		  border:0;
-		  background: #524dd3;
-		  color: #ffffff;
-		  border-radius: 100px;
-		  width: 100%;
-		  height: 49px;
-		  font-size: 16px;
-		  transition: 0.3s;
-		  cursor: pointer;
+			border: 0;
+			background: #524dd3;
+			color: #ffffff;
+			border-radius: 100px;
+			width: 100%;
+			height: 49px;
+			font-size: 16px;
+			transition: 0.3s;
+			cursor: pointer;
 		}
 	</style>
 </head>
 
 <body class="login-body">
 
-  	<!-- layout: 헤더 영역 -->
+	<!-- layout: 헤더 영역 -->
 	<main>
-	    <div class="login-box">
+		<div class="login-box">
 			<div class="d-flex justify-content-center text-black mt-3" style="text-align: center;">
-			  	<h1 class="fs-2">
-			    	<a href="/" class="logo d-flex align-items-center me-auto" style="text-decoration: none;">
-			      		<img style="width: 30px;" src="/assets/img/logo.webp" alt="">
-<!-- 			      <strong style="margin-left: 8px; color: #ffffff;">문답</strong> -->
-			    	</a>
+				<h1 class="fs-2">
+					<a href="/" class="logo d-flex align-items-center me-auto" style="text-decoration: none;">
+						<img style="width: 30px;" src="/assets/img/logo.webp" alt="">
+						<!-- <strong style="margin-left: 8px; color: #ffffff;">문답</strong> -->
+					</a>
 				</h1>
 			</div>
 
@@ -117,15 +118,16 @@
 					<input id="password" type="password" name="password" required>
 					<label>Password</label>
 				</div>
-		    	 
-			  	<input class="login-btn" type="submit" value="로그인" >
-			  
-                <a href="/joinSelectView" class="btn btn-outline-light w-100 mt-3 bord-radius-20" 
-                   style="text-transform: none; letter-spacing: normal; border: 1px solid #333447; height: 49px; line-height: 35px;">회원가입</a>
+
+				<input class="login-btn" type="submit" value="로그인">
+
+				<a href="/joinSelectView" class="btn btn-outline-light w-100 mt-0"
+					style="text-transform: none; letter-spacing: normal;">회원가입</a>
 			</form>
-			<div class="container copyright text-center mt-4 mb-0" style="font-size: 12px;">
-		    	<p>© <span>Copyright</span> <strong class="px-1 sitename">moondap</strong> <span>All Rights Reserved</span></p>
-		  	</div>
+			<div class="container copyright text-center mt-4 mb-0" style="font-size: 10px;">
+				<p>© <span>Copyright</span> <strong class="px-1 sitename">moondap</strong> <span>All Rights
+						Reserved</span></p>
+			</div>
 		</div>
 
 	</main>

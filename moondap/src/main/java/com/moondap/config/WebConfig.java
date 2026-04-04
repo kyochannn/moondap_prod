@@ -10,15 +10,22 @@ public class WebConfig implements WebMvcConfigurer {
 	
 	@Value("${file.upload-dir}")
     private String uploadDir;
+
+	@Value("${file.profile-dir}")
+	private String profileDir;
 	
 	@Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		
-		// 파일 업로드 시 해당 경로로 저장 됨.
-		// 설정 경로는 application.properties에 저장되어 있음.
+		// 일반 파일 업로드 경로 매핑
 		registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadDir);
         
-        System.out.println("설정된 리소스 경로: " + uploadDir);
+		// 프로필 이미지 전용 경로 매핑
+		registry.addResourceHandler("/profile/**")
+				.addResourceLocations("file:" + profileDir);
+
+        System.out.println("설정된 업로드 경로: " + uploadDir);
+        System.out.println("설정된 프로필 경로: " + profileDir);
     }
 }

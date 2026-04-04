@@ -18,6 +18,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	        </if>
 	    </where>
 	    ORDER BY created_at DESC
+	    LIMIT #{limit} OFFSET #{offset}
 	</select>
 
     <!-- 밸런스 게임 개별 조회 -->

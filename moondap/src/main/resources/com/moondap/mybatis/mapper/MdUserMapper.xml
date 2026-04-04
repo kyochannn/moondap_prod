@@ -12,8 +12,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <insert id="insertUser">
-        INSERT INTO moondap.md_users (username, password, role)
-        VALUES (#{user.username}, #{user.password}, #{user.role})
+        INSERT INTO moondap.md_users (username, password, nickname, email, bio, role, profile_image)
+        VALUES (#{user.username}, #{user.password}, #{user.nickname}, #{user.email}, #{user.bio}, #{user.role}, #{user.profileImage})
     </insert>
+
+    <select id="countByUsername" resultType="int">
+        SELECT COUNT(*)
+        FROM moondap.md_users
+        WHERE username = #{username}
+    </select>
+
+    <select id="countByNickname" resultType="int">
+        SELECT COUNT(*)
+        FROM moondap.md_users
+        WHERE nickname = #{nickname}
+    </select>
 
 </mapper>

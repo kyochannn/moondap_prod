@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.moondap.common.CommonUtil;
 import com.moondap.common.FileService;
+import com.moondap.common.ProfanityUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
 import com.moondap.mapper.BalanceGameMapper;
@@ -27,7 +28,7 @@ public class StandardBalanceGameService implements BalanceGameService {
 	private FileService fileService;
 	
     // 밸런스 게임 목록
-	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request) {
+	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request, int offset, int limit) {
 		log.info("========== 밸런스 게임 리스트 조회 시작 ==========");
 		
 		try {
@@ -38,7 +39,7 @@ public class StandardBalanceGameService implements BalanceGameService {
             	isSpicy = "0";
             }
 
-            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category);
+            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category, offset, limit);
 
             if (balanceGameList == null || balanceGameList.isEmpty()) {
                 log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}", isSpicy, category);
@@ -170,6 +171,12 @@ public class StandardBalanceGameService implements BalanceGameService {
     	if (CommonUtil.isNull(nickname)) flag = false;
     	if (CommonUtil.isNull(side)) flag = false;
     	if (CommonUtil.isNull(content)) flag = false;
+
+    	// 금칙어 체크
+    	if (ProfanityUtil.containsProfanity(nickname) || ProfanityUtil.containsProfanity(content)) {
+    		throw new RuntimeException("금칙어가 포함된 내용을 입력할 수 없습니다.");
+			
+    	}
     	
     	if (flag) {    		
     		updatedRows = balanceGameMapper.insertBalanceGameComment(id, nickname, side, content);

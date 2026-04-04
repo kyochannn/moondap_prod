@@ -10,7 +10,7 @@ import com.moondap.dto.BalanceGameDTO;
 
 public interface BalanceGameService {
 
-	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request);
+	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request, int offset, int limit);
 	
 	public BalanceGameDTO selectBalanceGame(String id, String spicyFilter, String category) throws Exception;
 	
