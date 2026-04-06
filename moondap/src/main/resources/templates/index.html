@@ -14,8 +14,8 @@
 <body layout:fragment="content">
   <main class="main">
 
-    <!-- Portfolio Section -->
-    <section id="portfolio" class="portfolio section">
+    <!-- Game Gallery Section -->
+    <section id="game-gallery" class="game-gallery section">
 
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
@@ -25,182 +25,183 @@
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
-          <ul class="portfolio-filters isotope-filters" data-aos="fade-up" data-aos-delay="200">
+        <div class="game-gallery-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+          <ul class="game-filters game-gallery-filters" data-aos="fade-up" data-aos-delay="200">
             <li data-filter="*" class="filter-active">전체</li>
             <li data-filter=".filter-man">남자</li>
             <li data-filter=".filter-woman">여자</li>
             <li data-filter=".filter-couple">커플용</li>
             <li data-filter=".filter-unisex">남녀 공통</li>
-          </ul><!-- End Portfolio Filters -->
+          </ul>
+          <!-- End Portfolio Filters -->
 
-          <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="300">
+          <div class="row gy-4 game-gallery-container" data-aos="fade-up" data-aos-delay="300">
 
-            <div class="col-xl-4 col-lg-6 isotope-item filter-couple">
+            <div class="col-xl-4 col-lg-6 game-item filter-couple">
               <a href="/balanceGame/selectBalanceGameListView" class="text-decoration-none d-block">
-                <div class="portfolio-wrapper">
-                  <div class="portfolio-image">
-                    <img src="assets/img/testList/img1.png" alt="Creative Web Project" class="img-fluid" loading="lazy">
+                <div class="game-wrapper">
+                  <div class="game-image">
+                    <img src="assets/img/testList/img1.png" alt="밸런스 게임 썸네일" class="img-fluid" loading="lazy">
                   </div>
-                  <div class="portfolio-content">
-                    <div class="portfolio-meta">
-                      <span class="project-type">커플</span>
-                      <div class="project-rating">
+                  <div class="game-content">
+                    <div class="game-meta">
+                      <span class="game-type">커플</span>
+                      <div class="game-rating">
                         <i class="bi bi-eye-fill"></i>
                         <span th:text="${#numbers.formatInteger(totalParticipantCount, 0, 'COMMA')}">21</span>
                       </div>
                     </div>
                     <h3>밸런스 게임</h3>
                     <p>다양한 밸런스 게임을 지금 문답에서 확인하세요!</p>
-                    <div class="portfolio-tech">
-                      <span class="tech-badge">연애</span>
-                      <span class="tech-badge">직장</span>
-                      <span class="tech-badge">일상</span>
+                    <div class="game-type-bundle">
+                      <span class="category-badge">연애</span>
+                      <span class="category-badge">직장</span>
+                      <span class="category-badge">일상</span>
                     </div>
                   </div>
                 </div>
               </a>
             </div>
 
-            <div class="col-xl-4 col-lg-6 isotope-item filter-unisex">
+            <div class="col-xl-4 col-lg-6 game-item filter-unisex">
               <a href="https://kckoo.co.kr" class="text-decoration-none d-block">
-                <div class="portfolio-wrapper">
-                  <div class="portfolio-image">
-                    <img src="assets/img/testList/img2.png" alt="Mobile App Project" class="img-fluid" loading="lazy">
+                <div class="game-wrapper">
+                  <div class="game-image">
+                    <img src="assets/img/testList/img3.png" alt="에겐테토 테스트 썸네일" class="img-fluid" loading="lazy">
                   </div>
-                  <div class="portfolio-content">
-                    <div class="portfolio-meta">
-                      <span class="project-type">남녀 공통</span>
-                      <div class="project-rating">
+                  <div class="game-content">
+                    <div class="game-meta">
+                      <span class="game-type">남녀 공통</span>
+                      <div class="game-rating">
                         <i class="bi bi-eye-fill"></i>
                         <span>260,000</span>
                       </div>
                     </div>
                     <h3>에겐/테토 테스트</h3>
                     <p>넌 에겐이야? 테토야? - 현대남녀 구분법!</p>
-                    <div class="portfolio-tech">
-                      <span class="tech-badge">에겐녀</span>
-                      <span class="tech-badge">테토녀</span>
-                      <span class="tech-badge">에겐남</span>
-                      <span class="tech-badge">테토남</span>
+                    <div class="game-type-bundle">
+                      <span class="category-badge">에겐녀</span>
+                      <span class="category-badge">테토녀</span>
+                      <span class="category-badge">에겐남</span>
+                      <span class="category-badge">테토남</span>
                     </div>
                   </div>
                 </div>
               </a>
             </div>
-
-            <div class="col-xl-4 col-lg-6 isotope-item filter-man">
-              <div class="portfolio-wrapper">
-                <div class="portfolio-image">
-                  <img src="assets/img/testList/img3.png" alt="Mobile App Project" class="img-fluid" loading="lazy">
+            
+            <div class="col-xl-4 col-lg-6 game-item filter-unisex">
+              <div class="game-wrapper">
+                <div class="game-image">
+                  <img src="assets/img/testList/img2.png" alt="준비중인 테스트 이미지" class="img-fluid" loading="lazy">
                 </div>
-                <div class="portfolio-content">
-                  <div class="portfolio-meta">
-                    <span class="project-type">남자</span>
-                    <div class="project-rating">
+                <div class="game-content">
+                  <div class="game-meta">
+                    <span class="game-type">남녀 공통</span>
+                    <div class="game-rating">
                       <i class="bi bi-eye-fill"></i>
-                      <span>12</span>
+                      <span>0</span>
                     </div>
                   </div>
-                  <h3>OO 테스트</h3>
-                  <p>테스트 설명입니다.</p>
-                  <div class="portfolio-tech">
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
+                  <h3>준비중입니다!</h3>
+                  <p>다양한 테스트를 준비하고 있어요.</p>
+                  <div class="game-type-bundle">
+                    <span class="category-badge">준비중</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="col-xl-4 col-lg-6 isotope-item filter-woman">
-              <div class="portfolio-wrapper">
-                <div class="portfolio-image">
-                  <img src="assets/img/testList/img4.png" alt="UI/UX Project" class="img-fluid" loading="lazy">
+            <!--
+            <div class="col-xl-4 col-lg-6 game-item filter-woman">
+              <div class="game-wrapper">
+                <div class="game-image">
+                  <img src="assets/img/testList/img4.png" alt="추천 테스트 썸네일" class="img-fluid" loading="lazy">
                 </div>
-                <div class="portfolio-content">
-                  <div class="portfolio-meta">
-                    <span class="project-type">여자</span>
-                    <div class="project-rating">
+                <div class="game-content">
+                  <div class="game-meta">
+                    <span class="game-type">여자</span>
+                    <div class="game-rating">
                       <i class="bi bi-eye-fill"></i>
                       <span>13</span>
                     </div>
                   </div>
                   <h3>OO 테스트</h3>
                   <p>테스트 설명입니다.</p>
-                  <div class="portfolio-tech">
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
+                  <div class="game-type-bundle">
+                    <span class="category-badge">test</span>
+                    <span class="category-badge">test</span>
+                    <span class="category-badge">test</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="col-xl-4 col-lg-6 isotope-item filter-couple">
-              <div class="portfolio-wrapper">
-                <div class="portfolio-image">
-                  <img src="assets/img/testList/img5.png" alt="E-commerce Platform" class="img-fluid" loading="lazy">
+            <div class="col-xl-4 col-lg-6 game-item filter-couple">
+              <div class="game-wrapper">
+                <div class="game-image">
+                  <img src="assets/img/testList/img5.png" alt="추천 테스트 썸네일" class="img-fluid" loading="lazy">
                 </div>
-                <div class="portfolio-content">
-                  <div class="portfolio-meta">
-                    <span class="project-type">커플</span>
-                    <div class="project-rating">
+                <div class="game-content">
+                  <div class="game-meta">
+                    <span class="game-type">커플</span>
+                    <div class="game-rating">
                       <i class="bi bi-eye-fill"></i>
                       <span>14</span>
                     </div>
                   </div>
                   <h3>OO 테스트</h3>
                   <p>테스트 설명입니다.</p>
-                  <div class="portfolio-tech">
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
+                  <div class="game-type-bundle">
+                    <span class="category-badge">test</span>
+                    <span class="category-badge">test</span>
+                    <span class="category-badge">test</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="col-xl-4 col-lg-6 isotope-item filter-unisex">
-              <div class="portfolio-wrapper">
-                <div class="portfolio-image">
-                  <img src="assets/img/testList/img6.png" alt="Fintech Mobile App" class="img-fluid" loading="lazy">
+            <div class="col-xl-4 col-lg-6 game-item filter-unisex">
+              <div class="game-wrapper">
+                <div class="game-image">
+                  <img src="assets/img/testList/img6.png" alt="추천 테스트 썸네일" class="img-fluid" loading="lazy">
                 </div>
-                <div class="portfolio-content">
-                  <div class="portfolio-meta">
-                    <span class="project-type">남녀 공통</span>
-                    <div class="project-rating">
+                <div class="game-content">
+                  <div class="game-meta">
+                    <span class="game-type">남녀 공통</span>
+                    <div class="game-rating">
                       <i class="bi bi-eye-fill"></i>
                       <span>11</span>
                     </div>
                   </div>
                   <h3>OO 테스트</h3>
                   <p>테스트 설명입니다.</p>
-                  <div class="portfolio-tech">
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
-                    <span class="tech-badge">test</span>
+                  <div class="game-type-bundle">
+                    <span class="category-badge">test</span>
+                    <span class="category-badge">test</span>
+                    <span class="category-badge">test</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div><!-- End Portfolio Items Container -->
+            -->
+          </div><!-- End Game Items Container -->
 
         </div>
 
-        <div class="portfolio-cta text-center" data-aos="fade-up" data-aos-delay="400">
+        <div class="game-cta text-center" data-aos="fade-up" data-aos-delay="400">
           <h4>다른 테스트도 해보실래요?</h4>
           <p>다양한 테스트를 통해 나를 더 알아보세요!</p>
           <div class="cta-buttons">
             <a href="#" class="btn btn-primary">모든 테스트 보기</a>
             <!--  -->
-            <a href="#" class="btn btn-outline">문답 인스타그램</a>
+            <a href="https://www.instagram.com/moondap_com/" class="btn btn-outline">문답 인스타그램</a>
           </div>
         </div>
 
       </div>
 
-    </section><!-- /Portfolio Section -->
+    </section><!-- /Game Gallery Section -->
 
   </main>
 </body>

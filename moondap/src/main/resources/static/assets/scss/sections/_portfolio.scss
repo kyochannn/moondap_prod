@@ -2,8 +2,8 @@
 /*--------------------------------------------------------------
 # Portfolio Section
 --------------------------------------------------------------*/
-.portfolio {
-  .portfolio-filters {
+.game-gallery {
+  .game-filters {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -65,7 +65,7 @@
     }
   }
 
-  .portfolio-wrapper {
+  .game-wrapper {
     background-color: var(--surface-color);
     border-radius: 20px;
     overflow: hidden;
@@ -79,19 +79,19 @@
       box-shadow: 0 20px 40px color-mix(in srgb, var(--default-color), transparent 85%);
       border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
 
-      .portfolio-image {
+      .game-image {
         img {
           transform: scale(1.05);
         }
 
-        .portfolio-hover {
+        .game-hover {
           opacity: 1;
           visibility: visible;
         }
       }
     }
 
-    .portfolio-image {
+    .game-image {
       position: relative;
       overflow: hidden;
       height: 240px;
@@ -103,7 +103,7 @@
         transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
-      .portfolio-hover {
+      .game-hover {
         position: absolute;
         top: 0;
         left: 0;
@@ -118,7 +118,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         backdrop-filter: blur(2px);
 
-        .portfolio-actions {
+        .game-actions {
           display: flex;
           gap: 15px;
 
@@ -146,16 +146,16 @@
       }
     }
 
-    .portfolio-content {
+    .game-content {
       padding: 25px;
 
-      .portfolio-meta {
+      .game-meta {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
 
-        .project-type {
+        .game-type {
           font-size: 0.75rem;
           font-weight: 600;
           text-transform: uppercase;
@@ -166,7 +166,7 @@
           border-radius: 20px;
         }
 
-        .project-rating {
+        .game-rating {
           display: flex;
           align-items: center;
           gap: 4px;
@@ -195,12 +195,12 @@
         line-height: 1.5;
       }
 
-      .portfolio-tech {
+      .game-type-bundle {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
 
-        .tech-badge {
+        .category-badge {
           font-size: 0.75rem;
           font-weight: 500;
           padding: 6px 12px;
@@ -220,7 +220,7 @@
     }
   }
 
-  .portfolio-cta {
+  .game-cta {
     margin-top: 60px;
     padding: 40px 30px;
     background: linear-gradient(135deg, var(--surface-color), color-mix(in srgb, var(--surface-color), var(--accent-color) 5%));

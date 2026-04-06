@@ -1368,7 +1368,7 @@ section,
 /*--------------------------------------------------------------
 # Portfolio Section
 --------------------------------------------------------------*/
-.portfolio .portfolio-filters {
+.game-gallery .game-filters {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -1379,13 +1379,13 @@ section,
 }
 
 @media (max-width: 768px) {
-  .portfolio .portfolio-filters {
+  .game-gallery .game-filters {
     gap: 6px;
     margin-bottom: 30px;
   }
 }
 
-.portfolio .portfolio-filters li {
+.game-gallery .game-filters li {
   padding: 12px 24px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -1400,13 +1400,13 @@ section,
 }
 
 @media (max-width: 768px) {
-  .portfolio .portfolio-filters li {
+  .game-gallery .game-filters li {
     padding: 10px 18px;
     font-size: 0.8rem;
   }
 }
 
-.portfolio .portfolio-filters li::before {
+.game-gallery .game-filters li::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1417,24 +1417,24 @@ section,
   transition: left 0.5s;
 }
 
-.portfolio .portfolio-filters li:hover {
+.game-gallery .game-filters li:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px color-mix(in srgb, var(--accent-color), transparent 85%);
   border-color: var(--accent-color);
 }
 
-.portfolio .portfolio-filters li:hover::before {
+.game-gallery .game-filters li:hover::before {
   left: 100%;
 }
 
-.portfolio .portfolio-filters li.filter-active {
+.game-gallery .game-filters li.filter-active {
   background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #4338ca 20%));
   color: var(--contrast-color);
   border-color: var(--accent-color);
   box-shadow: 0 8px 30px color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 
-.portfolio .portfolio-wrapper {
+.game-gallery .game-wrapper {
   background-color: var(--surface-color);
   border-radius: 20px;
   overflow: hidden;
@@ -1444,35 +1444,35 @@ section,
   border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
 }
 
-.portfolio .portfolio-wrapper:hover {
+.game-gallery .game-wrapper:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 40px color-mix(in srgb, var(--default-color), transparent 85%);
   border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
 }
 
-.portfolio .portfolio-wrapper:hover .portfolio-image img {
+.game-gallery .game-wrapper:hover .game-image img {
   transform: scale(1.05);
 }
 
-.portfolio .portfolio-wrapper:hover .portfolio-image .portfolio-hover {
+.game-gallery .game-wrapper:hover .game-image .game-hover {
   opacity: 1;
   visibility: visible;
 }
 
-.portfolio .portfolio-wrapper .portfolio-image {
+.game-gallery .game-wrapper .game-image {
   position: relative;
   overflow: hidden;
   height: 400px;
 }
 
-.portfolio .portfolio-wrapper .portfolio-image img {
+.game-gallery .game-wrapper .game-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.portfolio .portfolio-wrapper .portfolio-image .portfolio-hover {
+.game-gallery .game-wrapper .game-image .game-hover {
   position: absolute;
   top: 0;
   left: 0;
@@ -1488,12 +1488,12 @@ section,
   backdrop-filter: blur(2px);
 }
 
-.portfolio .portfolio-wrapper .portfolio-image .portfolio-hover .portfolio-actions {
+.game-gallery .game-wrapper .game-image .game-hover .game-actions {
   display: flex;
   gap: 15px;
 }
 
-.portfolio .portfolio-wrapper .portfolio-image .portfolio-hover .portfolio-actions .action-btn {
+.game-gallery .game-wrapper .game-image .game-hover .game-actions .action-btn {
   width: 50px;
   height: 50px;
   background-color: var(--surface-color);
@@ -1507,25 +1507,25 @@ section,
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.portfolio .portfolio-wrapper .portfolio-image .portfolio-hover .portfolio-actions .action-btn:hover {
+.game-gallery .game-wrapper .game-image .game-hover .game-actions .action-btn:hover {
   background-color: var(--accent-color);
   color: var(--contrast-color);
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.portfolio .portfolio-wrapper .portfolio-content {
+.game-gallery .game-wrapper .game-content {
   padding: 25px;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-meta {
+.game-gallery .game-wrapper .game-content .game-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-meta .project-type {
+.game-gallery .game-wrapper .game-content .game-meta .game-type {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1536,7 +1536,7 @@ section,
   border-radius: 20px;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-meta .project-rating {
+.game-gallery .game-wrapper .game-content .game-meta .game-rating {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1545,11 +1545,11 @@ section,
   color: #fbbf24;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-meta .project-rating i {
+.game-gallery .game-wrapper .game-content .game-meta .game-rating i {
   font-size: 0.8rem;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content h3 {
+.game-gallery .game-wrapper .game-content h3 {
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 10px;
@@ -1557,20 +1557,20 @@ section,
   line-height: 1.3;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content p {
+.game-gallery .game-wrapper .game-content p {
   font-size: 0.875rem;
   color: color-mix(in srgb, var(--default-color), transparent 30%);
   margin-bottom: 20px;
   line-height: 1.5;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-tech {
+.game-gallery .game-wrapper .game-content .game-type-bundle {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-tech .tech-badge {
+.game-gallery .game-wrapper .game-content .game-type-bundle .category-badge {
   font-size: 0.75rem;
   font-weight: 500;
   padding: 6px 12px;
@@ -1581,13 +1581,13 @@ section,
   transition: all 0.3s ease;
 }
 
-.portfolio .portfolio-wrapper .portfolio-content .portfolio-tech .tech-badge:hover {
+.game-gallery .game-wrapper .game-content .game-type-bundle .category-badge:hover {
   background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
   color: var(--accent-color);
   border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
 }
 
-.portfolio .portfolio-cta {
+.game-gallery .game-cta {
   margin-top: 60px;
   padding: 40px 30px;
   background: linear-gradient(135deg, var(--surface-color), color-mix(in srgb, var(--surface-color), var(--accent-color) 5%));
@@ -1595,27 +1595,27 @@ section,
   border: 1px solid color-mix(in srgb, var(--accent-color), transparent 90%);
 }
 
-.portfolio .portfolio-cta h4 {
+.game-gallery .game-cta h4 {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 10px;
   color: var(--heading-color);
 }
 
-.portfolio .portfolio-cta p {
+.game-gallery .game-cta p {
   font-size: 1rem;
   color: color-mix(in srgb, var(--default-color), transparent 30%);
   margin-bottom: 30px;
 }
 
-.portfolio .portfolio-cta .cta-buttons {
+.game-gallery .game-cta .cta-buttons {
   display: flex;
   justify-content: center;
   gap: 15px;
   flex-wrap: wrap;
 }
 
-.portfolio .portfolio-cta .cta-buttons .btn {
+.game-gallery .game-cta .cta-buttons .btn {
   padding: 14px 28px;
   font-weight: 600;
   border-radius: 12px;
@@ -1624,25 +1624,25 @@ section,
   text-decoration: none;
 }
 
-.portfolio .portfolio-cta .cta-buttons .btn.btn-primary {
+.game-gallery .game-cta .cta-buttons .btn.btn-primary {
   background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #4338ca 20%));
   color: var(--contrast-color);
   border: none;
   box-shadow: 0 4px 15px color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 
-.portfolio .portfolio-cta .cta-buttons .btn.btn-primary:hover {
+.game-gallery .game-cta .cta-buttons .btn.btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px color-mix(in srgb, var(--accent-color), transparent 60%);
 }
 
-.portfolio .portfolio-cta .cta-buttons .btn.btn-outline {
+.game-gallery .game-cta .cta-buttons .btn.btn-outline {
   background-color: transparent;
   color: var(--accent-color);
   border: 2px solid var(--accent-color);
 }
 
-.portfolio .portfolio-cta .cta-buttons .btn.btn-outline:hover {
+.game-gallery .game-cta .cta-buttons .btn.btn-outline:hover {
   background-color: var(--accent-color);
   color: var(--contrast-color);
   transform: translateY(-2px);
@@ -2923,37 +2923,37 @@ section,
 /*--------------------------------------------------------------
 # Portfolio Details Section
 --------------------------------------------------------------*/
-.portfolio-details {
+.game-gallery-details {
   --section-spacing: 2.5rem;
 }
 
-.portfolio-details .portfolio-details-media {
+.game-gallery-details .game-gallery-details-media {
   position: relative;
 }
 
-.portfolio-details .portfolio-details-media .main-image {
+.game-gallery-details .game-gallery-details-media .main-image {
   margin-bottom: 1rem;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider {
   position: relative;
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-wrapper {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-wrapper {
   height: auto !important;
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-slide img {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-slide img {
   aspect-ratio: 3/2;
   object-fit: cover;
   width: 100%;
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-next,
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-prev {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-next,
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-prev {
   background-color: var(--contrast-color);
   width: 40px;
   height: 40px;
@@ -2961,24 +2961,24 @@ section,
   transition: all 0.3s ease;
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-next:after,
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-prev:after {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-next:after,
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-prev:after {
   font-size: 16px;
   color: var(--accent-color);
   font-weight: bold;
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-next:hover,
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-prev:hover {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-next:hover,
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-prev:hover {
   background-color: var(--accent-color);
 }
 
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-next:hover:after,
-.portfolio-details .portfolio-details-media .main-image .portfolio-details-slider .swiper-button-prev:hover:after {
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-next:hover:after,
+.game-gallery-details .game-gallery-details-media .main-image .game-gallery-details-slider .swiper-button-prev:hover:after {
   color: var(--contrast-color);
 }
 
-.portfolio-details .portfolio-details-media .thumbnail-grid img {
+.game-gallery-details .game-gallery-details-media .thumbnail-grid img {
   height: 80px;
   object-fit: cover;
   border-radius: 8px;
@@ -2987,19 +2987,19 @@ section,
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.portfolio-details .portfolio-details-media .thumbnail-grid img:hover {
+.game-gallery-details .game-gallery-details-media .thumbnail-grid img:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-.portfolio-details .portfolio-details-media .tech-stack-badges {
+.game-gallery-details .game-gallery-details-media .tech-stack-badges {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 1.5rem;
 }
 
-.portfolio-details .portfolio-details-media .tech-stack-badges span {
+.game-gallery-details .game-gallery-details-media .tech-stack-badges span {
   display: inline-block;
   padding: 6px 12px;
   font-size: 13px;
@@ -3010,26 +3010,26 @@ section,
   transition: all 0.3s ease;
 }
 
-.portfolio-details .portfolio-details-media .tech-stack-badges span:hover {
+.game-gallery-details .game-gallery-details-media .tech-stack-badges span:hover {
   background-color: color-mix(in srgb, var(--heading-color), transparent 70%);
   transform: translateY(-2px);
 }
 
-.portfolio-details .portfolio-details-content {
+.game-gallery-details .game-gallery-details-content {
   padding: 0 0 0 2rem;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.portfolio-details .portfolio-details-content .project-meta {
+.game-gallery-details .game-gallery-details-content .project-meta {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   margin-bottom: 1.5rem;
 }
 
-.portfolio-details .portfolio-details-content .project-meta .badge-wrapper .project-badge {
+.game-gallery-details .game-gallery-details-content .project-meta .badge-wrapper .project-badge {
   display: inline-block;
   padding: 8px 16px;
   background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
@@ -3039,24 +3039,24 @@ section,
   font-size: 14px;
 }
 
-.portfolio-details .portfolio-details-content .project-meta .date-client {
+.game-gallery-details .game-gallery-details-content .project-meta .date-client {
   display: flex;
   gap: 1.5rem;
 }
 
-.portfolio-details .portfolio-details-content .project-meta .date-client .meta-item {
+.game-gallery-details .game-gallery-details-content .project-meta .date-client .meta-item {
   display: flex;
   align-items: center;
   font-size: 14px;
   color: color-mix(in srgb, var(--default-color), transparent 30%);
 }
 
-.portfolio-details .portfolio-details-content .project-meta .date-client .meta-item i {
+.game-gallery-details .game-gallery-details-content .project-meta .date-client .meta-item i {
   margin-right: 6px;
   color: var(--accent-color);
 }
 
-.portfolio-details .portfolio-details-content .project-title {
+.game-gallery-details .game-gallery-details-content .project-title {
   font-size: 2.2rem;
   margin-bottom: 1rem;
   font-weight: 700;
@@ -3064,45 +3064,45 @@ section,
   color: var(--heading-color);
 }
 
-.portfolio-details .portfolio-details-content .project-website {
+.game-gallery-details .game-gallery-details-content .project-website {
   display: flex;
   align-items: center;
   margin-bottom: 1.5rem;
 }
 
-.portfolio-details .portfolio-details-content .project-website i {
+.game-gallery-details .game-gallery-details-content .project-website i {
   font-size: 22px;
   color: var(--accent-color);
   margin-right: 8px;
 }
 
-.portfolio-details .portfolio-details-content .project-website a {
+.game-gallery-details .game-gallery-details-content .project-website a {
   font-weight: 500;
   transition: all 0.3s;
 }
 
-.portfolio-details .portfolio-details-content .project-website a:hover {
+.game-gallery-details .game-gallery-details-content .project-website a:hover {
   letter-spacing: 0.5px;
 }
 
-.portfolio-details .portfolio-details-content .project-overview {
+.game-gallery-details .game-gallery-details-content .project-overview {
   margin-bottom: var(--section-spacing);
 }
 
-.portfolio-details .portfolio-details-content .project-overview .lead {
+.game-gallery-details .game-gallery-details-content .project-overview .lead {
   font-size: 1.1rem;
   line-height: 1.7;
   color: color-mix(in srgb, var(--default-color), transparent 15%);
   margin-bottom: 1.5rem;
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item {
   border: none;
   background: none;
   margin-bottom: 10px;
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button {
   padding: 1rem;
   font-weight: 600;
   font-size: 1rem;
@@ -3112,7 +3112,7 @@ section,
   box-shadow: none;
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button:not(.collapsed) {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button:not(.collapsed) {
   background-color: var(--surface-color);
   color: var(--accent-color);
   border-bottom-left-radius: 0 !important;
@@ -3120,56 +3120,56 @@ section,
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button:not(.collapsed) i {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button:not(.collapsed) i {
   color: var(--accent-color);
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button::after {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button::after {
   background-size: 14px;
   width: 14px;
   height: 14px;
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button i {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button i {
   font-size: 1.1rem;
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-body {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-body {
   padding: 1rem;
   background-color: var(--surface-color);
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
 }
 
-.portfolio-details .portfolio-details-content .project-overview .project-accordion .accordion-item .accordion-body p {
+.game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-body p {
   margin-bottom: 0;
   color: color-mix(in srgb, var(--default-color), transparent 25%);
   line-height: 1.6;
 }
 
-.portfolio-details .portfolio-details-content .project-features {
+.game-gallery-details .game-gallery-details-content .project-features {
   margin-bottom: var(--section-spacing);
 }
 
-.portfolio-details .portfolio-details-content .project-features h3 {
+.game-gallery-details .game-gallery-details-content .project-features h3 {
   display: flex;
   align-items: center;
   font-size: 1.25rem;
   margin-bottom: 1.2rem;
 }
 
-.portfolio-details .portfolio-details-content .project-features h3 i {
+.game-gallery-details .game-gallery-details-content .project-features h3 i {
   margin-right: 10px;
   color: var(--accent-color);
   font-size: 1.1em;
 }
 
-.portfolio-details .portfolio-details-content .project-features .feature-list {
+.game-gallery-details .game-gallery-details-content .project-features .feature-list {
   list-style: none;
   padding-left: 0;
 }
 
-.portfolio-details .portfolio-details-content .project-features .feature-list li {
+.game-gallery-details .game-gallery-details-content .project-features .feature-list li {
   display: flex;
   align-items: center;
   padding: 8px 0;
@@ -3177,20 +3177,20 @@ section,
   color: color-mix(in srgb, var(--default-color), transparent 15%);
 }
 
-.portfolio-details .portfolio-details-content .project-features .feature-list li i {
+.game-gallery-details .game-gallery-details-content .project-features .feature-list li i {
   color: var(--accent-color);
   margin-right: 10px;
   font-size: 1.1em;
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons {
+.game-gallery-details .game-gallery-details-content .cta-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: auto;
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons .btn-view-project {
+.game-gallery-details .game-gallery-details-content .cta-buttons .btn-view-project {
   padding: 12px 28px;
   background-color: var(--accent-color);
   color: var(--contrast-color);
@@ -3199,13 +3199,13 @@ section,
   transition: all 0.3s ease;
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons .btn-view-project:hover {
+.game-gallery-details .game-gallery-details-content .cta-buttons .btn-view-project:hover {
   background-color: color-mix(in srgb, var(--accent-color), black 15%);
   transform: translateY(-3px);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons .btn-next-project {
+.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project {
   padding: 12px 28px;
   background-color: color-mix(in srgb, var(--heading-color), transparent 90%);
   color: var(--heading-color);
@@ -3217,51 +3217,51 @@ section,
   gap: 8px;
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons .btn-next-project i {
+.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project i {
   transition: transform 0.3s ease;
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons .btn-next-project:hover {
+.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project:hover {
   background-color: color-mix(in srgb, var(--heading-color), transparent 80%);
 }
 
-.portfolio-details .portfolio-details-content .cta-buttons .btn-next-project:hover i {
+.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project:hover i {
   transform: translateX(3px);
 }
 
 @media (max-width: 1199.98px) {
-  .portfolio-details .portfolio-details-content {
+  .game-gallery-details .game-gallery-details-content {
     padding-left: 1rem;
   }
 }
 
 @media (max-width: 991.98px) {
-  .portfolio-details .portfolio-details-content {
+  .game-gallery-details .game-gallery-details-content {
     padding: 2rem 0 0 0;
   }
 
-  .portfolio-details .portfolio-details-content .cta-buttons {
+  .game-gallery-details .game-gallery-details-content .cta-buttons {
     margin-top: 2rem;
   }
 }
 
 @media (max-width: 767.98px) {
-  .portfolio-details .project-meta {
+  .game-gallery-details .project-meta {
     flex-direction: column;
     gap: 1rem;
   }
 
-  .portfolio-details .project-meta .date-client {
+  .game-gallery-details .project-meta .date-client {
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .portfolio-details .cta-buttons {
+  .game-gallery-details .cta-buttons {
     flex-direction: column;
     width: 100%;
   }
 
-  .portfolio-details .cta-buttons a {
+  .game-gallery-details .cta-buttons a {
     width: 100%;
     text-align: center;
   }
