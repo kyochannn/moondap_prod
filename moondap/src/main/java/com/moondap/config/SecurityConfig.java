@@ -22,7 +22,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((auth) -> auth
         	.requestMatchers("/", "/loginView", "/joinView", "/joinSelectView", "/joinProc", "/joinCompleteView", "/joinViewAfterError", "/assets/**").permitAll()
-        	.requestMatchers("/checkUsername", "/checkNickname").permitAll()
+        	.requestMatchers("/checkUsername", "/checkNickname", "/checkAdminKey").permitAll()
         	.requestMatchers("/uploads/**").permitAll()
         	.requestMatchers("/balanceGame/**").permitAll()
         	.requestMatchers("/profile/**").permitAll()

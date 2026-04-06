@@ -26,8 +26,76 @@
             });
             
             // 실시간 비밀번호 체크 바인딩
+            $('#password').on('input', checkPasswordValidity);
             $('#password, #passwordConfirm').on('input', checkPasswordMatch);
+
+            // 실시간 이메일 체크 바인딩
+            $('#emailId, #emailDomain').on('input', checkEmailValidity);
+
+            // 이메일 초기화 (기존 데이터가 있는 경우)
+            /*<![CDATA[*/
+            let savedEmail = /*[[${user?.email}]]*/ "";
+            if (savedEmail && savedEmail.indexOf('@') !== -1) {
+                let parts = savedEmail.split('@');
+                $('#emailId').val(parts[0]);
+                $('#emailDomain').val(parts[1]);
+                
+                let found = false;
+                $('#domainSelect option').each(function() {
+                    if ($(this).val() === parts[1]) {
+                        $('#domainSelect').val(parts[1]);
+                        $('#emailDomain').prop("readonly", true);
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    $('#domainSelect').val("");
+                    $('#emailDomain').prop("readonly", false);
+                }
+            }
+            // 상태 복구 로직 (에러로 인해 다시 돌아왔을 때 기존 체크 상태 유지)
+            /*<![CDATA[*/
+            const restoredUsername = /*[[${user?.username}]]*/ "";
+            const restoredNickname = /*[[${user?.nickname}]]*/ "";
+            const restoredAdminKey = /*[[${user?.adminKey}]]*/ "";
+            
+            if (restoredUsername) {
+                isUsernameChecked = true;
+                checkedUsername = restoredUsername;
+                $('#usernameCheckMsg').text("  이미 확인되었습니다.").css("color", "#28a745");
+            }
+            if (restoredNickname) {
+                isNicknameChecked = true;
+                checkedNickname = restoredNickname;
+                $('#nicknameCheckMsg').text("  이미 확인되었습니다.").css("color", "#28a745");
+            }
+            if (restoredAdminKey) {
+                isAdminKeyChecked = true;
+                checkedAdminKey = restoredAdminKey;
+                $('#adminKeyCheckMsg').text("  이미 인증되었습니다.").css("color", "#28a745");
+            }
+            /*]]>*/
         });
+
+        // 비밀번호 유효성 검사 실시간 확인
+        function checkPasswordValidity() {
+            const password = $('#password').val();
+            const $msg = $('#passwordRuleMessage');
+            
+            // 영문, 숫자, 특수문자 포함 8~20자
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
+
+            if (password === "") {
+                $msg.text("");
+                return;
+            }
+
+            if (passwordRegex.test(password)) {
+                $msg.text("  안전한 비밀번호입니다.").css("color", "#28a745");
+            } else {
+                $msg.text("  8~20자 영문, 숫자, 특수문자를 포함해야 합니다.").css("color", "#ff4d4d");
+            }
+        }
 
         // 중복 확인 상태 관리
         let isUsernameChecked = false;
@@ -52,6 +120,44 @@
             isAdminKeyChecked = false;
             checkedAdminKey = "";
             $('#adminKeyCheckMsg').text("");
+        }
+
+        // 이메일 도메인 선택 변경 시
+        function changeDomain() {
+            const domainSelect = $('#domainSelect').val();
+            const $emailDomain = $('#emailDomain');
+            
+            if (domainSelect === "") {
+                $emailDomain.val("").prop("readonly", false).focus();
+            } else {
+                $emailDomain.val(domainSelect).prop("readonly", true);
+            }
+            checkEmailValidity(); // 도메인 변경 시에도 유효성 즉시 확인
+        }
+
+        // 이메일 유효성 실시간 확인
+        function checkEmailValidity() {
+            const emailId = $('#emailId').val().trim();
+            const emailDomain = $('#emailDomain').val().trim();
+            const $msg = $('#emailCheckMsg');
+
+            if (emailId === "" && emailDomain === "") {
+                $msg.text("");
+                return;
+            }
+
+            if (emailId !== "" && emailDomain !== "") {
+                const email = emailId + "@" + emailDomain;
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                
+                if (emailRegex.test(email)) {
+                    $msg.text("  올바른 이메일 형식입니다.").css("color", "#28a745");
+                } else {
+                    $msg.text("  이메일 형식이 올바르지 않습니다.").css("color", "#ff4d4d");
+                }
+            } else {
+                $msg.text("  이메일 주소를 완성해주세요.").css("color", "#ffc107"); // 주황색 (진행 중)
+            }
         }
 
         // 비밀번호 실시간 일치 확인 (3번 보완)
@@ -153,7 +259,7 @@
                         // alert("인증되었습니다."); // 알럿 대신 시각적 표시
                         isAdminKeyChecked = true;
                         checkedAdminKey = adminKey;
-                        $('#adminKeyCheckMsg').text("  인증되었습니다.").css("color", "#28a745");
+                        $('#adminKeyCheckMsg').text("  코드가 인증되었습니다.").css("color", "#28a745");
                     } else {
                         alert("인증 코드가 올바르지 않습니다.");
                         isAdminKeyChecked = false;
@@ -206,6 +312,14 @@
                 return;
             }
 
+            // 비밀번호 유효성 검사 (영문, 숫자, 특수문자 포함 8~20자)
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
+            if (!passwordRegex.test(password)) {
+                alert("비밀번호는 영문, 숫자, 특수문자를 포함한 8~20자여야 합니다.");
+                $('#password').focus();
+                return;
+            }
+
             if (password !== passwordConfirm) {
                 alert("비밀번호가 일치하지 않습니다.");
                 $('#passwordConfirm').focus();
@@ -239,15 +353,29 @@
             }
 
             // 이메일 유효성 검사 (입력이 있는 경우에만 체크)
-            let email = $('#email').val().trim();
-            if (email !== "") {
+            let emailId = $('#emailId').val().trim();
+            let emailDomain = $('#emailDomain').val().trim();
+            let email = "";
+
+            if (emailId !== "" || emailDomain !== "") {
+                if (emailId === "" || emailDomain === "") {
+                    alert("이메일 주소를 완성해주세요.");
+                    if (emailId === "") $('#emailId').focus();
+                    else $('#emailDomain').focus();
+                    return;
+                }
+                
+                email = emailId + "@" + emailDomain;
                 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
                 if (!emailRegex.test(email)) {
                     alert("올바른 이메일 형식이 아닙니다.");
-                    $('#email').focus();
+                    $('#emailId').focus();
                     return;
                 }
             }
+            
+            // 결합된 이메일을 hidden 필드에 설정
+            $('#email').val(email);
 
             // 폼 데이터 전송
             document.joinForm.submit();
@@ -333,6 +461,7 @@
                                         <!-- Password -->
                                         <p class="text-start ms-2 text-primary small mb-2">
                                             <i class="bi bi-key-fill"></i> 비밀번호 (필수)
+                                            <span id="passwordRuleMessage" class="ms-2 fw-bold" style="font-size: 0.75rem;"></span>
                                         </p>
                                         <input type="password" id="password" name="password" 
                                                class="form-control bord-radius-20 text-light py-2 mb-4" 
@@ -365,11 +494,29 @@
                                         <!-- Email -->
                                         <p class="text-start ms-2 text-primary small mb-2">
                                             <i class="bi bi-envelope-fill"></i> 이메일 (선택)
+                                            <span id="emailCheckMsg" class="ms-2 fw-bold" style="font-size: 0.75rem;"></span>
                                         </p>
-                                        <input type="email" id="email" name="email" 
-                                               class="form-control bord-radius-20 text-light py-2 mb-4" 
-                                               style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
-                                               placeholder="abc@example.com" th:value="${user?.email}">
+                                        <div class="input-group mb-4">
+                                            <input type="text" id="emailId" class="form-control text-light py-2" 
+                                                   style="background: rgba(255,255,255,0.05); border: 1px solid #333447; border-top-left-radius: 20px; border-bottom-left-radius: 20px;" 
+                                                   placeholder="이메일 아이디">
+                                            <span class="input-group-text text-light" style="background: rgba(255,255,255,0.05); border: 1px solid #333447; border-left: none; border-right: none;">@</span>
+                                            <input type="text" id="emailDomain" class="form-control text-light py-2" 
+                                                   style="background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
+                                                   placeholder="도메인">
+                                            <select id="domainSelect" class="form-select text-light py-2" 
+                                                    style="background: #1a1c2e; border: 1px solid #333447; border-top-right-radius: 20px; border-bottom-right-radius: 20px; cursor: pointer; color: #fff; flex: 0 0 30%;"
+                                                    onchange="changeDomain()">
+                                                <option value="">직접 입력</option>
+                                                <option value="naver.com">naver.com</option>
+                                                <option value="gmail.com">gmail.com</option>
+                                                <option value="daum.net">daum.net</option>
+                                                <option value="hanmail.net">hanmail.net</option>
+                                                <option value="kakao.com">kakao.com</option>
+                                            </select>
+                                        </div>
+
+                                        <input type="hidden" name="email" id="email">
                                         <!-- Bio -->
                                         <!--
                                             <p class="text-start ms-2 text-primary small mb-2">

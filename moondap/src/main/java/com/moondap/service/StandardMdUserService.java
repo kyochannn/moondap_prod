@@ -58,8 +58,24 @@ public class StandardMdUserService {
 		}
 		
 		String rawPassword = user.getPassword();
+		
+		// 3. 비밀번호 유효성 최종 검사 (영문, 숫자, 특수문자 포함 8~20자)
+		String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$";
+		if (rawPassword == null || !rawPassword.matches(passwordRegex)) {
+			throw new RuntimeException("비밀번호는 영문, 숫자, 특수문자를 포함한 8~20자여야 합니다.");
+		}
+		
 		String encPassword = bCryptPasswordEncoder.encode(rawPassword);
 		user.setPassword(encPassword);
+		
+		// 4. 이메일 유효성 검사 (입력된 경우에만)
+		String email = user.getEmail();
+		if (email != null && !email.isEmpty()) {
+			String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+			if (!email.matches(emailRegex)) {
+				throw new RuntimeException("올바른 이메일 형식이 아닙니다.");
+			}
+		}
 		
 		// 전달받은 권한이 없으면 기본값 ROLE_USER 설정
 		if (user.getRole() == null || user.getRole().isEmpty()) {

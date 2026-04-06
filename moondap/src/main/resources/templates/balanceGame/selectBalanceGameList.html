@@ -21,23 +21,23 @@
 			localStorage.setItem('moondap_balancegame_category', listCategory);
 			localStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
 
-			console.log("리스트 최초 카테고리: ", listCategory);
-			console.log("리스트 최초 매운맛 필터: ", listSpicyFilter);
+			// console.log("리스트 최초 카테고리: ", listCategory);
+			// console.log("리스트 최초 매운맛 필터: ", listSpicyFilter);
 
 			$('#category').on('change', function () {
 				searchBalanceGameList();
 				listCategory = $('#category').val();
 				localStorage.setItem('moondap_balancegame_category', listCategory);
-				console.log("리스트 선택된 카테고리: ", listCategory);
-				console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
+				// console.log("리스트 선택된 카테고리: ", listCategory);
+				// console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
 			});
 
 			$('#spicyFilter').on('change', function () {
 				searchBalanceGameList();
 				listSpicyFilter = $('#spicyFilter').is(':checked') ? 1 : 0;
 				localStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
-				console.log("리스트 선택된 카테고리: ", listCategory);
-				console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
+				// console.log("리스트 선택된 카테고리: ", listCategory);
+				// console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
 			});
 
 		});

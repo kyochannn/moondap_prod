@@ -175,7 +175,11 @@ public class StandardBalanceGameService implements BalanceGameService {
     	// 금칙어 체크
     	if (ProfanityUtil.containsProfanity(nickname) || ProfanityUtil.containsProfanity(content)) {
     		throw new RuntimeException("금칙어가 포함된 내용을 입력할 수 없습니다.");
-			
+    	}
+    	
+    	// 글자 수 체크 (50자 제한)
+    	if (content.length() > 50) {
+    		throw new RuntimeException("댓글은 50자 이내로 입력 가능합니다.");
     	}
     	
     	if (flag) {    		
