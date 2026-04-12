@@ -101,9 +101,9 @@ public class BalanceGameController {
 	 */
 	@GetMapping("/selectBalanceGameView")
 	public String selectBalanceGameView(
-			@RequestParam(required = false) String id,
-			@RequestParam(required = false) String spicyFilter,
-			@RequestParam(required = false) String category,
+			@RequestParam(value = "id", required = false) String id,
+			@RequestParam(value = "spicyFilter", required = false) String spicyFilter,
+			@RequestParam(value = "category", required = false) String category,
 			HttpServletRequest request,
 			Model model) throws Exception {
 
@@ -270,7 +270,7 @@ public class BalanceGameController {
 	@PostMapping("/insertBalanceGame")
 	@ResponseBody
 	public Map<String, Object> insertBalanceGame(@RequestParam Map<String, String> params,
-			@RequestParam MultipartFile option1Image, @RequestParam MultipartFile option2Image) {
+			@RequestParam("option1Image") MultipartFile option1Image, @RequestParam("option2Image") MultipartFile option2Image) {
 
 		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
@@ -302,7 +302,7 @@ public class BalanceGameController {
 	 * @return
 	 */
 	@GetMapping("/updateBalanceGameView")
-	public String updateBalanceGameView(@RequestParam String id, Model model) throws Exception {
+	public String updateBalanceGameView(@RequestParam("id") String id, Model model) throws Exception {
 		System.out.println("updateBalanceGameView ID :::::::::::" + id);
 		BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
 		// 데이터가 없는 경우(null) 처리
@@ -325,8 +325,8 @@ public class BalanceGameController {
 	@PostMapping("/updateBalanceGame")
 	@ResponseBody
 	public Map<String, Object> updateBalanceGame(@RequestParam Map<String, String> params,
-			@RequestParam(required = false) MultipartFile option1Image,
-			@RequestParam(required = false) MultipartFile option2Image) {
+			@RequestParam(value = "option1Image", required = false) MultipartFile option1Image,
+			@RequestParam(value = "option2Image", required = false) MultipartFile option2Image) {
 		System.out.println("updateBalanceGame controller :::::::::::");
 
 		String flag = "success";
@@ -369,12 +369,10 @@ public class BalanceGameController {
 
 		try {
 			String balanceGameId = balanceGameService.deleteBalanceGame(params);
-			String balanceGameCommentId = balanceGameService.deleteBalanceGameComment(params.get("id"));
 
-			System.out.println("balanceGame: " + balanceGameId +
-					", balanceGameCommentId: " + balanceGameCommentId);
+			System.out.println("balanceGame: " + balanceGameId);
 
-			if (CommonUtil.isNotNull(balanceGameId) && CommonUtil.isNotNull(balanceGameCommentId)) {
+			if (CommonUtil.isNotNull(balanceGameId)) {
 				rtnMap.put("balanceGameId", balanceGameId);
 			} else {
 				flag = "fail";

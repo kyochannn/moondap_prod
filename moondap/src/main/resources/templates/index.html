@@ -64,7 +64,8 @@
             </div>
 
             <div class="col-xl-4 col-lg-6 game-item filter-unisex">
-              <a href="https://kckoo.co.kr" class="text-decoration-none d-block">
+              <a href="/egenTeto/selectEgenTetoGame" class="text-decoration-none d-block">
+
                 <div class="game-wrapper">
                   <div class="game-image">
                     <img src="assets/img/testList/img3.png" alt="에겐테토 테스트 썸네일" class="img-fluid" loading="lazy">
@@ -74,7 +75,7 @@
                       <span class="game-type">남녀 공통</span>
                       <div class="game-rating">
                         <i class="bi bi-eye-fill"></i>
-                        <span>260,000</span>
+                        <span th:text="${#numbers.formatInteger(egenTetoTotalCount, 0, 'COMMA')}">0</span>
                       </div>
                     </div>
                     <h3>에겐/테토 테스트</h3>

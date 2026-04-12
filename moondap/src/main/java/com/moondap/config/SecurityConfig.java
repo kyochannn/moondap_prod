@@ -25,6 +25,7 @@ public class SecurityConfig {
         	.requestMatchers("/checkUsername", "/checkNickname", "/checkAdminKey").permitAll()
         	.requestMatchers("/uploads/**").permitAll()
         	.requestMatchers("/balanceGame/**").permitAll()
+            .requestMatchers("/egenTeto/**").permitAll()
         	.requestMatchers("/profile/**").permitAll()
         	.requestMatchers("/.well-known/**").permitAll()
             .requestMatchers("/admin").hasRole("ADMIN")

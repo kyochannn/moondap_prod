@@ -1,0 +1,216 @@
+/* 에겐/테토 질문 페이지 전용 스타일 */
+
+.wizard-container, .gender-selection-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    min-height: 500px;
+}
+
+/* 프로그레스 바 */
+.test-progress {
+    height: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    margin-bottom: 40px;
+    overflow: hidden;
+}
+
+.test-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3876f2, #de66e9);
+    width: 0%;
+    transition: width 0.4s ease;
+}
+
+/* 질문 섹션 관리 */
+.question-item {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.question-item.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.question-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    line-height: 1.4;
+    word-break: keep-all;
+}
+
+/* 옵션 버튼 스타일 */
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.option-btn {
+    background-color: var(--surface-color);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.option-btn:hover {
+    background-color: rgba(56, 118, 242, 0.1);
+    border-color: #3876f2;
+}
+
+.option-btn.selected {
+    background-color: rgba(56, 118, 242, 0.2);
+    border-color: #3876f2;
+    font-weight: 600;
+}
+
+.option-btn i {
+    font-size: 1.4rem;
+    color: #3876f2;
+}
+
+/* 미응답 하이라이트 */
+.highlight-missing {
+    animation: shake 0.5s ease-in-out;
+    border-color: #ff4d4d !important;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* 로딩 오버레이 */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3876f2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 성별 선택 카드 */
+.gender-card {
+    background: var(--surface-color);
+    border: 3px solid transparent;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.gender-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.gender-card.male:hover {
+    border-color: #3876f2;
+    background: rgba(56, 118, 242, 0.05);
+}
+
+.gender-card.female:hover {
+    border-color: #de66e9;
+    background: rgba(222, 102, 233, 0.05);
+}
+
+.gender-card .icon-box {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.gender-card.male .icon-box { color: #3876f2; }
+.gender-card.female .icon-box { color: #de66e9; }
+
+.gender-card h3 {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.gender-card p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.gender-card .select-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.gender-card:hover .select-badge {
+    opacity: 1;
+}
+
+/* 모바일 대응 */
+@media (max-width: 576px) {
+    .wizard-container, .gender-selection-container {
+        margin: 20px auto;
+        padding: 15px;
+    }
+    .question-title {
+        font-size: 1.25rem;
+    }
+    .option-btn {
+        padding: 15px;
+        font-size: 1rem;
+    }
+    .gender-card {
+        padding: 15px;
+        margin-bottom: 0;
+    }
+    .gender-card .icon-box {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    .gender-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    .gender-card p {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+}
+

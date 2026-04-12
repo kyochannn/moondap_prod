@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moondap.mapper.EgenTetoMapper">
+
+    <!-- 테스트 결과 삽입 -->
+    <insert id="insertTestResult" parameterType="com.moondap.dto.EgenTetoDTO">
+        INSERT INTO egen_teto_test_result (
+            userNo,
+            userName,
+            gender,
+            testResultType,
+            styleSelfcareResultType,
+            socialSkillResultType,
+            innerTendencyResultType,
+            ambitionResultType,
+            zScore,
+            topPercent,
+            tetoScore,
+            egenScore,
+            styleSelfcarePoint,
+            socialSkillPoint,
+            innerTendencyPoint,
+            ambitionPoint,
+            isTesterMyself
+        ) VALUES (
+            #{result.userNo},
+            #{result.userName},
+            #{result.gender},
+            #{result.testResultType},
+            #{result.styleSelfcareResultType},
+            #{result.socialSkillResultType},
+            #{result.innerTendencyResultType},
+            #{result.ambitionResultType},
+            #{result.zScore},
+            #{result.topPercent},
+            #{result.tetoScore},
+            #{result.egenScore},
+            #{result.styleSelfcarePoint},
+            #{result.socialSkillPoint},
+            #{result.innerTendencyPoint},
+            #{result.ambitionPoint},
+            #{result.isTesterMyself}
+        )
+    </insert>
+
+    <!-- 테스트 결과 조회 -->
+    <select id="selectTestResult" resultType="com.moondap.dto.EgenTetoDTO">
+        SELECT 
+            userNo,
+            userName,
+            gender,
+            testResultType,
+            styleSelfcareResultType,
+            socialSkillResultType,
+            innerTendencyResultType,
+            ambitionResultType,
+            zScore,
+            topPercent,
+            tetoScore,
+            egenScore,
+            styleSelfcarePoint,
+            socialSkillPoint,
+            innerTendencyPoint,
+            ambitionPoint,
+            isTesterMyself,
+            testDate
+        FROM egen_teto_test_result
+        WHERE userNo = #{userNo}
+    </select>
+
+    <!-- 전체 점수 통계 조회 -->
+    <select id="selectScoreStatistics" resultType="map">
+        SELECT 
+            IFNULL(AVG(tetoScore), 50.0) as avgScore,
+            IFNULL(STDDEV(tetoScore), 15.0) as stdDevScore,
+            COUNT(*) as totalCount
+        FROM egen_teto_test_result
+    </select>
+
+    <!-- 성별별 참여자 수 조회 -->
+    <select id="selectGenderCounts" resultType="map">
+        SELECT 
+            IFNULL(SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END), 0) as maleCount,
+            IFNULL(SUM(CASE WHEN gender = 'W' THEN 1 ELSE 0 END), 0) as femaleCount
+        FROM egen_teto_test_result
+    </select>
+
+</mapper>

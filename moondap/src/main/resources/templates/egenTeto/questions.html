@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>에겐/테토 테스트 - 질문</title>
+    <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <div class="wizard-container" data-aos="fade-up">
+            <!-- 프로그레스 바 -->
+            <div class="test-progress">
+                <div id="progressBar" class="test-progress-bar"></div>
+            </div>
+
+            <!-- 질문 노출 영역 -->
+            <div id="questionContainer">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">질문을 불러오고 있습니다...</p>
+                </div>
+            </div>
+
+            <!-- 하단 네비게이션 (필요 시) -->
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <button id="prevBtn" class="btn btn-outline-light rounded-pill px-4" style="display:none;">
+                    <i class="bi bi-arrow-left"></i> 이전
+                </button>
+                <div id="questionNumber" class="text-secondary fw-bold">1 / 24</div>
+            </div>
+
+        </div>
+
+        <!-- 결과 전송을 위한 Hidden Form -->
+        <form id="submitForm" th:action="@{/egenTeto/submit}" method="post">
+            <input type="hidden" name="gender" th:value="${gender}">
+            <input type="hidden" id="answersInput" name="answers">
+        </form>
+
+        <!-- 로딩 오버레이 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <h4>결율을 분석하고 있습니다...</h4>
+            <p>잠시만 기다려주세요.</p>
+        </div>
+    </main>
+
+    <!-- JS 로직 -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const gender = /*[[${gender}]]*/ 'M';
+
+        
+        // 질문 데이터 세트
+        const questionData = {
+            'M': [
+                "옷을 입을 때 다양한 스타일을 구현하기위해 노력하시나요?",
+                "스트레스받는 상황에서 감정에 휘둘리기보다 문제를 해결하기 위한 구체적인 방법을 찾는 데 집중하시나요?",
+                "모임에서 대화 주제가 정해지지 않으면 먼저 나서서 어떤 이야기를 할지 제안하거나 분위기를 이끌어가는 편이신가요?",
+                "인생에서 가장 중요하게 생각하는 성공은 사회적인 인정이나 경제적인 성취와 같이 눈에 보이는 결과인가요?",
+                "옷을 쇼핑을 할 때 무신사, 탑텐 등의 무난한 브랜드에서 자주 구매하시나요?",
+                "친구가 고민을 털어놓을 때, 해결책을 제시하기보다 친구의 감정에 깊이 공감하고 위로해 주는 것을 더 잘하시나요?",
+                "힘든 일이 있을 때 혼자 해결하기보다 친한 친구에게 속마음을 털어놓고 감정을 나누는 것을 선호하시나요?",
+                "새로운 도전을 할 때 성공 가능성보다 실패했을 때의 위험이나 불안감을 더 크게 느끼는 편이신가요?",
+                "목표를 정하면 어려운 상황에서도 포기하지 않고 끈기 있게 밀어붙여서 기어코 달성하려는 의지가 강하신가요?",
+                "자신의 외모나 스타일에 대해 누군가 칭찬해 주면 하루 종일 기분이 좋고 자신감이 더 생기시나요?",
+                "자신의 실수나 약점에 대해 비판을 들으면 감정적으로 상처받기보다 그 내용을 분석해서 배우려는 자세를 보이시나요?",
+                "여러 사람과의 관계에서 감정적인 문제보다 논리적인 사실 관계를 파악하는 것이 더 중요하다고 생각하시나요?",
+                "남들이 말하는 성공(좋은 직장, 고연봉, 명예 등)을 이뤄야 한다는 부담을 종종 느끼시나요?",
+                "새로운 사람들과 만나는 자리에서 상대방의 분위기를 먼저 살피고 편안하게 다가가기 위해 노력하는 편이신가요?",
+                "옷을 입을 때 힙한 코디보다는 베이직하고 깔끔한 코디를 선호하시나요?",
+                "친한 친구에게 서운한 점이 있다면 감정적으로 표현하기보다 왜 서운한지 구체적인 상황과 이유를 설명하며 대화하려 하시나요?",
+                "슬픈 영화를 보거나 감동적인 음악을 들으면 눈물이 나거나 감정적으로 크게 동요하는 편이신가요?",
+                "과거의 아쉬웠던 일이나 후회되는 감정에 오래 머물기보다 빠르게 털어내고 현실에 집중하는 편이신가요?",
+                "남들이 모르는 브랜드나 스타일을 탐색하는 것을 좋아하시나요?",
+                "다른 사람의 어려운 상황을 보면 마치 자신의 일처럼 가슴 아파하고 진심으로 안타까워하는 편이신가요?",
+                "경쟁 상황에 놓이면 반드시 이겨야 한다는 승부욕이 강하게 발동하는 편이신가요?",
+                "어려운 문제에 부딪혔을 때 혼자 해결하기보다 주변 사람들에게 도움을 요청하거나 함께 해결하는 것을 선호하시나요?",
+                "옷 쇼핑이 귀찮고 누가 대신 골라줬으면 좋겠다는 생각을 자주 하시나요?",
+                "단체 활동을 할 때, 모두가 조화롭게 어울리고 편안한 분위기를 만드는 것에 신경을 많이 쓰시나요?"
+            ],
+            'W': [
+                "친구나 주변 사람들의 스타일 변화를 보고 나도 한번 시도해 볼까 하는 생각이 자주 드시나요?",
+                "누군가에게 섭섭함을 느꼈을 때, 직접 이야기하기보다는 조용히 거리를 두시나요?",
+                "친구들과의 약속을 잡을 때, 가장 효율적인 시간과 장소를 제안하며 일정을 조율하는 역할을 주로 하시나요?",
+                "인생의 목표를 설정할 때, 자신의 커리어나 사회적인 지위 향상과 같은 개인적인 성취를 중요하게 생각하시나요?",
+                "소녀스럽거나 여성스러운 옷을 입기보다는 힙한 코디를 주로 하시나요?",
+                "누군가와 의견 충돌이 생겼을 때, 상대방의 기분이나 기분이 상하지 않도록 자신의 의견을 표현하는 것을 어려워하거나 망설이는 편이신가요?",
+                "기분이 안 좋을 때, 혼자 있기보다 누군가와 함께 시간을 보내거나 감정을 이야기하면서 위로받고 싶어 하시나요?",
+                "새로운 일을 시작할 때 안정성을 최우선으로 고려하고, 불확실하거나 위험한 도전은 망설이는 편이신가요?",
+                "자신의 일이나 목표를 위해 필요하다면 다른 사람과의 관계에서 발생하는 감정적인 부분은 잠시 제쳐둘 수 있나요?",
+                "미용실, 네일아트, 마사지샵, 명품관 등을 방문하는 것을 좋아하시나요?",
+                "속상하거나 화가 날 때, 누군가에게 조용히 털어놓는 대신 뒷담화를 통해 풀 때가 있나요?",
+                "인간관계에서 감정적인 문제보다 신뢰나 약속 같은 원칙을 더 중요하게 생각하시나요?",
+                "미래에 대해 생각할 때, 구체적인 성공 계획보다 행복하고 편안한 삶, 그리고 소중한 사람들과의 관계에 대한 그림을 더 많이 그리시나요?",
+                "주변 사람들의 기분이나 감정을 잘 파악하는 편이고, 그에 맞춰 자신의 태도를 조절하는 것이 익숙하신가요?",
+                "자신만의 확고한 스타일이 있어서 유행에 크게 흔들리지 않고 좋아하는 스타일을 고수하는 편이신가요?",
+                "친구들과의 대화에서 개인적인 감정이나 관계에 대한 깊은 이야기보다 관심 있는 정보나 분석에 대해 이야기하는 것을 더 즐기시나요?",
+                "주변 사람들의 작은 말이나 행동에도 쉽게 감정이 동요하고 영향을 받는 편이신가요?",
+                "주변 사람이 힘들어할 때 먼저 다가가 안아주거나 말을 걸어주는 따뜻한 면이 있나요?",
+                "원피스와 같은 소녀스럽고 여성스러운 옷을 좋아하시나요?",
+                "다른 사람과의 관계에서 발생하는 감정적인 문제들로 인해 힘들어하거나 스트레스를 받는 경우가 많으신가요?",
+                "자신의 능력이나 가능성에 대해 비교적 객관적이고 때로는 자신에게 엄격한 평가를 내리는 편이신가요?",
+                "목표를 향해 나아가는 과정에서 결과보다 함께 하는 사람들과의 관계나 감정적인 교류를 더 중요하게 생각하시나요?",
+                "외모에 대한 칭찬을 들었을 때, 쑥스러워하거나 크게 기뻐하기보다 담담하게 '감사합니다' 하고 넘어가는 편이신가요?",
+                "소중한 사람과의 관계 유지를 위해 자신의 일부를 희생하거나 양보하는 것에 대해 비교적 쉽게 결정하시나요?"
+            ]
+        };
+
+        const options = ["매우 그렇다", "그렇다", "그렇지 않다", "매우 그렇지 않다"];
+        const questions = questionData[gender];
+        let currentIndex = 0;
+        const userAnswers = [];
+
+        const container = document.getElementById("questionContainer");
+        const progressBar = document.getElementById("progressBar");
+        const qNumberSpan = document.getElementById("questionNumber");
+        const prevBtn = document.getElementById("prevBtn");
+
+        function renderQuestion(index) {
+            container.innerHTML = `
+                <div class="question-item active">
+                    <h4 class="question-title">Q${index + 1}. ${questions[index]}</h4>
+                    <div class="options-list">
+                        ${options.map((opt, i) => `
+                            <div class="option-btn" onclick="selectOption(${index}, '${opt}')">
+                                <i class="bi bi-circle"></i>
+                                <span>${opt}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // UI 상태 업데이트
+            const progress = ((index + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            qNumberSpan.innerText = `${index + 1} / ${questions.length}`;
+            prevBtn.style.display = 'block'; // 항상 노출
+        }
+
+        window.selectOption = function(qIdx, val) {
+            userAnswers[qIdx] = val;
+            
+            // 다음 질문으로 이동 (약간의 선택 지연 효과)
+            setTimeout(() => {
+                if (qIdx < questions.length - 1) {
+                    currentIndex++;
+                    renderQuestion(currentIndex);
+                } else {
+                    finishTest();
+                }
+            }, 300);
+        };
+
+        function finishTest() {
+            document.getElementById("loadingOverlay").style.display = 'flex';
+            document.getElementById("answersInput").value = JSON.stringify(userAnswers);
+            
+            setTimeout(() => {
+                document.getElementById("submitForm").submit();
+            }, 1500);
+        }
+
+        prevBtn.onclick = () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion(currentIndex);
+            } else {
+                // 1번 질문에서 이전 클릭 시 성별 선택으로 이동
+                if (confirm('성별 선택 화면으로 돌아가시겠습니까?')) {
+                    location.href = '/egenTeto/select';
+                }
+            }
+        };
+
+
+        // 브라우저 뒤로가기 시 로딩 오버레이 숨기기
+        window.onpageshow = function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                document.getElementById("loadingOverlay").style.display = 'none';
+            }
+        };
+
+
+        // 초기 시작
+        renderQuestion(currentIndex);
+        /*]]>*/
+    </script>
+</body>
+
+</html>

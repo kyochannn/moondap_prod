@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>에겐/테토 테스트 - 성별 선택</title>
+    <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container gender-selection-container" data-aos="fade-up">
+                <div class="section-title text-center mb-4">
+                    <h2 class="mb-2">성별 선택</h2>
+                    <p class="fs-5">정확한 분석을 위해 당신의 성별을 선택해 주세요.</p>
+                </div>
+
+                <div class="row justify-content-center g-3 g-md-4">
+                    <!-- 남성 선택 카드 -->
+                    <div class="col-6 col-md-5">
+                        <div class="gender-card male" onclick="selectGender('M')">
+                            <div class="select-badge"><i class="bi bi-check-circle-fill"></i></div>
+                            <div class="icon-box">
+                                <i class="bi bi-gender-male"></i>
+                            </div>
+                            <h3>남자 (M)</h3>
+                            <p>
+                               <span class="fw-bold text-teto">[[${#numbers.formatInteger(maleCount, 0, 'COMMA')}]]명이 참여했어요.</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 여성 선택 카드 -->
+                    <div class="col-6 col-md-5">
+                        <div class="gender-card female" onclick="selectGender('W')">
+                            <div class="select-badge"><i class="bi bi-check-circle-fill"></i></div>
+                            <div class="icon-box">
+                                <i class="bi bi-gender-female"></i>
+                            </div>
+                            <h3>여자 (W)</h3>
+                            <p>
+                               <span class="fw-bold text-egen">[[${#numbers.formatInteger(femaleCount, 0, 'COMMA')}]]명이 참여했어요.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <p class="text-secondary small">
+                        * 성별에 따라 분석 기준과 질문 문항이 다르게 구성되어 있어요.<br/>
+                        * 결과에 너무 진심이면 곤란해요! 재미로만 봐주세요 :).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 이동을 위한 Hidden Form -->
+        <form id="genderForm" th:action="@{/egenTeto/start}" method="get">
+            <input type="hidden" id="genderInput" name="gender">
+        </form>
+
+        <!-- 로딩 오버레이 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <h4>질문지를 생성중입니다...</h4>
+            <p>잠시만 기다려주세요.</p>
+        </div>
+    </main>
+
+    <script>
+        function selectGender(gender) {
+            document.getElementById('genderInput').value = gender;
+            
+            // 시각적 피드백
+            const card = document.querySelector(`.gender-card.${gender === 'M' ? 'male' : 'female'}`);
+            card.style.transform = "scale(0.95)";
+            
+            // 로딩 오버레이 표시
+            document.getElementById("loadingOverlay").style.display = 'flex';
+            
+            // 약간의 지연 후 폼 제출
+            setTimeout(() => {
+                document.getElementById('genderForm').submit();
+            }, 800);
+        }
+
+        // 브라우저 뒤로가기 시 로딩 오버레이 숨기기
+        window.onpageshow = function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                document.getElementById("loadingOverlay").style.display = 'none';
+                // 시각적 피드백 초기화
+                document.querySelectorAll('.gender-card').forEach(card => {
+                    card.style.transform = "scale(1)";
+                });
+            }
+        };
+    </script>
+    <!-- 에러 메시지 알림 스크립트 -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.onload = function() {
+            const errorMessage = /*[[${errorMessage}]]*/ null;
+            if (errorMessage) {
+                alert(errorMessage);
+            }
+        };
+        /*]]>*/
+    </script>
+</body>
+
+</html>

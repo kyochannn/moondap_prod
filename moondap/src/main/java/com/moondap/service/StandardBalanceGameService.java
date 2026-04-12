@@ -3,6 +3,9 @@ package com.moondap.service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -12,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.moondap.common.CommonUtil;
 import com.moondap.common.FileService;
 import com.moondap.common.ProfanityUtil;
+import com.moondap.config.auth.PrincipalDetails;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
 import com.moondap.mapper.BalanceGameMapper;
@@ -22,12 +26,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StandardBalanceGameService implements BalanceGameService {
 
+    private static final String DEFAULT_IMAGE = "default-img.png";
+
 	@Autowired
 	private BalanceGameMapper balanceGameMapper;
 	@Autowired
 	private FileService fileService;
 	
     // 밸런스 게임 목록
+	@Override
 	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request, int offset, int limit) {
 		log.info("========== 밸런스 게임 리스트 조회 시작 ==========");
 		
@@ -46,10 +53,6 @@ public class StandardBalanceGameService implements BalanceGameService {
                 return Collections.emptyList();
             }
 
-            for (BalanceGameDTO balanceGame : balanceGameList) {
-            	balanceGame.setCommentCnt(balanceGameMapper.selectBalanceGameCount(balanceGame.getId(), null, null));
-			}
-            
             return balanceGameList;
         } catch (DataAccessException e) {
             log.error("데이터베이스 접근 중 오류 발생: {}", e.getMessage());
@@ -61,19 +64,17 @@ public class StandardBalanceGameService implements BalanceGameService {
 	}
     
 	// 밸런스 게임 조회
+    @Override
     public BalanceGameDTO selectBalanceGame(String id, String spicyFilter, String category) throws Exception {
-    	System.out.println("========== 밸런스 게임 select ==========");
-    	System.out.println("id: " + id + "	|	spicyFilter: " + spicyFilter + "	|	category: " + category);
+    	log.info("========== 밸런스 게임 select ==========");
     	
     	if (CommonUtil.isNull(id)) {
     		id = balanceGameMapper.selectMaxBalanceGameId(spicyFilter, category);
-    		System.out.println("해당 조건문 탐..! : id : " + id);
     	}
     	
     	BalanceGameDTO balanceGame = balanceGameMapper.selectBalanceGame(id, spicyFilter, category);
     	
     	if (balanceGame == null) {
-    		System.out.println("밸런스 게임이 존재하지 않습니다.");
     		return null;
     	}
     	
@@ -81,11 +82,9 @@ public class StandardBalanceGameService implements BalanceGameService {
     	int totalCount = balanceGame.getOption1Count() + balanceGame.getOption2Count();
     	
     	if (totalCount == 0) {
-    	    // 아무도 투표하지 않은 경우, 0%로 설정하거나 예외를 주지 않도록 처리
     	    balanceGame.setOption1Percent(50);
     	    balanceGame.setOption2Percent(50);
     	} else {
-    	    // 투표자가 있을 때만 계산
     	    int option1Percent = (balanceGame.getOption1Count() * 100) / totalCount;
     	    int option2Percent = 100 - option1Percent;
     	    
@@ -97,6 +96,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     }
     
     // 다음 밸런스 게임 ID 조회
+    @Override
     public String nextOrPrevBalanceGameIdSelect(Map<String, String> request) throws Exception {
     	System.out.println("========== 다음 밸런스 게임 ID select ==========");
     	
@@ -105,16 +105,12 @@ public class StandardBalanceGameService implements BalanceGameService {
     	String spicyFilter = request.get("spicyFilter");
     	String category = request.get("category");
     	
-    	String balanceGame = balanceGameMapper.nextOrPrevBalanceGameIdSelect(id, direction, spicyFilter, category);
-    	
-    	if (balanceGame == null || "".equals(balanceGame)) {
-    		System.out.println("밸런스 게임 null");
-    	}
-    	
-    	return balanceGame;
+    	return balanceGameMapper.nextOrPrevBalanceGameIdSelect(id, direction, spicyFilter, category);
     }
     
     // 밸런스 게임 투표
+    @Override
+    @Transactional
     public BalanceGameDTO vote(Map<String, String> request) throws Exception {
     	System.out.println("========== 밸런스 게임 vote ==========");
     	
@@ -127,19 +123,16 @@ public class StandardBalanceGameService implements BalanceGameService {
     	int updatedRows = balanceGameMapper.vote(id, option1Count, option2Count);
 
     	if (updatedRows == 1) {
-    		System.out.println("업데이트 성공");
-    		BalanceGameDTO balanceGame = selectBalanceGame(id, null, null);
-    		
-    		return balanceGame;
+    		return selectBalanceGame(id, null, null);
     	} else {
     		System.out.println("업데이트 실패");
     		
     		return null;
     	}	
-    	
     }
     
 	// 밸런스 게임 댓글 조회
+    @Override
     public List<BalanceGameCommentDTO> selectBalanceGameComment(String id) throws Exception {
     	System.out.println("========== 밸런스 게임 댓글 select ==========");
     	
@@ -156,6 +149,8 @@ public class StandardBalanceGameService implements BalanceGameService {
     }
     
     // 밸런스 게임 댓글 달기
+    @Override
+    @Transactional
     public List<BalanceGameCommentDTO> insertBalanceGameComment(Map<String, String> request) throws Exception {
     	System.out.println("========== 밸런스 게임 댓글 추가 ==========");
     	
@@ -164,15 +159,10 @@ public class StandardBalanceGameService implements BalanceGameService {
     	String side = request.get("side");
     	String content = request.get("content");
     	
-    	Boolean flag = true;
-    	int updatedRows = 0;
-    	
-    	if (CommonUtil.isNull(id)) flag = false;
-    	if (CommonUtil.isNull(nickname)) flag = false;
-    	if (CommonUtil.isNull(side)) flag = false;
-    	if (CommonUtil.isNull(content)) flag = false;
+    	if (CommonUtil.isNull(id) || CommonUtil.isNull(nickname) || CommonUtil.isNull(side) || CommonUtil.isNull(content)) {
+            return null;
+        }
 
-    	// 금칙어 체크
     	if (ProfanityUtil.containsProfanity(nickname) || ProfanityUtil.containsProfanity(content)) {
     		throw new RuntimeException("금칙어가 포함된 내용을 입력할 수 없습니다.");
     	}
@@ -182,52 +172,33 @@ public class StandardBalanceGameService implements BalanceGameService {
     		throw new RuntimeException("댓글은 50자 이내로 입력 가능합니다.");
     	}
     	
-    	if (flag) {    		
-    		updatedRows = balanceGameMapper.insertBalanceGameComment(id, nickname, side, content);
-    		if (updatedRows == 1) {
-    			System.out.println("업데이트 성공");
-    			List<BalanceGameCommentDTO> balanceGameCommentList = selectBalanceGameComment(id);
-    			
-    			return balanceGameCommentList;
-    		} else {
-    			System.out.println("업데이트 실패");
-    			
-    			return null;
-    		}	
-    	} else {
-    		return null;
+    	int updatedRows = balanceGameMapper.insertBalanceGameComment(id, nickname, side, content);
+    	if (updatedRows == 1) {
+    		return selectBalanceGameComment(id);
     	}
-    	
+    	return null;
     }
     
     // 밸런스 게임 관련 댓글 삭제
+    @Override
+    @Transactional
     public String deleteBalanceGameComment(String id) throws Exception {
     	System.out.println("========== 밸런스 게임 댓글 삭제 ==========");
     	
     	List<BalanceGameCommentDTO> list = selectBalanceGameComment(id);
-    	
-    	// DB
-    	// 댓글이 존재할 때만 삭제
-    	if (list.size() > 0) {
+    	if (list != null && !list.isEmpty()) {
     		int updatedRows = balanceGameMapper.deleteBalanceGameComment(id);
-    		
-    		System.out.println("updatedRows ::::::::: del :::::" + updatedRows);
-    		
     		if (updatedRows >= 1) {
-    			System.out.println("밸런스 게임 관련 댓글 삭제 성공");
     			return id;
-    		} else {
-    			System.out.println("밸런스 게임 관련 댓글 삭제 실패");
-    			return null;
-    		}    		
-    	} else {
-    		System.out.println("밸런스 게임 관련 댓글이 존재하지 않아 댓글 삭제를 생략합니다.");    		
-    		return id;
-    	}
-    	
+    		}
+    		return null;
+    	} 
+    	return id;
     }
     
     // 밸런스 게임 좋아요 등록
+    @Override
+    @Transactional
     public List<BalanceGameCommentDTO> updateBalanceGameCommentLikeCount(Map<String, String> request) throws Exception {
     	System.out.println("========== 밸런스 게임 댓글 좋아요 추가 ==========");
     	
@@ -235,90 +206,64 @@ public class StandardBalanceGameService implements BalanceGameService {
     	int no = Integer.parseInt(request.get("no"));
     	String setting = request.get("setting");
     	
-    	System.out.println(id + "//" + no + "//" + setting);
-    	
     	int updatedRows;
-    	
-    	if ("UP".equals(setting) || "UP" == setting) { 		
+    	if ("UP".equals(setting)) { 		
     		updatedRows = balanceGameMapper.updateBalanceGameCommentLikeCount(no, id, 1);
     	} else {
     		updatedRows = balanceGameMapper.updateBalanceGameCommentLikeCount(no, id, -1);    		
     	}
 
     	if (updatedRows == 1) {
-    		System.out.println("업데이트 성공");
-    		List<BalanceGameCommentDTO> balanceGameCommentList = selectBalanceGameComment(id);
-    		
-    		return balanceGameCommentList;
-    	} else {
-    		System.out.println("업데이트 실패");
-    		
-    		return null;
-    	}	
-    	
+    		return selectBalanceGameComment(id);
+    	}
+    	return null;
     }
 	
     // 밸런스 게임 등록
+    @Override
+    @Transactional
     public String insertBalanceGame(Map<String, String> params, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
-    	System.out.println("========== 밸런스 게임 등록 ==========");
-    	
-    	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
-    	
     	String title = params.get("title");
     	String spicyFilter = params.get("spicyFilter");
     	String category = params.get("category");
     	String option1Text = params.get("option1Text");
     	String option2Text = params.get("option2Text");
+
+        // 입력값 검증
+        validateBalanceGame(title, option1Text, option2Text);
+
     	String option1ImagePath = fileService.upload(option1Image);
     	String option2ImagePath = fileService.upload(option2Image);
     	String lastId = generateNextId(balanceGameMapper.selectMaxBalanceGameId(null, null));
     	
-    	// null check
-    	if (CommonUtil.isNotNull(title)) balanceGameDto.setTitle(title);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(spicyFilter)) balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(category)) balanceGameDto.setCategory(category);	    		
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option1Text)) balanceGameDto.setOption1Text(option1Text);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option2Text)) balanceGameDto.setOption2Text(option2Text);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option1ImagePath)) balanceGameDto.setOption1ImagePath(option1ImagePath);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option2ImagePath)) balanceGameDto.setOption2ImagePath(option2ImagePath);
-    	else return null;
-    		
-    	if (CommonUtil.isNotNull(lastId)) balanceGameDto.setId(lastId);
-    	else return null;
-    	
-    	/*if (CommonUtil.isNotNull("UserId"))*/ balanceGameDto.setUserId("mdadmin");
-//    	else return null;
-    	
-    	// DB Insert
-    	int updatedRows = balanceGameMapper.insertBalanceGame(balanceGameDto);
+    	if (CommonUtil.isNull(title) || CommonUtil.isNull(spicyFilter) || CommonUtil.isNull(category) || 
+            CommonUtil.isNull(option1Text) || CommonUtil.isNull(option2Text) || 
+            CommonUtil.isNull(option1ImagePath) || CommonUtil.isNull(option2ImagePath)) {
+            return null;
+        }
 
+    	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
+    	balanceGameDto.setTitle(title);
+        balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
+        balanceGameDto.setCategory(category);
+        balanceGameDto.setOption1Text(option1Text);
+        balanceGameDto.setOption2Text(option2Text);
+        balanceGameDto.setOption1ImagePath(option1ImagePath);
+        balanceGameDto.setOption2ImagePath(option2ImagePath);
+    	balanceGameDto.setId(lastId);
+    	balanceGameDto.setUserId(getCurrentUserId());
+    	
+    	int updatedRows = balanceGameMapper.insertBalanceGame(balanceGameDto);
     	if (updatedRows == 1) {
-    		System.out.println("업데이트 성공");
     		return lastId;
-    	} else {
-    		System.out.println("업데이트 실패");
-    		return null;
     	}
+    	return null;
     }
     
     // 밸런스 게임 수정
+    @Override
+    @Transactional
 	public String updateBalanceGame(Map<String, String> params, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
-    	System.out.println("========== 밸런스 게임 수정 ==========");
-    	
-    	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
-    	
     	String id = params.get("id");
     	String title = params.get("title");
     	String spicyFilter = params.get("spicyFilter");
@@ -327,110 +272,114 @@ public class StandardBalanceGameService implements BalanceGameService {
     	String option2Text = params.get("option2Text");
     	String oldOption1ImagePath = params.get("oldOption1ImagePath");
     	String oldOption2ImagePath = params.get("oldOption2ImagePath");
-    	String option1ImagePath = fileService.upload(option1Image);
+    	
+        if (CommonUtil.isNull(id)) return null;
+
+        // 입력값 검증
+        validateBalanceGame(title, option1Text, option2Text);
+
+        String option1ImagePath = fileService.upload(option1Image);
     	String option2ImagePath = fileService.upload(option2Image);
     	
-    	// null check
-    	if (CommonUtil.isNotNull(id)) balanceGameDto.setId(id);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(title)) balanceGameDto.setTitle(title);
-    	else return null;
-    	
-    	System.out.println("Boolean.parseBoolean(spicyFilter)::: " + Boolean.parseBoolean(spicyFilter));
-    	if (CommonUtil.isNotNull(spicyFilter)) balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(category)) balanceGameDto.setCategory(category);	    		
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option1Text)) balanceGameDto.setOption1Text(option1Text);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option2Text)) balanceGameDto.setOption2Text(option2Text);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(option1ImagePath)) {
-        	if ("default-img.png".equals(option1ImagePath)) {
-        		option1ImagePath = oldOption1ImagePath;
-        	} else {
-        		fileService.deleteFile(oldOption1ImagePath);
-        	}
-    		balanceGameDto.setOption1ImagePath(option1ImagePath);
-    	} else {
-    		return null;
-    	}
-    	
-    	if (CommonUtil.isNotNull(option2ImagePath)) {
-    		if ("default-img.png".equals(option2ImagePath)) {
-    			option2ImagePath = oldOption2ImagePath;
-    		} else {
-        		fileService.deleteFile(oldOption2ImagePath);
-        	}
-    		balanceGameDto.setOption2ImagePath(option2ImagePath);
-    	} else {
-    		return null;
-    	}
-    	
-    	/*if (CommonUtil.isNotNull("UserId"))*/ balanceGameDto.setUserId("mdadmin");
-//        	else return null;
-    	
-    	// DB Insert
-    	int updatedRows = balanceGameMapper.updateBalanceGame(balanceGameDto);
+    	if (CommonUtil.isNull(title) || CommonUtil.isNull(spicyFilter) || CommonUtil.isNull(category) || 
+            CommonUtil.isNull(option1Text) || CommonUtil.isNull(option2Text) || 
+            CommonUtil.isNull(option1ImagePath) || CommonUtil.isNull(option2ImagePath)) {
+            return null;
+        }
 
+    	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
+        balanceGameDto.setId(id);
+    	balanceGameDto.setTitle(title);
+        balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
+        balanceGameDto.setCategory(category);
+        balanceGameDto.setOption1Text(option1Text);
+        balanceGameDto.setOption2Text(option2Text);
+    	balanceGameDto.setUserId(getCurrentUserId());
+
+        if (DEFAULT_IMAGE.equals(option1ImagePath)) {
+            option1ImagePath = oldOption1ImagePath;
+        } 
+        balanceGameDto.setOption1ImagePath(option1ImagePath);
+
+        if (DEFAULT_IMAGE.equals(option2ImagePath)) {
+            option2ImagePath = oldOption2ImagePath;
+        } 
+        balanceGameDto.setOption2ImagePath(option2ImagePath);
+    	
+    	int updatedRows = balanceGameMapper.updateBalanceGame(balanceGameDto);
     	if (updatedRows == 1) {
-    		System.out.println("업데이트 성공");
+            // DB 성공 시에만 기존 파일 삭제
+            if (oldOption1ImagePath != null && !option1ImagePath.equals(oldOption1ImagePath)) {
+                fileService.deleteFile(oldOption1ImagePath);
+            }
+            if (oldOption2ImagePath != null && !option2ImagePath.equals(oldOption2ImagePath)) {
+                fileService.deleteFile(oldOption2ImagePath);
+            }
     		return id;
-    	} else {
-    		System.out.println("업데이트 실패");
-    		return null;
     	}
+    	return null;
     }
 
     // 밸런스 게임 삭제
+    @Override
+    @Transactional
 	public String deleteBalanceGame(Map<String, String> params) throws Exception {
-    	System.out.println("========== 밸런스 게임 삭제 ==========");
-    	
-    	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
-    	
     	String id = params.get("id");
     	String oldOption1ImagePath = params.get("oldOption1ImagePath");
     	String oldOption2ImagePath = params.get("oldOption2ImagePath");
     	
-    	// null check
-    	if (CommonUtil.isNotNull(id)) balanceGameDto.setId(id);
-    	else return null;
-    	
-    	if (CommonUtil.isNotNull(oldOption1ImagePath)) {
-    		fileService.deleteFile(oldOption1ImagePath);
-    	} else {
-    		return null;
-    	}
-    	
-    	if (CommonUtil.isNotNull(oldOption2ImagePath)) {
-    		fileService.deleteFile(oldOption2ImagePath);
-    	} else {
-    		return null;
-    	}
-    	
-    	// DB Insert
-    	int updatedRows = balanceGameMapper.deleteBalanceGame(id);
+    	if (CommonUtil.isNull(id)) return null;
 
+        // 관련 댓글 먼저 삭제 (트랜잭션 보장)
+        deleteBalanceGameComment(id);
+    	
+    	int updatedRows = balanceGameMapper.deleteBalanceGame(id);
     	if (updatedRows == 1) {
-    		System.out.println("밸런스 게임 삭제 성공");
+            // DB 삭제 성공 시 물리 파일 삭제
+            if (CommonUtil.isNotNull(oldOption1ImagePath)) {
+                fileService.deleteFile(oldOption1ImagePath);
+            }
+            if (CommonUtil.isNotNull(oldOption2ImagePath)) {
+                fileService.deleteFile(oldOption2ImagePath);
+            }
     		return id;
-    	} else {
-    		System.out.println("밸런스 게임 삭제 실패");
-    		return null;
     	}
+    	return null;
     }
     
-    //
+    private void validateBalanceGame(String title, String option1Text, String option2Text) {
+        if (title != null && title.length() > 30) {
+            throw new RuntimeException("제목의 길이가 30자를 초과했습니다.");
+        }
+        if (option1Text != null && option1Text.length() > 20) {
+            throw new RuntimeException("왼쪽 선택지의 길이가 20자를 초과했습니다.");
+        }
+        if (option2Text != null && option2Text.length() > 20) {
+            throw new RuntimeException("오른쪽 선택지의 길이가 20자를 초과했습니다.");
+        }
+
+        if (ProfanityUtil.containsProfanity(title) || 
+            ProfanityUtil.containsProfanity(option1Text) || 
+            ProfanityUtil.containsProfanity(option2Text)) {
+            throw new RuntimeException("금칙어가 포함된 내용을 입력할 수 없습니다.");
+        }
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal().toString())) {
+            return "mdadmin"; 
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof PrincipalDetails) {
+            return ((PrincipalDetails) principal).getUsername();
+        }
+        return authentication.getName();
+    }
+
     public static String generateNextId(String lastId) {
         String prefix = "BG";
         int nextNumber = 1;
-        
-        // 1. 기존 ID가 존재하는 경우 숫자 추출
         if (lastId != null && lastId.startsWith(prefix)) {
             try {
                 String numericPart = lastId.substring(2); 
@@ -439,9 +388,6 @@ public class StandardBalanceGameService implements BalanceGameService {
                 nextNumber = 1;
             }
         }
-
-        // 2. 숫자를 5자리 문자열로 포맷팅 (모자란 자릿수는 0으로 채움)
-        // %05d: 5자리 정수이며, 빈 자리는 0으로 채움
         return String.format("%s%05d", prefix, nextNumber);
     }
 
@@ -449,5 +395,4 @@ public class StandardBalanceGameService implements BalanceGameService {
 	public long getTotalParticipantCount() {
 		return balanceGameMapper.selectTotalParticipantCount();
 	}
-    
 }

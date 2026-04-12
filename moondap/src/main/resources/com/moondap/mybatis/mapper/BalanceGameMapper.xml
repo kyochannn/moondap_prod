@@ -7,8 +7,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.moondap.mapper.BalanceGameMapper">
     <!-- 밸런스 게임 목록 -->
 	<select id="selectBalanceGameList" resultType="BalanceGameDTO">
-	    SELECT *
-	    FROM moondap.balance_questions
+	    SELECT q.*, 
+	           (SELECT COUNT(*) FROM moondap.balance_comments c WHERE c.question_id = q.id) AS comment_cnt
+	    FROM moondap.balance_questions q
 	    <where>
 	        <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
 	            AND is_spicy = 0
