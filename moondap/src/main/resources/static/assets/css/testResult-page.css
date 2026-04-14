@@ -115,7 +115,7 @@
 .faq-toggle {
     position: absolute;
     right: 25px;
-    top: 22px;
+    top: 20px; /* 패딩 상단과 일치 */
     font-size: 1.2rem;
     transition: transform 0.3s ease;
     color: #fff;
@@ -157,9 +157,13 @@
 
 
     .faq-item {
-        padding: 15px 20px;
+        padding: 15px 23px;
     }
     .faq-item h3 {
         font-size: 1rem;
+    }
+    .faq-toggle {
+        top: 15px; /* 모바일 패딩 상단과 일치 */
+        right: 20px;
     }
 }

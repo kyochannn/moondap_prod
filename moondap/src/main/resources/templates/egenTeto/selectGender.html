@@ -50,7 +50,6 @@
                 <div class="text-center mt-5">
                     <p class="text-secondary small">
                         * 성별에 따라 분석 기준과 질문 문항이 다르게 구성되어 있어요.<br/>
-                        * 결과에 너무 진심이면 곤란해요! 재미로만 봐주세요 :).
                     </p>
                 </div>
             </div>
@@ -75,7 +74,7 @@
             
             // 시각적 피드백
             const card = document.querySelector(`.gender-card.${gender === 'M' ? 'male' : 'female'}`);
-            card.style.transform = "scale(0.95)";
+            card.classList.add('clicked');
             
             // 로딩 오버레이 표시
             document.getElementById("loadingOverlay").style.display = 'flex';
@@ -92,7 +91,7 @@
                 document.getElementById("loadingOverlay").style.display = 'none';
                 // 시각적 피드백 초기화
                 document.querySelectorAll('.gender-card').forEach(card => {
-                    card.style.transform = "scale(1)";
+                    card.classList.remove('clicked');
                 });
             }
         };

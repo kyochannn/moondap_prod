@@ -57,7 +57,7 @@
 
                 <!-- 정규분포 차트 영역 -->
                 <div class="chart-wrapper mb-4" data-aos="fade-up">
-                    <div id="chatContainer" style="max-width: 500px; width: 95%; height: 200px; margin: 0 auto;"></div>
+                    <div id="chartContainer" style="max-width: 500px; width: 95%; height: 200px; margin: 0 auto;"></div>
                     <!-- T/E 아이콘 표시 -->
                     <div class="icon-indicator d-flex justify-content-between px-4" style="max-width: 480px; margin: auto;">
                         <div class="text-center" th:with="totalTeto=${u.styleSelfcarePoint + u.socialSkillPoint + u.innerTendencyPoint + u.ambitionPoint}">
@@ -84,7 +84,7 @@
                             <div class="progress-container d-flex align-items-center gap-2">
                                 <div class="text-center">
                                     <img th:src="${u.styleSelfcarePoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.styleSelfcarePoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-egen'}">[[${u.styleSelfcarePoint}]]점</div>
+                                    <div th:class="${u.styleSelfcarePoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.styleSelfcarePoint}]]점</div>
                                 </div>
                                 
                                 <!-- 테토 우세 시 (50점 초과) -->
@@ -109,7 +109,7 @@
 
                                 <div class="text-center">
                                     <img th:src="${u.styleSelfcarePoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.styleSelfcarePoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-teto'}">[[${100 - u.styleSelfcarePoint}]]점</div>
+                                    <div th:class="${u.styleSelfcarePoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.styleSelfcarePoint}]]점</div>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +121,7 @@
                             <div class="progress-container d-flex align-items-center gap-2">
                                 <div class="text-center">
                                     <img th:src="${u.socialSkillPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.socialSkillPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-egen'}">[[${u.socialSkillPoint}]]점</div>
+                                    <div th:class="${u.socialSkillPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.socialSkillPoint}]]점</div>
                                 </div>
                                 
                                 <!-- 테토 우세 시 -->
@@ -146,7 +146,7 @@
 
                                 <div class="text-center">
                                     <img th:src="${u.socialSkillPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.socialSkillPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-teto'}">[[${100 - u.socialSkillPoint}]]점</div>
+                                    <div th:class="${u.socialSkillPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.socialSkillPoint}]]점</div>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +158,7 @@
                             <div class="progress-container d-flex align-items-center gap-2">
                                 <div class="text-center">
                                     <img th:src="${u.innerTendencyPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.innerTendencyPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-egen'}">[[${u.innerTendencyPoint}]]점</div>
+                                    <div th:class="${u.innerTendencyPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.innerTendencyPoint}]]점</div>
                                 </div>
                                 
                                 <!-- 테토 우세 시 -->
@@ -183,7 +183,7 @@
 
                                 <div class="text-center">
                                     <img th:src="${u.innerTendencyPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.innerTendencyPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-teto'}">[[${100 - u.innerTendencyPoint}]]점</div>
+                                    <div th:class="${u.innerTendencyPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.innerTendencyPoint}]]점</div>
                                 </div>
                             </div>
                         </div>
@@ -195,7 +195,7 @@
                             <div class="progress-container d-flex align-items-center gap-2">
                                 <div class="text-center">
                                     <img th:src="${u.ambitionPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.ambitionPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-egen'}">[[${u.ambitionPoint}]]점</div>
+                                    <div th:class="${u.ambitionPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.ambitionPoint}]]점</div>
                                 </div>
                                 
                                 <!-- 테토 우세 시 -->
@@ -292,19 +292,19 @@
             </section>
 
             <!-- 하단 액션 버튼 -->
-            <div class="container py-5 text-center" data-aos="fade-up">
+            <div class="container pb-5 text-center" data-aos="fade-up">
                 <div class="d-flex flex-wrap justify-content-center gap-3">
                     <a th:href="@{/egenTeto/select}" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold">
-                        <i class="bi bi-arrow-repeat"></i> 다시 테스트하기
+                        <i class="bi bi-arrow-repeat"></i> 다시하기
                     </a>
-                    <button onclick="saveImage()" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
+                    <!-- <button onclick="saveImage()" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
                         <i class="bi bi-download"></i> 결과 이미지 저장
-                    </button>
+                    </button> -->
                     <button onclick="copyLinkAction()" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow text-white">
-                        <i class="bi bi-link-45deg"></i> 결과 링크 공유
+                        <i class="bi bi-link-45deg"></i> 링크 공유
                     </button>
                     <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-4 py-2 fw-bold shadow text-dark" style="background-color: #FEE500; border: none;">
-                        <i class="bi bi-chat-fill"></i> 카카오톡 공유
+                        <i class="bi bi-chat-fill"></i> 카톡 공유
                     </button>
                 </div>
                 <div class="copyMessage mt-3" style="display:none; color: #3876f2;">
@@ -369,7 +369,7 @@
                 
                 // 그래프 형태 고정용 상수 (중앙 0, 표준편차 30으로 범위 확장 대응)
                 const mean = 0;
-                const stdDev = 30;
+                const stdDev = 37;
 
                 // 정규분포 확률 밀도 함수 (PDF)
                 function normalPDF(x, m, s) {
@@ -382,7 +382,7 @@
                     chartData.push([x, normalPDF(x, mean, stdDev)]);
                 }
 
-                Highcharts.chart('chatContainer', {
+                Highcharts.chart('chartContainer', {
                     chart: { type: 'area', backgroundColor: 'transparent', height: 200 },
                     title: { text: '' },
                     xAxis: {

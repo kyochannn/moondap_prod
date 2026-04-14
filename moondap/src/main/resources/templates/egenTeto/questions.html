@@ -126,7 +126,7 @@
                     <h4 class="question-title">Q${index + 1}. ${questions[index]}</h4>
                     <div class="options-list">
                         ${options.map((opt, i) => `
-                            <div class="option-btn" onclick="selectOption(${index}, '${opt}')">
+                            <div class="option-btn" onclick="selectOption(this, ${index}, '${opt}')">
                                 <i class="bi bi-circle"></i>
                                 <span>${opt}</span>
                             </div>
@@ -142,8 +142,19 @@
             prevBtn.style.display = 'block'; // 항상 노출
         }
 
-        window.selectOption = function(qIdx, val) {
+        window.selectOption = function(element, qIdx, val) {
             userAnswers[qIdx] = val;
+            
+            // 즉각적인 시각적 피드백
+            const optionsList = element.closest('.options-list');
+            optionsList.classList.add('disabled'); // 중복 클릭 방지
+            
+            element.classList.add('selected');
+            const icon = element.querySelector('i');
+            if (icon) {
+                icon.classList.remove('bi-circle');
+                icon.classList.add('bi-check-circle-fill');
+            }
             
             // 다음 질문으로 이동 (약간의 선택 지연 효과)
             setTimeout(() => {
@@ -153,7 +164,7 @@
                 } else {
                     finishTest();
                 }
-            }, 300);
+            }, 400);
         };
 
         function finishTest() {
