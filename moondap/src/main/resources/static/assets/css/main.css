@@ -4287,3 +4287,53 @@ section,
   border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
   color: #fff;
 }
+/*--------------------------------------------------------------
+# Global Loading Overlay
+--------------------------------------------------------------*/
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 7, 30, 0.85); /* --background-color와 유사한 톤 */
+  backdrop-filter: blur(5px);
+  display: none; /* 초기 상태 */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000; /* 최상위 레이어 */
+  transition: all 0.3s;
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spinner-spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loading-text {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes spinner-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}

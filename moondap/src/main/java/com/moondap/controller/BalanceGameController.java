@@ -22,6 +22,9 @@ import com.moondap.common.CommonUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
 import com.moondap.service.BalanceGameService;
+import com.moondap.config.auth.PrincipalDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,9 +114,9 @@ public class BalanceGameController {
 		model.addAttribute("baseUrl", baseUrl);
 		model.addAttribute("fullUrl", request.getRequestURL().toString() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
 
-		System.out.println("id :::::::::::" + id);
-		System.out.println("spicyFilter :::::::::::" + spicyFilter);
-		System.out.println("category :::::::::::" + category);
+		log.info("id :::::::::::{}", id);
+		log.info("spicyFilter :::::::::::{}", spicyFilter);
+		log.info("category :::::::::::{}", category);
 
 		// 리스트에서 조회 시 get 방식으로 넘겨주는데, 게임시작 버튼을 눌렀을 때 어떻게 처리해야 할지 고민 후 구현부터 시작!!
 
@@ -125,6 +128,8 @@ public class BalanceGameController {
 		}
 
 		model.addAttribute("balanceGame", balanceGame);
+		model.addAttribute("currentUserId", getCurrentUserId());
+		model.addAttribute("isAnonymous", SecurityContextHolder.getContext().getAuthentication() instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
 		return "balanceGame/selectBalanceGame";
 	}
 
@@ -177,7 +182,7 @@ public class BalanceGameController {
 	@PostMapping("/vote")
 	@ResponseBody
 	public BalanceGameDTO voteBalanceGame(@RequestBody Map<String, String> request) {
-		System.out.println("voteBalanceGame ::::::::: ");
+		log.info("voteBalanceGame ::::::::: ");
 
 		try {
 			BalanceGameDTO balanceGame = balanceGameService.vote(request);
@@ -201,7 +206,7 @@ public class BalanceGameController {
 	public List<BalanceGameCommentDTO> selectBalanceGameComment(@RequestBody Map<String, String> request) {
 
 		String id = request.get("id");
-		System.out.println("selectBalanceGameComment ::::::::::: " + id);
+		log.info("selectBalanceGameComment ::::::::::: {}", id);
 
 		try {
 			List<BalanceGameCommentDTO> balanceGameCommentList = balanceGameService.selectBalanceGameComment(id);
@@ -224,7 +229,7 @@ public class BalanceGameController {
 	@PostMapping("/insertBalanceGameComment")
 	@ResponseBody
 	public List<BalanceGameCommentDTO> insertBalanceGameComment(@RequestBody Map<String, String> request) {
-		System.out.println("insertBalanceGameMessage ::::::::: ");
+		log.info("insertBalanceGameMessage ::::::::: ");
 
 		try {
 			List<BalanceGameCommentDTO> balanceGameCommenList = balanceGameService.insertBalanceGameComment(request);
@@ -239,7 +244,7 @@ public class BalanceGameController {
 	@PostMapping("/updateBalanceGameCommentLikeCount")
 	@ResponseBody
 	public List<BalanceGameCommentDTO> updateBalanceGameCommentLikeCount(@RequestBody Map<String, String> request) {
-		System.out.println("updateBalanceGameCommentLikeCount ::::::::: ");
+		log.info("updateBalanceGameCommentLikeCount ::::::::: ");
 
 		try {
 			List<BalanceGameCommentDTO> balanceGameCommenList = balanceGameService
@@ -259,6 +264,10 @@ public class BalanceGameController {
 	 */
 	@GetMapping("/insertBalanceGameView")
 	public String insertBalanceGameView() {
+		// [보안] 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
+		if (!IsLoggedIn()) {
+			return "redirect:/loginView";
+		}
 		return "balanceGame/insertBalanceGame";
 	}
 
@@ -274,6 +283,13 @@ public class BalanceGameController {
 
 		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
+
+		// [보안] 로그인하지 않은 사용자는 저장 불가
+		if (!IsLoggedIn()) {
+			rtnMap.put("flag", "fail");
+			rtnMap.put("message", "로그인 후 이용 가능합니다.");
+			return rtnMap;
+		}
 
 		try {
 			String balanceGameId = balanceGameService.insertBalanceGame(params, option1Image, option2Image);
@@ -303,7 +319,13 @@ public class BalanceGameController {
 	 */
 	@GetMapping("/updateBalanceGameView")
 	public String updateBalanceGameView(@RequestParam("id") String id, Model model) throws Exception {
-		System.out.println("updateBalanceGameView ID :::::::::::" + id);
+		log.info("updateBalanceGameView ID :::::::::::{}", id);
+		
+		// [보안] 권한 확인
+		if (!balanceGameService.CheckMyTest(id)) {
+			return "redirect:/history.back()"; // 또는 에러 페이지
+		}
+
 		BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
 		// 데이터가 없는 경우(null) 처리
 		if (balanceGame == null) {
@@ -327,7 +349,7 @@ public class BalanceGameController {
 	public Map<String, Object> updateBalanceGame(@RequestParam Map<String, String> params,
 			@RequestParam(value = "option1Image", required = false) MultipartFile option1Image,
 			@RequestParam(value = "option2Image", required = false) MultipartFile option2Image) {
-		System.out.println("updateBalanceGame controller :::::::::::");
+		log.info("updateBalanceGame controller :::::::::::");
 
 		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
@@ -362,7 +384,7 @@ public class BalanceGameController {
 	@PostMapping("/deleteBalanceGame")
 	@ResponseBody
 	public Map<String, Object> deleteBalanceGame(@RequestParam Map<String, String> params) {
-		System.out.println("deleteBalanceGame controller :::::::::::");
+		log.info("deleteBalanceGame controller :::::::::::");
 
 		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
@@ -370,7 +392,7 @@ public class BalanceGameController {
 		try {
 			String balanceGameId = balanceGameService.deleteBalanceGame(params);
 
-			System.out.println("balanceGame: " + balanceGameId);
+			log.info("balanceGame: {}", balanceGameId);
 
 			if (CommonUtil.isNotNull(balanceGameId)) {
 				rtnMap.put("balanceGameId", balanceGameId);
@@ -435,5 +457,28 @@ public class BalanceGameController {
 	@GetMapping("/500")
 	public String get500() {
 		return "error/500";
+	}
+
+	/**
+	 * 현재 사용자가 로그인 상태인지 확인
+	 */
+	private boolean IsLoggedIn() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return auth != null && auth.isAuthenticated() && 
+			  !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 ID를 가져오는 유틸리티 메서드
+	 */
+	private String getCurrentUserId() {
+		if (!IsLoggedIn()) {
+			return "mdadmin";
+		}
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (principal instanceof PrincipalDetails) {
+			return ((PrincipalDetails) principal).getUsername();
+		}
+		return SecurityContextHolder.getContext().getAuthentication().getName();
 	}
 }

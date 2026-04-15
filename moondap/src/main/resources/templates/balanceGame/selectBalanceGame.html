@@ -760,7 +760,7 @@
 									<button type="button"
 										class="btn btn-outline-light d px-3 bord-radius-20"
 										onclick="updateBalanceGameView()" 
-										sec:authorize="hasRole('ADMIN')">
+										th:if="${(!isAnonymous and currentUserId == balanceGame.userId) or #authorization.expression('hasRole(''ADMIN'')')}">
 										<i class="bi bi-pencil-fill"></i> 편집하기
 									</button>
 									</div>

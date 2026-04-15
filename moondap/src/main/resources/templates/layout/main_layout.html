@@ -10,6 +10,12 @@
     <th:block th:replace="~{fragment/link::link}"></th:block>
 </head>
 <body>
+    <!-- 로딩 오버레이 (작업 중 화면 차단) -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">이미지를 처리하고 있습니다...</p>
+    </div>
+
     <!-- header -->
     <th:block th:replace="~{fragment/header::header}"></th:block>
 

@@ -98,7 +98,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     // 다음 밸런스 게임 ID 조회
     @Override
     public String nextOrPrevBalanceGameIdSelect(Map<String, String> request) throws Exception {
-    	System.out.println("========== 다음 밸런스 게임 ID select ==========");
+    	log.info("========== 다음 밸런스 게임 ID select ==========");
     	
     	String id = request.get("id");
     	String direction = request.get("direction");
@@ -112,7 +112,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Override
     @Transactional
     public BalanceGameDTO vote(Map<String, String> request) throws Exception {
-    	System.out.println("========== 밸런스 게임 vote ==========");
+    	log.info("========== 밸런스 게임 vote ==========");
     	
     	String id = request.get("id");
     	String side = request.get("side");
@@ -125,7 +125,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	if (updatedRows == 1) {
     		return selectBalanceGame(id, null, null);
     	} else {
-    		System.out.println("업데이트 실패");
+    		log.warn("업데이트 실패");
     		
     		return null;
     	}	
@@ -134,15 +134,14 @@ public class StandardBalanceGameService implements BalanceGameService {
 	// 밸런스 게임 댓글 조회
     @Override
     public List<BalanceGameCommentDTO> selectBalanceGameComment(String id) throws Exception {
-    	System.out.println("========== 밸런스 게임 댓글 select ==========");
+    	log.info("========== 밸런스 게임 댓글 select ==========");
     	
     	List<BalanceGameCommentDTO> balanceGameCommentList = balanceGameMapper.selectBalanceGameComment(id);
     	
-    	if (balanceGameCommentList.size() == 0 || balanceGameCommentList == null) {
-    		System.out.println("밸런스 게임 댓글 null이거나 존재하지 않습니다.");
+    	if (balanceGameCommentList.isEmpty()) {
+    		log.info("밸런스 게임 댓글이 존재하지 않습니다.");
     	} else {
-    		
-    		System.out.println("밸런스 게임 댓글이 " + balanceGameCommentList.size() + "개 존재합니다.");
+    		log.info("밸런스 게임 댓글이 {}개 존재합니다.", balanceGameCommentList.size());
     	}
     	
         return balanceGameCommentList;
@@ -152,7 +151,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Override
     @Transactional
     public List<BalanceGameCommentDTO> insertBalanceGameComment(Map<String, String> request) throws Exception {
-    	System.out.println("========== 밸런스 게임 댓글 추가 ==========");
+    	log.info("========== 밸런스 게임 댓글 추가 ==========");
     	
     	String id = request.get("id");
     	String nickname = request.get("nickname");
@@ -183,7 +182,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Override
     @Transactional
     public String deleteBalanceGameComment(String id) throws Exception {
-    	System.out.println("========== 밸런스 게임 댓글 삭제 ==========");
+    	log.info("========== 밸런스 게임 댓글 삭제 ==========");
     	
     	List<BalanceGameCommentDTO> list = selectBalanceGameComment(id);
     	if (list != null && !list.isEmpty()) {
@@ -200,7 +199,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Override
     @Transactional
     public List<BalanceGameCommentDTO> updateBalanceGameCommentLikeCount(Map<String, String> request) throws Exception {
-    	System.out.println("========== 밸런스 게임 댓글 좋아요 추가 ==========");
+    	log.info("========== 밸런스 게임 댓글 좋아요 추가 ==========");
     	
     	String id = request.get("id");
     	int no = Integer.parseInt(request.get("no"));
@@ -265,6 +264,12 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Transactional
 	public String updateBalanceGame(Map<String, String> params, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
     	String id = params.get("id");
+        
+        // [보안] 권한 확인
+        if (!CheckMyTest(id)) {
+            throw new RuntimeException("해당 게임을 수정할 권한이 없습니다.");
+        }
+
     	String title = params.get("title");
     	String spicyFilter = params.get("spicyFilter");
     	String category = params.get("category");
@@ -325,6 +330,12 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Transactional
 	public String deleteBalanceGame(Map<String, String> params) throws Exception {
     	String id = params.get("id");
+        
+        // [보안] 권한 확인
+        if (!CheckMyTest(id)) {
+            throw new RuntimeException("해당 게임을 삭제할 권한이 없습니다.");
+        }
+
     	String oldOption1ImagePath = params.get("oldOption1ImagePath");
     	String oldOption2ImagePath = params.get("oldOption2ImagePath");
     	
@@ -365,16 +376,56 @@ public class StandardBalanceGameService implements BalanceGameService {
         }
     }
 
+    private boolean IsLoggedIn() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.isAuthenticated() && 
+              !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
+    }
+
     private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal().toString())) {
+        if (!IsLoggedIn()) {
             return "mdadmin"; 
         }
-        Object principal = authentication.getPrincipal();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof PrincipalDetails) {
             return ((PrincipalDetails) principal).getUsername();
         }
-        return authentication.getName();
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    @Override
+    public boolean CheckMyTest(String id) {
+        log.info("========== 권한 확인 시작: {} ==========", id);
+        
+        // 1. 로그인 상태가 아니면 무조건 권한 없음
+        if (!IsLoggedIn()) {
+            log.warn("- 비로그인 사용자 접근 차단");
+            return false;
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        // 2. 관리자 권한 확인 (ROLE_ADMIN 권한이 있다면 아이디 상관없이 허용)
+        if (authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            log.info("- 관리자 권한 확인됨");
+            return true;
+        }
+
+        // 3. 작성자 확인
+        String currentUserId = getCurrentUserId();
+        try {
+            BalanceGameDTO balanceGame = balanceGameMapper.selectBalanceGame(id, null, null);
+            if (balanceGame != null && currentUserId.equals(balanceGame.getUserId())) {
+                log.info("- 작성자 본인 확인됨: {}", currentUserId);
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("권한 확인 중 데이터베이스 조회 오류: {}", e.getMessage());
+        }
+
+        log.warn("- 권한 없음: 현재사용자({}), 작성자(알 수 없음 또는 다름)", currentUserId);
+        return false;
     }
 
     public static String generateNextId(String lastId) {

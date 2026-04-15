@@ -212,6 +212,8 @@
 // 		    }
 		    
 		   	// 
+			showLoading();
+			
 			const formData = new FormData();
 		   	
 		    formData.append('id', id);
@@ -232,6 +234,7 @@
 		        processData: false,
 		        contentType: false,
 		        success: function(response) {
+		            hideLoading();
 		            if (response.flag === "success") {
 			            alert("밸런스 게임이 수정되었어요!");		            	
 			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + '1' + '&category=' + 'all');
@@ -240,6 +243,7 @@
 		            }
 		        },
 		        error: function(xhr) {
+		            hideLoading();
 		        	alert("밸런스 게임 수정 중에 문제가 발생했어요.");
 		            console.error(xhr);
 		        }
@@ -257,6 +261,8 @@
 		   	let oldOption2ImagePath = $('#oldOption2ImagePath').val().trim();
 		    
 		   	// 
+			showLoading();
+			
 			const formData = new FormData();
 		   	
 		    formData.append('id', id);
@@ -270,6 +276,7 @@
 		        processData: false,
 		        contentType: false,
 		        success: function(response) {
+		            hideLoading();
 		            if (response.flag === "success") {
 			            alert("밸런스 게임이 삭제되었어요!");		            	
 			            location.replace("/");
@@ -278,6 +285,7 @@
 		            }
 		        },
 		        error: function(xhr) {
+		            hideLoading();
 		        	alert("밸런스 게임 삭제 중에 문제가 발생했어요.");
 		            console.error(xhr);
 		        }

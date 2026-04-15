@@ -41,6 +41,17 @@ function generateUUID() {
     );
 }
 
+// [로딩 제어 함수]
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('active');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
 // [3] 미리보기 함수 (콘솔 확인 로직 추가)
 async function previewImage(inputOrFile, targetId) {
     const preview = document.getElementById(targetId);
@@ -62,45 +73,59 @@ async function previewImage(inputOrFile, targetId) {
         return null;
     }
 
-    // 압축 진행
-    dropZone.style.opacity = "0.6"; 
-    console.log("- 압축 프로세스 진행 중...");
-    let compressedFile = await compressImage(file);
-    dropZone.style.opacity = "1";
-    
-    // 파일 이름 UUID로 변경
-    const extension = file.name.split('.').pop();
-    const newFileName = `${generateUUID()}.${extension}`;
-    
-    // 새로운 File 객체 생성
-    const finalFile = new File([compressedFile], newFileName, { type: compressedFile.type });
+    // [로딩 시작]
+    showLoading();
 
-    // [콘솔] 압축 결과 출력
-    const ratio = ((1 - (finalFile.size / file.size)) * 100).toFixed(1);
-    console.log(`- 새 파일명: ${finalFile.name}`);
-    console.log(`- 압축 후 용량: ${(finalFile.size / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`- 압축률: ${ratio}% 감소`);
+    try {
+        // 압축 진행
+        dropZone.style.opacity = "0.6"; 
+        console.log("- 압축 프로세스 진행 중...");
+        let compressedFile = await compressImage(file);
+        dropZone.style.opacity = "1";
+        
+        // 파일 이름 UUID로 변경
+        const extension = file.name.split('.').pop();
+        const newFileName = `${generateUUID()}.${extension}`;
+        
+        // 새로운 File 객체 생성
+        const finalFile = new File([compressedFile], newFileName, { type: compressedFile.type });
 
-    // 미리보기 및 input 동기화
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        dropZone.classList.add('has-image');
-        console.log("- 미리보기 이미지 로드 완료");
-    };
-    reader.readAsDataURL(finalFile);
+        // [콘솔] 압축 결과 출력
+        const ratio = ((1 - (finalFile.size / file.size)) * 100).toFixed(1);
+        console.log(`- 새 파일명: ${finalFile.name}`);
+        console.log(`- 압축 후 용량: ${(finalFile.size / 1024 / 1024).toFixed(2)} MB`);
+        console.log(`- 압축률: ${ratio}% 감소`);
 
-    // input 요소에 압축된 파일 담기
-    if (!(inputOrFile instanceof File)) {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(finalFile);
-        inputOrFile.files = dataTransfer.files;
-        console.log("- Input 요소 데이터 동기화 완료");
+        // 미리보기 및 input 동기화
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            dropZone.classList.add('has-image');
+            console.log("- 미리보기 이미지 로드 완료");
+            
+            // 미리보기 로드 완료 시 로딩 해제 (onload 내부)
+            hideLoading();
+        };
+        reader.readAsDataURL(finalFile);
+
+        // input 요소에 압축된 파일 담기
+        if (!(inputOrFile instanceof File)) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(finalFile);
+            inputOrFile.files = dataTransfer.files;
+            console.log("- Input 요소 데이터 동기화 완료");
+        }
+
+        console.groupEnd(); // 콘솔 그룹 종료
+        return finalFile; 
+        
+    } catch (error) {
+        console.error("- [실패] 이미지 처리 중 에러 발생:", error);
+        hideLoading();
+        console.groupEnd();
+        return null;
     }
-
-    console.groupEnd(); // 콘솔 그룹 종료
-    return finalFile; 
 }
 
 // [4] 이벤트 리스너

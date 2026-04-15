@@ -205,6 +205,9 @@
 		        return;
 		    }
 		   	
+			// 로딩 시작
+			showLoading();
+			
 			const formData = new FormData();
 			
 		    formData.append('title', title);
@@ -222,6 +225,7 @@
 		        processData: false,
 		        contentType: false,
 		        success: function(response) {
+		            hideLoading();
 		            if (response.flag === "success") {
 			            alert("밸런스 게임 등록이 완료되었어요!");		            	
 			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + '1' + '&category=' + 'all');
@@ -230,6 +234,7 @@
 		            }
 		        },
 		        error: function(xhr) {
+		            hideLoading();
 		        	alert("밸런스 게임 저장 중에 문제가 발생했어요.");
 		            console.error(xhr);
 		        }
