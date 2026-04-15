@@ -41,17 +41,6 @@ function generateUUID() {
     );
 }
 
-// [로딩 제어 함수]
-function showLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.classList.add('active');
-}
-
-function hideLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.classList.remove('active');
-}
-
 // [3] 미리보기 함수 (콘솔 확인 로직 추가)
 async function previewImage(inputOrFile, targetId) {
     const preview = document.getElementById(targetId);
@@ -74,7 +63,7 @@ async function previewImage(inputOrFile, targetId) {
     }
 
     // [로딩 시작]
-    showLoading();
+    showLoading(0, '이미지를 처리하고 있습니다', '품질을 유지하며 압축 중입니다...');
 
     try {
         // 압축 진행

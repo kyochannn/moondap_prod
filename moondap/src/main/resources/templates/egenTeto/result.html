@@ -15,6 +15,9 @@
 </head>
 
 <body layout:fragment="content">
+    <!-- 복사 알림 토스트 (밸런스 게임 통일) -->
+    <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
+
     <main class="main">
 
         <!-- Starter Section Section -->
@@ -294,21 +297,21 @@
             <!-- 하단 액션 버튼 -->
             <div class="container pb-5 text-center" data-aos="fade-up">
                 <div class="d-flex flex-wrap justify-content-center gap-3">
-                    <a th:href="@{/egenTeto/select}" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold">
+                    <a th:href="@{/egenTeto/select}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
                         <i class="bi bi-arrow-repeat"></i> 다시하기
                     </a>
                     <!-- <button onclick="saveImage()" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
                         <i class="bi bi-download"></i> 결과 이미지 저장
                     </button> -->
+                    <a href="/" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
+                        <i class="bi bi-grid-fill"></i> 다른 테스트 보기
+                    </a>
                     <button onclick="copyLinkAction()" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow text-white">
                         <i class="bi bi-link-45deg"></i> 링크 공유
                     </button>
                     <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-4 py-2 fw-bold shadow text-dark" style="background-color: #FEE500; border: none;">
                         <i class="bi bi-chat-fill"></i> 카톡 공유
                     </button>
-                </div>
-                <div class="copyMessage mt-3" style="display:none; color: #3876f2;">
-                    <i class="bi bi-clipboard-check"></i> 링크가 복사되었습니다!
                 </div>
             </div>
         </div>
@@ -334,13 +337,26 @@
                 link.click();
             }
 
-            // 2. 결과 링크 복사
+            // 2. 결과 링크 복사 (밸런스 게임 스타일)
             function copyLinkAction() {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    const msg = document.querySelector('.copyMessage');
-                    msg.innerHTML = '<i class="bi bi-clipboard-check"></i> 결과 링크가 복사되었습니다!';
-                    msg.style.display = 'block';
-                    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+                const url = shareUrl || window.location.href;
+                
+                navigator.clipboard.writeText(url).then(function() {
+                    const toast = document.getElementById("copyToast");
+                    toast.className = "show";
+                    setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+                }).catch(function(err) {
+                    // 구형 브라우저 대응 (폴백)
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    const toast = document.getElementById("copyToast");
+                    toast.className = "show";
+                    setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
                 });
             }
 
@@ -353,16 +369,20 @@
                 });
             }
 
-            // 3. Highcharts - 정규분포 그래프
+            // 3. Highcharts - 정규분포 그래프 및 분석 연출
             document.addEventListener('DOMContentLoaded', function() {
+                // 전역 showLoading 호출 (1.8초 뒤 자동 종료)
+                // showLoading(1.8, '결과 분석중입니다.', '데이터를 바탕으로 당신의 성향을 분석하고 있습니다...');
+
                 if (!u) return;
                 
-                // 유저의 백분위에 따른 시각적 좌표 재계산 (-100 ~ 100 스케일)
+                // 유저의 백분위에 따른 시각적 좌표 재계산 (표준 분포상의 위치 매핑)
                 const topPercent = u.topPercent; // 상위 1% ~ 50%
                 const isTeto = u.teto;
                 
-                // 상위 50%일 때 거리가 50, 상위 1%일 때 거리가 99가 되도록 매핑
-                let offset = 100 - topPercent;
+                // 50%일 때 0(중앙), 1%일 때 약 95(개별 극단)가 되도록 매핑
+                // 공식: (50 - 상위%) * 계수
+                let offset = (50 - topPercent) * 1.92; 
                 let displayPosition = isTeto ? -offset : offset; // 테토는 왼쪽(-), 에겐은 오른쪽(+)
                 
                 const userScore = displayPosition;

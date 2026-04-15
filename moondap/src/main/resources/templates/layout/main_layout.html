@@ -10,11 +10,103 @@
     <th:block th:replace="~{fragment/link::link}"></th:block>
 </head>
 <body>
-    <!-- 로딩 오버레이 (작업 중 화면 차단) -->
+    <!-- 로딩 오버레이 (프리미엄 글래스모피즘 디자인) -->
     <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p class="loading-text">이미지를 처리하고 있습니다...</p>
+        <div class="loading-box">
+            <div class="spinner-container">
+                <div class="custom-spinner"></div>
+                <div class="spinner-core"></div>
+            </div>
+            <h4 class="loading-title">문답을 준비하고 있습니다</h4>
+            <p class="loading-subtext">잠시만 기다려주세요...</p>
+        </div>
     </div>
+
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .loading-box {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+        }
+
+        .custom-spinner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top: 4px solid #00d2ff;
+            border-right: 4px solid #3a7bd5;
+            animation: spin 1s linear infinite;
+        }
+
+        .spinner-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d2ff;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .loading-subtext {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            margin: 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+    </style>
 
     <!-- header -->
     <th:block th:replace="~{fragment/header::header}"></th:block>

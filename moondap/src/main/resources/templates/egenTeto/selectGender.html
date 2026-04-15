@@ -60,12 +60,7 @@
             <input type="hidden" id="genderInput" name="gender">
         </form>
 
-        <!-- 로딩 오버레이 -->
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner"></div>
-            <h4>질문지를 생성중입니다...</h4>
-            <p>잠시만 기다려주세요.</p>
-        </div>
+        <!-- Hidden Form 및 스크립트는 유지 (로딩 HTML만 삭제) -->
     </main>
 
     <script>
@@ -76,8 +71,12 @@
             const card = document.querySelector(`.gender-card.${gender === 'M' ? 'male' : 'female'}`);
             card.classList.add('clicked');
             
-            // 로딩 오버레이 표시
-            document.getElementById("loadingOverlay").style.display = 'flex';
+            // 로딩 오버레이 표시 (전역 함수 사용 가능하도록 처리)
+            if (typeof showLoading === 'function') {
+                showLoading('질문지를 생성하고 있습니다', '성별에 따른 맞춤 문항을 준비 중입니다...');
+            } else {
+                document.getElementById("loadingOverlay").classList.add('active');
+            }
             
             // 약간의 지연 후 폼 제출
             setTimeout(() => {
