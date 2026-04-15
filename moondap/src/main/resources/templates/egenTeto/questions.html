@@ -40,12 +40,7 @@
             <input type="hidden" id="answersInput" name="answers">
         </form>
 
-        <!-- 로딩 오버레이 -->
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner"></div>
-            <h4>결율을 분석하고 있습니다...</h4>
-            <p>잠시만 기다려주세요.</p>
-        </div>
+        <!-- 결과 전송을 위한 Hidden Form -->
     </main>
 
     <!-- JS 로직 -->
@@ -168,7 +163,12 @@
         };
 
         function finishTest() {
-            document.getElementById("loadingOverlay").style.display = 'flex';
+            // 로딩 오버레이 표시 (전역 함수 사용)
+            if (typeof showLoading === 'function') {
+                showLoading(0, '결과 분석중입니다.', '당신의 성향 분석 알고리즘이 동작 중입니다...');
+            } else {
+                document.getElementById("loadingOverlay").classList.add('active');
+            }
             document.getElementById("answersInput").value = JSON.stringify(userAnswers);
             
             setTimeout(() => {

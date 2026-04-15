@@ -16,26 +16,32 @@ import com.moondap.mapper.EgenTetoMapper;
 @Service
 public class EgenTetoService {
 
-    // --- 문항 매핑 상수 ---
-    // 남성(M) 매핑
+    // --- 문항 매핑 상수 (3:3 밸런스 조정 완료) ---
+    // 남성(Male) 매핑
     private static final int[] M_STYLE_IDX =    {0, 4, 9, 14, 18, 22};
-    private static final int[] M_STYLE_REV =    {0, 9, 18}; // 에겐형 문항(다양성/탐색)
-    private static final int[] M_SOCIAL_IDX =   {2, 5, 11, 13, 21, 23};
-    private static final int[] M_SOCIAL_REV =   {5, 13, 21, 23}; // 에겐형 문항(공감/조화)
-    private static final int[] M_INNER_IDX =    {1, 6, 7, 16, 17, 19};
-    private static final int[] M_INNER_REV =    {6, 7, 16, 19}; // 에겐형 문항(감정공유/눈물)
-    private static final int[] M_AMBITION_IDX = {3, 8, 10, 12, 15, 20};
-    private static final int[] M_AMBITION_REV = {12}; // 에겐형 문항(부담감)
+    private static final int[] M_STYLE_REV =    {0, 9, 18};    // 에겐형 3개 (다양성/탐색)
+    
+    private static final int[] M_SOCIAL_IDX =   {2, 5, 11, 13, 15, 23};
+    private static final int[] M_SOCIAL_REV =   {5, 13, 23};   // 에겐형 3개 (공감/살핌/조화)
+    
+    private static final int[] M_INNER_IDX =    {1, 6, 10, 16, 17, 19};
+    private static final int[] M_INNER_REV =    {6, 16, 19};   // 에겐형 3개 (털어놓음/눈물/안타까워함)
+    
+    private static final int[] M_AMBITION_IDX = {3, 7, 8, 12, 20, 21};
+    private static final int[] M_AMBITION_REV = {7, 12, 21};   // 에겐형 3개 (불안감/부담감/도움요청)
 
-    // 여성(W) 매핑
+    // 여성(Female) 매핑
     private static final int[] W_STYLE_IDX =    {0, 4, 9, 14, 18, 22};
-    private static final int[] W_STYLE_REV =    {0, 9, 18}; // 에겐형 문항(시도/관리/소녀스러움)
-    private static final int[] W_SOCIAL_IDX =   {2, 10, 13, 15, 17, 23};
-    private static final int[] W_SOCIAL_REV =   {10, 13, 17, 23}; // 에겐형 문항(간접표현/분위기/케어)
-    private static final int[] W_INNER_IDX =    {1, 5, 6, 7, 16, 19};
-    private static final int[] W_INNER_REV =    {1, 5, 6, 7, 16, 19}; // 에겐형 문항(거리두기/결정장애/동요/스트레스)
-    private static final int[] W_AMBITION_IDX = {3, 8, 11, 12, 20, 21};
-    private static final int[] W_AMBITION_REV = {12, 21}; // 에겐형 문항(관계지향)
+    private static final int[] W_STYLE_REV =    {0, 9, 18};    // 에겐형 3개 (시도/유행관리/여성스러움)
+    
+    private static final int[] W_SOCIAL_IDX =   {2, 10, 13, 15, 17, 21};
+    private static final int[] W_SOCIAL_REV =   {10, 13, 17};   // 에겐형 3개 (뒷담화/살핌/따뜻함)
+    
+    private static final int[] W_INNER_IDX =    {1, 5, 8, 11, 20, 23};
+    private static final int[] W_INNER_REV =    {1, 5, 23};    // 에겐형 3개 (거리두기/망설임/관계중시)
+    
+    private static final int[] W_AMBITION_IDX = {3, 6, 7, 12, 16, 19};
+    private static final int[] W_AMBITION_REV = {12, 16, 19};  // 에겐형 3개 (관계그림/동요/스트레스)
 
     private final EgenTetoMapper egenTetoMapper;
 
@@ -147,11 +153,11 @@ public class EgenTetoService {
     }
 
     private int convertAnswerToScore(String answer, boolean isReverse) {
-        int score = 2; // 기본값 (그렇지 않다 수준)
-        if (answer.contains("매우 그렇다")) score = 4;
-        else if (answer.contains("그렇다")) score = 3;
-        else if (answer.contains("그렇지 않다")) score = 2;
-        else if (answer.contains("매우 그렇지 않다")) score = 1;
+        int score = 2; // 기본값
+        if (answer.equals("매우 그렇다")) score = 4;
+        else if (answer.equals("그렇다")) score = 3;
+        else if (answer.equals("그렇지 않다")) score = 2;
+        else if (answer.equals("매우 그렇지 않다")) score = 1;
 
         if (isReverse) {
             // 역채점: 그렇다(4) -> 에겐(4)/테토(1), 그렇지 않다(1) -> 에겐(1)/테토(4)
@@ -171,15 +177,24 @@ public class EgenTetoService {
     }
 
     private int calculateRank(int score) {
-        if (score >= 95) return 1;
-        if (score >= 90) return 3;
-        if (score >= 85) return 6;
-        if (score >= 80) return 10;
-        if (score >= 75) return 15;
-        if (score >= 70) return 22;
-        if (score >= 65) return 30;
-        if (score >= 60) return 40;
-        if (score >= 55) return 48;
+        // 정밀한 백분위 산출 (50점=50%, 100점=1%)
+        if (score >= 98) return 1;
+        if (score >= 95) return 2;
+        if (score >= 92) return 4;
+        if (score >= 89) return 7;
+        if (score >= 86) return 10;
+        if (score >= 83) return 13;
+        if (score >= 80) return 16;
+        if (score >= 77) return 19;
+        if (score >= 74) return 22;
+        if (score >= 71) return 25;
+        if (score >= 68) return 28;
+        if (score >= 65) return 31;
+        if (score >= 62) return 34;
+        if (score >= 59) return 37;
+        if (score >= 56) return 40;
+        if (score >= 53) return 44;
+        if (score >= 51) return 47;
         return 50;
     }
 

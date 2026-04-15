@@ -7,20 +7,41 @@
     min-height: 500px;
 }
 
-/* 프로그레스 바 */
+/* 프로그레스 바 (글래스모피즘) */
 .test-progress {
-    height: 10px;
-    background-color: #f0f0f0;
-    border-radius: 5px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
     margin-bottom: 40px;
     overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .test-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #3876f2, #de66e9);
+    background: linear-gradient(90deg, #3876f2, #de66e9, #3876f2);
+    background-size: 200% 100%;
     width: 0%;
-    transition: width 0.4s ease;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(56, 118, 242, 0.4);
+    animation: gradientMove 5s linear infinite;
+    position: relative;
+}
+
+.test-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
 }
 
 /* 질문 섹션 관리 */

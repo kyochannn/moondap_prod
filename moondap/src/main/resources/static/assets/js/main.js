@@ -209,3 +209,34 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+/**
+ * 전역 로딩 오버레이 제어 함수
+ * @param {number} seconds - 자동으로 닫힐 시간(초). 0이면 수동으로 닫아야 함.
+ * @param {string} title - 메인 타이틀
+ * @param {string} subtext - 서브 설명 문구
+ */
+function showLoading(seconds, title, subtext) {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    if (title) overlay.querySelector('.loading-title').innerText = title;
+    if (subtext) overlay.querySelector('.loading-subtext').innerText = subtext;
+    overlay.classList.add('active');
+
+    // 초 단위 설정이 있을 경우 자동 종료 타이머 설정
+    if (seconds && seconds > 0) {
+      setTimeout(() => {
+        hideLoading();
+        // AOS 애니메이션 리프레시 (필요 시)
+        if (typeof AOS !== 'undefined') AOS.refresh();
+      }, seconds * 1000);
+    }
+  }
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+  }
+}
