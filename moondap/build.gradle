@@ -58,6 +58,24 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
 }
 
+// WAR 빌드 시 DevTools 제외 설정
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+}
+
+tasks.named('bootWar') {
+    // production 빌드 시 devtools 제외를 명시적으로 보장
+    exclude '**/spring-boot-devtools-*.jar'
+}
+
+tasks.named('war') {
+    // 일반 war 태스크에서도 제외
+    exclude '**/spring-boot-devtools-*.jar'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
