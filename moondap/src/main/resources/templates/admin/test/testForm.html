@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${test.id != null} ? '테스트 수정' : '테스트 생성'">테스트 관리 - 문답</title>
+
+    <!-- 어드민 폼 공통 스타일 -->
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+    <style>
+        /* 테스트 폼 전용 미세 조정 */
+        #thumbnail-drop-zone { max-width: 300px; margin: 0 auto; }
+    </style>
+
+
+    <!-- 이미지 유효성 검사 및 압축용 로직 통합 -->
+    <script th:src="@{/assets/js/dragAndDrop.js}"></script>
+</head>
+
+<body layout:fragment="content">
+    <div class="container pb-5">
+        <section id="admin-test-form" class="section py-1">
+            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+                
+                <div class="row">
+                    <div class="col-lg-8 offset-lg-2">
+                        
+                        <!-- 헤더 -->
+                        <div class="pt-3 text-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 px-2 py-3">
+                                <h5 class="text-white mb-0 fw-bold">
+                                    <span th:text="${test.id != null} ? '테스트 정보 수정' : '새 테스트 등록'"></span>
+                                </h5>
+                            </div>
+                        </div>
+
+                        <form th:action="${test.id != null} ? @{/admin/test/{id}/update(id=${test.id})} : @{/admin/test/create}"
+                              method="post" enctype="multipart/form-data" id="testForm">
+                            
+                            <!-- 테스트 키 (숨김 처리) -->
+                            <input type="hidden" name="testKey" th:value="${test.testKey}">
+
+                            <!-- 제목 입력 -->
+                            <div class="leadership-slider pb-4">
+                                <p class="text-start ms-2 text-primary small mb-2">
+                                    <i class="bi bi-info-circle-fill"></i> 어떤 테스트인가요? 제목을 알려주세요.
+                                </p>
+                                <input type="text" name="title" class="custom-input" 
+                                       placeholder="테스트 제목을 입력해주세요" maxlength="100"
+                                       th:value="${test.title}" required>
+                            </div>
+
+                            <!-- 카테고리 + 시간 -->
+                            <div class="row leadership-slider pb-4 g-3">
+                                <div class="col-md-7">
+                                    <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-tag-fill"></i> 카테고리</p>
+                                    <select name="category" class="form-select text-white bord-radius-20 d px-3 py-2">
+                                        <option value="">Box 카테고리 선택</option>
+                                        <option value="성격/심리" th:selected="${test.category == '성격/심리'}">🧠 성격/심리</option>
+                                        <option value="연애/관계" th:selected="${test.category == '연애/관계'}">💖 연애/관계</option>
+                                        <option value="직업/진로" th:selected="${test.category == '직업/진로'}">💼 직업/진로</option>
+                                        <option value="라이프스타일" th:selected="${test.category == '라이프스타일'}">🌿 라이프스타일</option>
+                                        <option value="재미/유머" th:selected="${test.category == '재미/유머'}">🎉 재미/유머</option>
+                                        <option value="기타" th:selected="${test.category == '기타'}">🔖 기타</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-stopwatch-fill"></i> 소요 시간(분)</p>
+                                    <input type="number" name="estimatedTime" class="custom-input"
+                                           min="1" max="60" th:value="${test.estimatedTime > 0 ? test.estimatedTime : 3}">
+                                </div>
+                            </div>
+
+                            <!-- 상세 설명 (멀티라인 유지) -->
+                            <div class="leadership-slider pb-4">
+                                <p class="text-start ms-2 text-primary small mb-2">
+                                    <i class="bi bi-card-text"></i> 테스트 소개 문구를 적어주세요.
+                                </p>
+                                <textarea name="description" class="custom-input" rows="4" 
+                                          style="resize: none;" placeholder="사용자에게 보여질 테스트 설명을 자세히 적어주세요."
+                                          th:text="${test.description}"></textarea>
+                            </div>
+
+                            <!-- 상태 설정 -->
+                            <div class="leadership-slider pb-4">
+                                <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-eye-fill"></i> 현재 상태</p>
+                                <select name="status" class="form-select text-white bord-radius-20 d px-3 py-2">
+                                    <option value="draft" th:selected="${test.status == 'draft' or test.status == null}">⏳ Draft (준비 중 / 임시저장)</option>
+                                    <option value="active" th:selected="${test.status == 'active'}">✅ Active (공개 중)</option>
+                                    <option value="inactive" th:selected="${test.status == 'inactive'}">🚫 Inactive (비공개 / 숨김)</option>
+                                </select>
+                            </div>
+
+
+                            <!-- 썸네일 이미지 업로드 (드롭존) -->
+                            <div class="leadership-slider pb-5">
+                                <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-image"></i> 대표 썸네일 이미지</p>
+                                <div class="leader-card selection-card p-0" style="background: transparent; border: none;">
+                                    <div class="leader-image drop-zone active-upload" 
+                                         th:classappend="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? 'has-image' : ''"
+                                         id="thumbnail-drop-zone" onclick="document.getElementById('thumbnail-file').click()">
+                                        
+                                        <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'" 
+                                             alt="썸네일" id="thumbnail-preview" class="preview-img">
+                                        
+                                        <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+                                            <div class="icon-circle mb-2">
+                                                <i class="bi bi-plus-circle-fill text-white fs-3"></i>
+                                            </div>
+                                            <p class="guide-text mb-0">썸네일 이미지 업로드</p>
+                                            <p class="guide-sub-text">(드래그 또는 클릭)</p>
+                                        </div>
+
+                                        <div class="drag-overlay"><div class="drag-message"></div></div>
+                                        <input type="file" name="thumbnailFile" id="thumbnail-file" style="display: none;" 
+                                               accept="image/*" onchange="previewImage(this, 'thumbnail-preview')">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 최종 액션 -->
+                            <div class="admin-cta-box" data-aos="fade-up" data-aos-delay="200">
+                                <div class="cta-icon">
+                                    <i class="bi bi-rocket-takeoff-fill"></i>
+                                </div>
+                                <div class="cta-content">
+                                    <h4 th:text="${test.id != null} ? '테스트 정보를 수정할까요?' : '테스트를 새로 만들까요?'"></h4>
+                                    <p>세상의 모든 테스트, 문답!</p>
+                                    <div class="cta-actions">
+                                        <a class="btn btn-outline px-5" href="/admin/test/list">취소</a>
+                                        <button type="submit" class="btn btn-primary px-5" 
+                                               th:text="${test.id != null} ? '수정' : '등록'"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- 페이지 로드 시 스크립트 초기화 -->
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // 이미지 미리보기 함수
+        function previewImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    preview.src = e.target.result;
+                    input.closest('.drop-zone').classList.add('has-image');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>

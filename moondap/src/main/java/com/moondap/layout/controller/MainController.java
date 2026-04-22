@@ -37,5 +37,15 @@ public class MainController {
 
 		return "index";
 	}
+
+	@GetMapping("/privacy")
+	public String privacy() {
+		return "legal/privacy";
+	}
+
+	@GetMapping("/terms")
+	public String terms() {
+		return "legal/terms";
+	}
 	
 }

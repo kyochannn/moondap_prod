@@ -8,121 +8,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <style>
-		.expand-btn {
-		    width: 40px; 
-		    height: 40px;
-		    border-radius: 20px !important;
-		    overflow: hidden;
-		    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		    display: flex;
-		    flex-direction: row; /* 정방향: 아이콘 - 텍스트 순서 */
-		    align-items: center;
-		    justify-content: flex-start; /* 왼쪽 정렬 */
-		    border: none;
-		    white-space: nowrap;
-		}
-		
-		/* 아이콘 영역: 항상 버튼의 시작점(왼쪽) 근처에 위치 */
-		.expand-btn i {
-		    width: 40px;
-		    min-width: 40px;
-		    height: 40px;
-		    display: flex;
-		    align-items: center;
-		    justify-content: center;
-		    font-size: 1rem;
-		    flex-shrink: 0;
-		}
-		
-		/* 텍스트 영역: 아이콘 바로 오른쪽에 밀착 */
-		.btn-text {
-		    opacity: 0;
-		    max-width: 0;
-		    overflow: hidden;
-		    transition: all 0.3s ease-out;
-		    font-size: 0.85rem;
-		    font-weight: 600;
-		    margin-left: -5px; /* 아이콘과 더 바짝 붙이기 위해 음수 마진 활용 */
-		}
-		
-		/* 확장 상태: 버튼이 왼쪽으로 늘어남 */
-		.expand-btn:hover, .expand-btn:active {
-		    width: 150px; /* 늘어나는 너비 */
-		}
-		
-		/* 확장 시 텍스트 스타일 */
-		.expand-btn:hover .btn-text, .expand-btn:active .btn-text {
-		    opacity: 1;
-		    max-width: 110px;
-		    margin-left: 0px; /* 확장 시 살짝 간격을 벌림 */
-		    padding-right: 15px; /* 오른쪽 끝 여백 */
-		}
-		
-		
-		
-		/* 드롭존 기본 스타일 */
-		.drop-zone.active-upload {
-		    position: relative;
-		    border: 2px dashed rgba(255, 255, 255, 0.4); /* 기본 점선 */
-		    border-radius: 20px;
-		    background: #1a1b2e;
-		    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		}
-		
-		/* 이미지 위에 얹어지는 가이드 레이어 */
-		.upload-guide-layer {
-		    position: absolute;
-		    inset: 0;
-		    z-index: 2;
-		    background: rgba(0, 0, 0, 0.4); /* 이미지 위를 어둡게 눌러줌 */
-		    border-radius: 20px;
-		    backdrop-filter: blur(2px); /* 약간의 블러로 텍스트 집중도 향상 */
-		    opacity: 1;
-		    transition: background 0.3s;
-		}
-		
-		/* 이미지가 있을 때 호버하면 더 밝아지게 */
-		.drop-zone:hover .upload-guide-layer {
-		    background: rgba(82, 79, 208, 0.6); /* 교찬님 포인트 컬러로 변경 */
-		}
-		
-		/* 안내 텍스트 스타일 */
-		.guide-text {
-		    color: white;
-		    font-size: 0.9rem;
-		    font-weight: 600;
-		    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-		}
-		
-		.guide-sub-text {
-		    color: rgba(255, 255, 255, 0.7);
-		    font-size: 0.75rem;
-		}
-		
-		/* 아이콘 주변 원형 강조 */
-		.icon-circle {
-		    width: 50px;
-		    height: 50px;
-		    background: rgba(255, 255, 255, 0.2);
-		    border-radius: 50%;
-		    display: flex;
-		    align-items: center;
-		    justify-content: center;
-		    border: 1px solid rgba(255, 255, 255, 0.3);
-		}
-		
-		/* 드래그 앤 드롭 시 애니메이션 */
-		@keyframes dash-move {
-		    to { stroke-dashoffset: -20; }
-		}
-		
-		.drop-zone.drag-over {
-		    border: 2px dashed #ffffff;
-		    transform: scale(0.98);
-		    box-shadow: inset 0 0 30px rgba(255,255,255,0.2);
-		}
-	</style>
+    <!-- 어드민 폼 공통 스타일 -->
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
 	
 	<!-- dragAndDrop.js에는 이미지 유효성 검사, 파일 압축, 이미지명 uuid 변경, drag and drop 기능이 포함 -->
 	<script th:src="@{/assets/js/dragAndDrop.js}"></script>
@@ -241,7 +128,10 @@
 		    });
 		}
 	</script>
-<title>세상의 모든 테스트, 문답</title></head>
+    <title>세상의 모든 테스트, 문답</title>
+    <!-- 어드민 공통 스타일 -->
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+</head>
 
 <!-- layout:fragment="레이아웃 프레그먼트 이름" -->
 <body layout:fragment="content">
@@ -253,7 +143,7 @@
 <!-- 				<form id="gameInsertForm" th:object="${gameForm}"> -->
 	
 					<div class="row">
-						<div class="col-12">
+						<div class="col-lg-8 offset-lg-2">
 							<div class="team-carousel-wrapper" data-aos="fade-up"
 								data-aos-delay="100">
 								
@@ -271,10 +161,9 @@
 									    <p class="text-start ms-2 text-primary small mb-2">
 									        <i class="bi bi-info-circle-fill"></i> 질문을 여기서 입력할 수 있어요
 									    </p>
-									    <input id="title" class="form-control bord-radius-20 text-light py-2 mb-0" 
-									           style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #333447;" 
-									           value="" maxlength="30"
-									           placeholder="밸런스 게임 질문을 입력해주세요.">
+								    <input id="title" class="custom-input" 
+								           value="" maxlength="30"
+								           placeholder="밸런스 게임 질문을 입력해주세요.">
 								    </div>
 								</div>
 								
@@ -347,9 +236,8 @@
 									        </div>
 									
 									        <div class="leader-info px-0">
-									            <textarea class="d-block bord-radius-20 text-center text-light mx-auto py-2 mt-2" 
-										          style="width: 95%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-								                  word-break: break-all; overflow-wrap: break-word; resize: none; height: auto;" 
+									            <textarea class="custom-input text-center text-light mx-auto" 
+										          style="width: 95%; word-break: break-all; overflow-wrap: break-word; resize: none; height: auto;" 
 										          id="option1Text" rows="1" placeholder="선택지 입력" maxlength="20"></textarea>
 										          
 									        </div>
@@ -377,9 +265,8 @@
 									        </div>
 									
 									        <div class="leader-info px-0">
-									            <textarea class="d-block bord-radius-20 text-center text-light mx-auto py-2 mt-2" 
-										          style="width: 95%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-								                  word-break: break-all; overflow-wrap: break-word; resize: none; height: auto;" 
+									            <textarea class="custom-input text-center text-light mx-auto" 
+										          style="width: 95%; word-break: break-all; overflow-wrap: break-word; resize: none; height: auto;" 
 										          id="option2Text" rows="1" placeholder="선택지 입력" maxlength="20"></textarea>
 									        </div>
 									    </div>
@@ -396,11 +283,11 @@
 				<!-- 반영 -->
 		        <div class="row mt-4">
 		        	<div class="col-lg-8 offset-lg-2">
-			            <div class="join-team-cta" data-aos="fade-up" data-aos-delay="300">
+			            <div class="admin-cta-box" data-aos="fade-up" data-aos-delay="300">
 			            	<div class="cta-icon">
 			                	<i class="bi bi-rocket-takeoff-fill"></i>
 			              	</div>
-			              	<div class="cta-content">
+			              	<div class="cta-content text-center">
 			                	<h4>밸런스 게임을 등록할까요?</h4>
 			                	<p>세상의 모든 테스트, 문답!</p>
 			                	<div class="cta-actions">

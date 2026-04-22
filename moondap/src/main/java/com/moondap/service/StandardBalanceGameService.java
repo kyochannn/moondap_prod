@@ -78,14 +78,16 @@ public class StandardBalanceGameService implements BalanceGameService {
     		return null;
     	}
     	
-    	// Service 계산 로직
-    	int totalCount = balanceGame.getOption1Count() + balanceGame.getOption2Count();
+    	// Service 계산 로직 - Null safe 처리를 위해 Integer에서 int로 변환 시 null 체크 추가
+    	int o1Count = (balanceGame.getOption1Count() == null) ? 0 : balanceGame.getOption1Count();
+    	int o2Count = (balanceGame.getOption2Count() == null) ? 0 : balanceGame.getOption2Count();
+    	int totalCount = o1Count + o2Count;
     	
     	if (totalCount == 0) {
     	    balanceGame.setOption1Percent(50);
     	    balanceGame.setOption2Percent(50);
     	} else {
-    	    int option1Percent = (balanceGame.getOption1Count() * 100) / totalCount;
+    	    int option1Percent = (o1Count * 100) / totalCount;
     	    int option2Percent = 100 - option1Percent;
     	    
     	    balanceGame.setOption1Percent(option1Percent);
@@ -251,6 +253,11 @@ public class StandardBalanceGameService implements BalanceGameService {
         balanceGameDto.setOption2ImagePath(option2ImagePath);
     	balanceGameDto.setId(lastId);
     	balanceGameDto.setUserId(getCurrentUserId());
+    	
+    	// 신규 등록 시 카운트 초기화 (0) - NULL 방지
+    	balanceGameDto.setOption1Count(0);
+    	balanceGameDto.setOption2Count(0);
+    	balanceGameDto.setTotalCount(0);
     	
     	int updatedRows = balanceGameMapper.insertBalanceGame(balanceGameDto);
     	if (updatedRows == 1) {
