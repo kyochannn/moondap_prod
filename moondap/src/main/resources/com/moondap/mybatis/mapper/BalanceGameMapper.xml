@@ -143,9 +143,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 밸런스 게임 등록 -->
     <insert id="insertBalanceGame">
         INSERT INTO moondap.balance_questions(id, title, is_spicy, category, 
-        option_1_text, option_1_image_path, option_2_text, option_2_image_path, user_id)
+        option_1_text, option_1_image_path, option_2_text, option_2_image_path, user_id,
+        option_1_count, option_2_count, total_count)
         VALUES (#{id}, #{title}, #{isSpicy}, #{category}, 
-        #{option1Text}, #{option1ImagePath}, #{option2Text}, #{option2ImagePath}, #{userId});
+        #{option1Text}, #{option1ImagePath}, #{option2Text}, #{option2ImagePath}, #{userId},
+        #{option1Count}, #{option2Count}, #{totalCount});
     </insert>
 
     <!-- 밸런스 게임 수정 -->

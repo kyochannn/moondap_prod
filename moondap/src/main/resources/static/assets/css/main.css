@@ -2393,102 +2393,6 @@ section,
   background: var(--accent-color);
 }
 
-.team .join-team-cta {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color), transparent 95%) 0%, color-mix(in srgb, var(--accent-color), transparent 92%) 100%);
-  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 75%);
-  border-radius: 25px;
-  padding: 40px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.team .join-team-cta::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent-color), transparent 85%) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.team .join-team-cta .cta-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--accent-color), transparent 85%);
-  color: var(--accent-color);
-  display: grid;
-  place-items: center;
-  margin: 0 auto 25px;
-  position: relative;
-  z-index: 2;
-}
-
-.team .join-team-cta .cta-icon i {
-  font-size: 2rem;
-}
-
-.team .join-team-cta .cta-content {
-  position: relative;
-  z-index: 2;
-}
-
-.team .join-team-cta .cta-content h4 {
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  color: var(--heading-color);
-}
-
-.team .join-team-cta .cta-content p {
-  font-size: 1.05rem;
-  color: color-mix(in srgb, var(--default-color), transparent 15%);
-  margin-bottom: 30px;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.team .join-team-cta .cta-content .cta-actions {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  flex-wrap: nowrap !important;
-}
-
-.team .join-team-cta .cta-content .cta-actions .btn {
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.team .join-team-cta .cta-content .cta-actions .btn.btn-primary {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  border: 1px solid var(--accent-color);
-}
-
-.team .join-team-cta .cta-content .cta-actions .btn.btn-primary:hover {
-  background: color-mix(in srgb, var(--accent-color), black 15%);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-color), transparent 65%);
-}
-
-.team .join-team-cta .cta-content .cta-actions .btn.btn-outline {
-  background: transparent;
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-}
-
-.team .join-team-cta .cta-content .cta-actions .btn.btn-outline:hover {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  transform: translateY(-2px);
-}
-
 .team .swiper-wrapper {
   height: auto !important;
 }
@@ -2511,14 +2415,6 @@ section,
 
   .team .team-grid .member-hexagon:nth-child(even) {
     margin-top: 30px;
-  }
-
-  .team .join-team-cta {
-    padding: 30px 20px;
-  }
-
-  .team .join-team-cta .cta-content h4 {
-    font-size: 1.5rem;
   }
 }
 
@@ -2545,15 +2441,6 @@ section,
 
   .team .team-grid .member-hexagon:nth-child(even) {
     margin-top: 0;
-  }
-
-  .team .join-team-cta .cta-content .cta-actions {
-    /*     flex-direction: column; */
-    align-items: center;
-  }
-
-  .team .join-team-cta .cta-content .cta-actions .btn {
-    width: 200px;
   }
 }
 

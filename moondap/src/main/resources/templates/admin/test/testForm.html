@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${test.id != null} ? '테스트 수정' : '테스트 생성'">테스트 관리 - 문답</title>
+
+    <!-- 어드민 폼 공통 스타일 -->
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+    <style>
+        /* 테스트 폼 전용 미세 조정 */
+        #thumbnail-drop-zone { max-width: 300px; margin: 0 auto; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <!-- 이미지 유효성 검사 및 압축용 로직 통합 -->
+    <script th:src="@{/assets/js/dragAndDrop.js}"></script>
+</head>
+
+<body layout:fragment="content">
+    <div class="container pb-5">
+        <section id="admin-test-form" class="section py-1">
+            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+                
+                <div class="row">
+                    <div class="col-lg-8 offset-lg-2">
+                        
+                        <!-- 헤더 -->
+                        <div class="pt-3 text-center">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 px-2 py-3">
+                                <h5 class="text-white mb-0 fw-bold">
+                                    <span th:text="${test.id != null} ? '테스트 정보 수정' : '새 테스트 등록'"></span>
+                                </h5>
+                            </div>
+                        </div>
+
+                        <form th:action="${test.id != null} ? @{/admin/test/{id}/update(id=${test.id})} : @{/admin/test/create}"
+                              method="post" enctype="multipart/form-data" id="testForm" onsubmit="return handleSubmit(event)">
+                            
+                            <!-- 1단계: 기본 정보 -->
+                            <div id="step-1" style="animation: fadeIn 0.4s ease-out;">
+                                <input type="hidden" name="testKey" th:value="${test.testKey}">
+
+                                <div class="leadership-slider pb-4">
+                                    <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 어떤 테스트인가요? 제목을 알려주세요.</p>
+                                    <input type="text" name="title" id="test-title" class="custom-input" placeholder="테스트 제목을 입력해주세요" maxlength="100" th:value="${test.title}">
+                                </div>
+
+                                <div class="row leadership-slider pb-4 g-3">
+                                    <div class="col-md-7">
+                                        <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-tag-fill"></i> 카테고리</p>
+                                        <select name="category" id="test-category" class="form-select text-white bord-radius-20 d px-3 py-2">
+                                            <option value="">Box 카테고리 선택</option>
+                                            <option value="성격/심리" th:selected="${test.category == '성격/심리'}">🧠 성격/심리</option>
+                                            <option value="연애/관계" th:selected="${test.category == '연애/관계'}">💖 연애/관계</option>
+                                            <option value="직업/진로" th:selected="${test.category == '직업/진로'}">💼 직업/진로</option>
+                                            <option value="라이프스타일" th:selected="${test.category == '라이프스타일'}">🌿 라이프스타일</option>
+                                            <option value="재미/유머" th:selected="${test.category == '재미/유머'}">🎉 재미/유머</option>
+                                            <option value="기타" th:selected="${test.category == '기타'}">🔖 기타</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-stopwatch-fill"></i> 소요 시간(분)</p>
+                                        <input type="number" name="estimatedTime" class="custom-input" min="1" max="60" th:value="${test.estimatedTime > 0 ? test.estimatedTime : 3}">
+                                    </div>
+                                </div>
+
+                                <div class="leadership-slider pb-4">
+                                    <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-card-text"></i> 테스트 소개 문구를 적어주세요.</p>
+                                    <textarea name="description" class="custom-input" rows="4" style="resize: none;" placeholder="사용자에게 보여질 테스트 설명을 자세히 적어주세요." th:text="${test.description}"></textarea>
+                                </div>
+
+                                <div class="leadership-slider pb-4">
+                                    <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-eye-fill"></i> 현재 상태</p>
+                                    <select name="status" class="form-select text-white bord-radius-20 d px-3 py-2">
+                                        <option value="draft" th:selected="${test.status == 'draft' or test.status == null}">⏳ Draft (준비 중)</option>
+                                        <option value="active" th:selected="${test.status == 'active'}">✅ Active (공개 중)</option>
+                                        <option value="inactive" th:selected="${test.status == 'inactive'}">🚫 Inactive (비공개)</option>
+                                    </select>
+                                </div>
+
+                                <div class="leadership-slider pb-5">
+                                    <p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-image"></i> 대표 썸네일 이미지</p>
+                                    <div class="leader-card selection-card p-0" style="background: transparent; border: none;">
+                                        <div class="leader-image drop-zone active-upload" th:classappend="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? 'has-image' : ''" id="thumbnail-drop-zone" onclick="document.getElementById('thumbnail-file').click()">
+                                            <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'" alt="썸네일" id="thumbnail-preview" class="preview-img">
+                                            <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+                                                <div class="icon-circle mb-2"><i class="bi bi-plus-circle-fill text-white fs-3"></i></div>
+                                                <p class="guide-text mb-0">썸네일 이미지 업로드</p>
+                                            </div>
+                                            <input type="file" name="thumbnailFile" id="thumbnail-file" style="display: none;" accept="image/*" onchange="previewImage(this, 'thumbnail-preview')">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="admin-cta-box" data-aos="fade-up">
+                                    <div class="cta-icon"><i class="bi bi-1-circle-fill"></i></div>
+                                    <div class="cta-content">
+                                        <h4>기본 정보 입력을 마쳤나요?</h4>
+                                        <p>다음은 테스트 결과 유형을 구성할 차례입니다.</p>
+                                        <div class="cta-actions">
+                                            <a class="btn btn-outline px-5" href="/admin/test/list">취소</a>
+                                            <button type="button" class="btn btn-primary px-5" onclick="nextStep(2)">결과 구성하기</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2단계: 결과 구성 -->
+                            <div id="step-2" style="display: none; animation: fadeIn 0.4s ease-out;">
+                                <div class="leadership-slider pb-5 border-bottom border-secondary mb-5">
+                                    <div class="mb-3 ms-2 d-flex justify-content-between align-items-center">
+                                        <p class="text-primary small mb-0"><i class="bi bi-trophy-fill"></i> 결과 유형 구성</p>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="addResult()">
+                                            <i class="bi bi-plus-lg me-1"></i> 결과 추가
+                                        </button>
+                                    </div>
+                                    <p class="text-white-50 small ms-2 mb-3">사용자가 받을 수 있는 결과 유형들을 정의해주세요.</p>
+                                    <div id="results-container">
+                                        <div th:each="r, iter : ${test.results}" class="result-item mb-4 p-3 border rounded shadow-sm" 
+                                             style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="text-white mb-0 small fw-bold">결과 유형</h6>
+                                                <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeResult(this)"><i class="bi bi-trash3"></i></button>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-md-3">
+                                                    <div class="drop-zone mini-drop-zone h-100" th:classappend="${r.resultImage != null} ? 'has-image' : ''" 
+                                                         style="min-height: 100px; border-radius: 12px; border: 2px dashed rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; background: rgba(0,0,0,0.2);">
+                                                        <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;" 
+                                                               th:onchange="|previewResultImage(this, 'res-preview-' + ${iter.index})|">
+                                                        <img th:id="'res-preview-' + ${iter.index}" class="preview-img" 
+                                                             th:src="${r.resultImage != null} ? @{'/uploads/' + ${r.resultImage}} : ''" 
+                                                             style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+                                                        <div class="text-center text-white-50 small upload-placeholder" style="z-index: 0;">
+                                                            <i class="bi bi-image" style="font-size: 1.2rem;"></i><br>이미지
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <div class="mb-2"><input type="text" class="custom-input r-title" placeholder="결과 유형을 입력해주세요" th:value="${r.resultTitle}" oninput="updateDomainOptions()"></div>
+                                                    <input type="hidden" class="r-image-name" th:value="${r.resultImage}">
+                                                    <div class="mb-0"><textarea class="custom-input r-content" rows="2" style="font-size: 0.9rem;" placeholder="결과 유형에 대한 상세 설명을 입력하세요" th:text="${r.resultContent}"></textarea></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div th:if="${#lists.isEmpty(test.results)}" id="no-results-msg" class="text-center py-4 text-white-50 small">등록된 결과 유형이 없습니다.</div>
+                                    </div>
+                                </div>
+
+                                <div class="admin-cta-box" data-aos="fade-up">
+                                    <div class="cta-icon"><i class="bi bi-2-circle-fill"></i></div>
+                                    <div class="cta-content">
+                                        <h4>결과 유형을 모두 만드셨나요?</h4>
+                                        <p>마지막으로 테스트 질문을 구성합니다.</p>
+                                        <div class="cta-actions">
+                                            <button type="button" class="btn btn-outline px-5" onclick="prevStep(1)">이전으로</button>
+                                            <button type="button" class="btn btn-primary px-5" onclick="nextStep(3)">질문 구성하기</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3단계: 질문 구성 -->
+                            <div id="step-3" style="display: none; animation: fadeIn 0.4s ease-out;">
+                                <div class="leadership-slider pb-5">
+                                    <div class="mb-3 ms-2 d-flex justify-content-between align-items-center">
+                                        <p class="text-primary small mb-0"><i class="bi bi-list-check"></i> 질문 구성</p>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="addQuestion()">
+                                            <i class="bi bi-plus-lg me-1"></i> 질문 추가
+                                        </button>
+                                    </div>
+                                    <div id="questions-container">
+                                        <div th:each="q, stat : ${test.questions}" class="question-item mb-4 p-3 border rounded" 
+                                             style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="text-white mb-0 small fw-bold">질문 #<span class="q-index" th:text="${stat.count}">1</span></h6>
+                                                <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeQuestion(this)"><i class="bi bi-trash3"></i></button>
+                                            </div>
+                                            <div class="mb-3"><textarea class="custom-input q-text" rows="2" placeholder="질문 내용을 입력하세요" required th:text="${q.questionText}"></textarea></div>
+                                            <div class="row g-2">
+                                                <div class="col-8">
+                                                    <select class="form-select text-white q-domain" style="font-size: 0.85rem; background-color: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);" th:attr="data-selected-domain=${q.domain}"><option value="">도메인(결과유형) 선택</option></select>
+                                                </div>
+                                                <div class="col-4 d-flex align-items-center justify-content-end">
+                                                    <div class="form-check form-switch ps-4"><input class="form-check-input q-reverse" type="checkbox" value="true" th:checked="${q.reverse}"><label class="form-check-label text-white-50 small ms-1">역채점</label></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div th:if="${#lists.isEmpty(test.questions)}" id="no-questions-msg" class="text-center py-4 text-white-50 small">등록된 질문이 없습니다.</div>
+                                    </div>
+                                </div>
+
+                                <div class="admin-cta-box" data-aos="fade-up">
+                                    <div class="cta-icon"><i class="bi bi-3-circle-fill"></i></div>
+                                    <div class="cta-content">
+                                        <h4 th:text="${test.id != null} ? '테스트 수정을 완료할까요?' : '테스트를 등록할까요?'"></h4>
+                                        <p>모든 구성이 완료되었습니다!</p>
+                                        <div class="cta-actions">
+                                            <button type="button" class="btn btn-outline px-5" onclick="prevStep(2)">이전으로</button>
+                                            <button type="submit" class="btn btn-primary px-5" th:text="${test.id != null} ? '수정 완료' : '등록 완료'"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- 스크립트 영역 -->
+    <script>
+        $(document).ready(function() {
+            AOS.init({ duration: 800, once: true });
+            updateDomainOptions();
+        });
+
+        function nextStep(step) {
+            if (step === 2) {
+                const title = $('#test-title').val().trim();
+                const category = $('#test-category').val();
+                if (!title) { alert('테스트 제목을 입력해주세요.'); return; }
+                if (!category) { alert('카테고리를 선택해주세요.'); return; }
+            } else if (step === 3) {
+                if ($('.result-item').length === 0) { alert('최소 한 개 이상의 결과 유형을 등록해야 합니다.'); return; }
+            }
+            $('[id^="step-"]').hide();
+            $(`#step-${step}`).show();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (step === 3) updateDomainOptions();
+        }
+
+        function prevStep(step) {
+            $('[id^="step-"]').hide();
+            $(`#step-${step}`).show();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 공통 이미지 미리보기
+        function previewImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    preview.src = e.target.result;
+                    $(input).closest('.drop-zone').addClass('has-image');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 결과 이미지 미리보기 특화
+        function previewResultImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    preview.src = e.target.result;
+                    const $item = $(input).closest('.result-item');
+                    $item.find('.mini-drop-zone').addClass('has-image');
+                    $item.attr('data-has-new-image', 'true'); // 새 이미지 플래그 설정
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // 결과 유형 추가
+        function addResult() {
+            const container = document.getElementById('results-container');
+            if (document.getElementById('no-results-msg')) document.getElementById('no-results-msg').style.display = 'none';
+
+            const index = Date.now(); // 유니크 ID 생성용
+            const html = `
+                <div class="result-item mb-4 p-3 border rounded shadow-sm" 
+                     style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important; animation: fadeIn 0.4s ease-out;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-white mb-0 small fw-bold">결과 유형</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeResult(this)"><i class="bi bi-trash3"></i></button>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <div class="drop-zone mini-drop-zone h-100" style="min-height: 100px; border-radius: 12px; border: 2px dashed rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; background: rgba(0,0,0,0.2);">
+                                <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;" 
+                                       onchange="previewResultImage(this, 'res-preview-${index}')">
+                                <img id="res-preview-${index}" class="preview-img" style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+                                <div class="text-center text-white-50 small upload-placeholder" style="z-index: 0;">
+                                    <i class="bi bi-image" style="font-size: 1.2rem;"></i><br>이미지
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-2"><input type="text" class="custom-input r-title" placeholder="결과 유형을 입력해주세요" oninput="updateDomainOptions()"></div>
+                            <input type="hidden" class="r-image-name" value="">
+                            <div class="mb-0"><textarea class="custom-input r-content" rows="2" style="font-size: 0.9rem;" placeholder="결과 유형에 대한 상세 설명을 입력하세요"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeResult(btn) {
+            if (confirm('이 결과 유형을 삭제하시겠습니까?')) {
+                btn.closest('.result-item').remove();
+                updateDomainOptions();
+                if ($('.result-item').length === 0 && document.getElementById('no-results-msg')) document.getElementById('no-results-msg').style.display = 'block';
+            }
+        }
+
+        function updateDomainOptions() {
+            const resultTitles = [];
+            $('.r-title').each(function() {
+                const title = $(this).val().trim();
+                if (title) resultTitles.push(title);
+            });
+            $('.q-domain').each(function() {
+                const $select = $(this);
+                const currentSelected = $select.val() || $select.attr('data-selected-domain');
+                $select.empty().append('<option value="">도메인(결과유형) 선택</option>');
+                resultTitles.forEach(title => {
+                    const isSelected = (title === currentSelected) ? 'selected' : '';
+                    $select.append(`<option value="${title}" ${isSelected}>${title}</option>`);
+                });
+                if (resultTitles.includes(currentSelected)) $select.val(currentSelected);
+            });
+        }
+
+        function addQuestion() {
+            const container = document.getElementById('questions-container');
+            if (document.getElementById('no-questions-msg')) document.getElementById('no-questions-msg').style.display = 'none';
+            const index = container.querySelectorAll('.question-item').length;
+            const html = `
+                <div class="question-item mb-4 p-3 border rounded" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important; animation: fadeIn 0.4s ease-out;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-white mb-0 small fw-bold">질문 #<span class="q-index">${index + 1}</span></h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removeQuestion(this)"><i class="bi bi-trash3"></i></button>
+                    </div>
+                    <div class="mb-3"><textarea class="custom-input q-text" rows="2" placeholder="질문 내용을 입력하세요" required></textarea></div>
+                    <div class="row g-2">
+                        <div class="col-8">
+                            <select class="form-select text-white q-domain" style="font-size: 0.85rem; background-color: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);"><option value="">도메인 선택</option></select>
+                        </div>
+                        <div class="col-4 d-flex align-items-center justify-content-end">
+                            <div class="form-check form-switch ps-4"><input class="form-check-input q-reverse" type="checkbox" value="true"><label class="form-check-label text-white-50 small ms-1">역채점</label></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            reindexQuestions();
+            updateDomainOptions();
+        }
+
+        function removeQuestion(btn) {
+            if (confirm('이 질문을 삭제하시겠습니까?')) {
+                btn.closest('.question-item').remove();
+                reindexQuestions();
+                if ($('.question-item').length === 0 && document.getElementById('no-questions-msg')) document.getElementById('no-questions-msg').style.display = 'block';
+            }
+        }
+
+        function reindexQuestions() {
+            $('.question-item').each(function(idx) { $(this).find('.q-index').text(idx + 1); });
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const $submitBtn = $(form).find('button[type="submit"]');
+            const originalBtnText = $submitBtn.text();
+            
+            if ($('.question-item').length === 0) { alert('최소 한 개 이상의 질문을 등록해야 합니다.'); return; }
+            $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...');
+
+            const formData = new FormData(form);
+            const results = [];
+            $('.result-item').each(function() {
+                const $item = $(this);
+                const title = $item.find('.r-title').val().trim();
+                const hasNewImage = $item.attr('data-has-new-image') === 'true';
+                
+                if (title) {
+                    results.push({ 
+                        resultTitle: title, 
+                        resultImage: $item.find('.r-image-name').val(), 
+                        resultContent: $item.find('.r-content').val().trim(),
+                        hasNewImage: hasNewImage
+                    });
+                    if (hasNewImage) {
+                        const file = $item.find('.r-file')[0].files[0];
+                        formData.append('resultFiles', file);
+                    }
+                }
+            });
+
+            const questions = [];
+            $('.question-item').each(function() {
+                const text = $(this).find('.q-text').val().trim();
+                if (text) questions.push({ questionText: text, domain: $(this).find('.q-domain').val(), reverse: $(this).find('.q-reverse').is(':checked') });
+            });
+
+            formData.append('resultsJson', JSON.stringify(results));
+            formData.append('questionsJson', JSON.stringify(questions));
+
+            $.ajax({
+                url: form.action,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    if (res.success) { alert(res.message); window.location.href = '/admin/test/list'; }
+                    else { alert(res.message); $submitBtn.prop('disabled', false).text(originalBtnText); }
+                },
+                error: function() { alert('오류가 발생했습니다.'); $submitBtn.prop('disabled', false).text(originalBtnText); }
+            });
+            return false;
+        }
+    </script>
+</body>
+</html>

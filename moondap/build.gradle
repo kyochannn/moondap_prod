@@ -33,11 +33,12 @@ dependencies {
 	
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.core:jackson-core'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -59,13 +60,6 @@ dependencies {
 }
 
 // WAR 빌드 시 DevTools 제외 설정
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
-    }
-}
-
 tasks.named('bootWar') {
     // production 빌드 시 devtools 제외를 명시적으로 보장
     exclude '**/spring-boot-devtools-*.jar'

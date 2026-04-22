@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /my/
+
+Sitemap: https://moondap.com/sitemap.xml

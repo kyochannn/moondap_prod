@@ -45,6 +45,14 @@
               <!--               <li><a href="#">밸런스 게임 수정</a></li> -->
             </ul>
           </li>
+
+          <!-- 어드민 메뉴: 테스트 관리 -->
+          <li sec:authorize="hasRole('ADMIN')" class="dropdown"><a href="#"><span class="text-warning">테스트 관리</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="/admin/test/list">테스트 목록 관리</a></li>
+              <li><a href="/admin/test/new">신규 테스트 등록</a></li>
+            </ul>
+          </li>
           <li sec:authorize="isAuthenticated()" class="dropdown">
             <a href="#">
               <span class="text-primary fw-bold" sec:authentication="name">사용자명</span>
@@ -56,7 +64,7 @@
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
       <div class="header-right d-flex justify-content-end" style="flex: 1;">
-        <a class="btn-getstarted" href="#about">모든 테스트 보기</a>
+        <a class="btn-getstarted" href="/">모든 테스트 보기</a>
       </div>
     </div>
   </header>
