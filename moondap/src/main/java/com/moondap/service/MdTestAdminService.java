@@ -69,6 +69,11 @@ public class MdTestAdminService {
                 if (q.getQuestionText() == null || q.getQuestionText().isBlank()) continue;
                 q.setTestId(dto.getId());
                 q.setQuestionOrder(order++);
+
+                // Null 체크 및 기본값 설정
+                if (q.getReverse() == null) q.setReverse(false);
+                if (q.getActive() == null) q.setActive(true);
+
                 mdTestMapper.insertQuestion(q);
             }
         }
@@ -118,6 +123,11 @@ public class MdTestAdminService {
                 if (q.getQuestionText() == null || q.getQuestionText().isBlank()) continue;
                 q.setTestId(dto.getId());
                 q.setQuestionOrder(order++);
+
+                // Null 체크 및 기본값 설정
+                if (q.getReverse() == null) q.setReverse(false);
+                if (q.getActive() == null) q.setActive(true);
+
                 mdTestMapper.insertQuestion(q);
             }
         }
