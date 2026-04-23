@@ -42,7 +42,7 @@ public class MdTestAdminController {
     @GetMapping("/new")
     public String testNewForm(Model model) {
         model.addAttribute("test", new MdTestDTO());
-        return "admin/test/testForm";
+        return "admin/test/insertTestForm";
     }
 
     @PostMapping("/create")
@@ -81,7 +81,7 @@ public class MdTestAdminController {
         MdTestDTO test = mdTestAdminService.getTest(id);
         if (test == null) return "redirect:/admin/test/list";
         model.addAttribute("test", test);
-        return "admin/test/testForm";
+        return "admin/test/updateTestForm";
     }
 
     @PostMapping("/{id}/update")

@@ -41,6 +41,23 @@
         WHERE id = #{id}
     </select>
 
+    <select id="selectTestByTestKey" resultType="com.moondap.dto.MdTestDTO">
+        SELECT
+            id,
+            test_key,
+            title,
+            description,
+            thumbnail_image,
+            category,
+            estimated_time,
+            status,
+            created_by,
+            created_at,
+            updated_at
+        FROM md_tests
+        WHERE test_key = #{testKey}
+    </select>
+
 
     <!-- 테스트 등록 -->
     <insert id="insertTest" parameterType="com.moondap.dto.MdTestDTO" useGeneratedKeys="true" keyProperty="id">

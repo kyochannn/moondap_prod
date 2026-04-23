@@ -117,55 +117,56 @@ async function previewImage(inputOrFile, targetId) {
     }
 }
 
-// [4] 이벤트 리스너
-// [4] 이벤트 리스너 (수정됨)
-// [4] 이벤트 리스너
-document.addEventListener('DOMContentLoaded', function() {
-    // 모든 .drop-zone 요소를 찾아서 각각 이벤트를 붙임
-    document.querySelectorAll('.drop-zone').forEach(zone => {
-        
-        // 1. 드래그 중 효과
-        zone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            zone.classList.add('drag-over');
-        });
+// [4] 개별 요소 드래그 앤 드롭 초기화 함수
+function initDragAndDrop(zone) {
+    if (!zone) return;
+    
+    // 1. 드래그 중 효과
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.add('drag-over');
+    });
 
-        // 2. 드래그 나갈 때 효과
-        ['dragleave', 'dragend'].forEach(type => {
-            zone.addEventListener(type, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                zone.classList.remove('drag-over');
-            });
-        });
-
-        // 3. 파일 드롭 시 (핵심 수정 부분)
-        zone.addEventListener('drop', async (e) => {
+    // 2. 드래그 나갈 때 효과
+    ['dragleave', 'dragend'].forEach(type => {
+        zone.addEventListener(type, (e) => {
             e.preventDefault();
             e.stopPropagation();
             zone.classList.remove('drag-over');
-
-            const files = e.dataTransfer.files;
-            if (files && files.length > 0) {
-                // zone 변수는 이 블록 안에서만 유효합니다.
-                const previewImg = zone.querySelector('img');
-                const fileInput = zone.querySelector('input[type="file"]');
-                
-                // [수정 포인트] previewImage를 호출하고 압축된 파일을 리턴받음
-                const compressedFile = await previewImage(files[0], previewImg.id);
-                
-                // [수정 포인트] 리턴받은 압축 파일을 input에 강제로 삽입
-                if (compressedFile && fileInput) {
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(compressedFile);
-                    fileInput.files = dataTransfer.files;
-                    
-                    // 값이 변경되었음을 알리는 이벤트 발생 (필요 시)
-                    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }
         });
+    });
+
+    // 3. 파일 드롭 시
+    zone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove('drag-over');
+
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            const previewImg = zone.querySelector('img');
+            const fileInput = zone.querySelector('input[type="file"]');
+            
+            // previewImage를 호출하고 압축된 파일을 리턴받음
+            const compressedFile = await previewImage(files[0], previewImg.id);
+            
+            if (compressedFile && fileInput) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                fileInput.files = dataTransfer.files;
+                
+                // 값이 변경되었음을 알리는 이벤트 발생
+                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+    });
+}
+
+// [5] 이벤트 리스너
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        initDragAndDrop(zone);
     });
 
     // 브라우저 기본 드롭 방지 (파일이 브라우저에서 바로 열리는 현상 막기)

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'테스트 결과 - ' + ${test.title}">테스트 결과</title>
+    <link th:href="@{/assets/css/testResult-page.css}" rel="stylesheet">
+    <style>
+        #copyToast {
+            visibility: hidden; min-width: 200px; background-color: #ffffff; color: #000;
+            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
+            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #copyToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+        
+        .main-result-img { max-width: 500px; width: 100%; height: auto; aspect-ratio: 1/1; object-fit: cover; }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
+
+    <main class="main">
+        <section id="starter-section" class="starter-section section p-3">
+            <div class="container section-title pb-2" data-aos="fade-up">
+                <h2 th:text="${test.title}">테스트 제목</h2>
+                <p>테스트가 완료되었습니다! 당신의 유형을 확인해 보세요.</p>
+            </div>
+        </section>
+
+        <section class="section p-0">
+            <div class="container pb-4" data-aos="fade-up">
+                <div class="px-2 text-center" style="max-width: 800px; width: 100%; margin: 0 auto;">
+                    
+                    <!-- 결과 이미지 및 타이틀 -->
+                    <div class="result-image-wrapper">
+                        <img th:src="${result.resultImage != null} ? @{'/uploads/' + ${result.resultImage}} : '/assets/img/testList/default-img.png'" 
+                             class="img-fluid mb-3 main-result-img shadow rounded-4">
+                        <h3 class="fw-bold mt-4" th:text="'당신은 [' + ${result.resultTitle} + '] 유형입니다.'">결과 타이틀</h3>
+                    </div>
+
+                    <!-- 결과 상세 설명 -->
+                    <div class="light-background p-4 rounded-4 mt-4 text-start">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-chat-left-dots-fill text-primary me-2"></i>상세 분석</h5>
+                        <p class="text-white mb-0" style="white-space: pre-wrap; line-height: 1.8;" th:text="${result.resultContent}">
+                            상세 분석 내용이 출력됩니다.
+                        </p>
+                    </div>
+
+                    <!-- 하단 액션 버튼 -->
+                    <div class="mt-5 d-flex flex-wrap justify-content-center gap-3">
+                        <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
+                            <i class="bi bi-arrow-repeat"></i> 다시 하기
+                        </a>
+                        <a href="/" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
+                            <i class="bi bi-grid-fill"></i> 다른 테스트 보기
+                        </a>
+                        <button onclick="copyLinkAction()" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow text-white">
+                            <i class="bi bi-share-fill"></i> 공유하기
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script th:inline="javascript">
+        function copyLinkAction() {
+            const shareUrl = /*[[${shareUrl}]]*/ window.location.href;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const toast = document.getElementById("copyToast");
+                toast.className = "show";
+                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>

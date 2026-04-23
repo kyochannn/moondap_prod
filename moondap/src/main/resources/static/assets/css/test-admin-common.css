@@ -1,0 +1,112 @@
+/* ── 테스트 관리자 공통 스타일 (상세/수정/등록) ── */
+
+/* 1. 카드 레이아웃 */
+.admin-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+}
+
+/* 2. 다크 커스텀 테이블 */
+.table-dark-custom {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: rgba(255,255,255,0.06);
+    color: #fff;
+}
+.table-dark-custom thead th {
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.table-dark-custom td, .table-dark-custom th {
+    border-color: rgba(255,255,255,0.06);
+    vertical-align: middle;
+}
+
+/* 3. 인라인 입력 필드 (수정 페이지 전용) */
+.custom-input-inline {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    padding: 10px 14px; /* 패딩을 늘려 높이 확보 */
+    width: 100%;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    display: block;
+}
+
+/* select 요소 특화 (input과 높이 맞추기) */
+select.custom-input-inline {
+    height: auto;
+    min-height: 42px; /* input의 패딩 포함 높이와 일치시킴 */
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 36px;
+    appearance: none; /* 브라우저 기본 화살표 제거 */
+}
+
+/* textarea 요소 특화 */
+textarea.custom-input-inline {
+    min-height: 42px;
+    overflow-y: auto;
+}
+
+.custom-input-inline:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #524dd3;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(82, 77, 211, 0.25);
+}
+
+/* 4. 이미지 업로드/미리보기 영역 */
+.mini-drop-zone {
+    width: 60px; height: 60px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px dashed rgba(255, 255, 255, 0.3) !important;
+    margin: 0 auto;
+}
+.mini-drop-zone.has-image { border: none !important; }
+.preview-img { display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; z-index: 1; }
+.preview-img[src]:not([src=""]) { display: block; }
+.upload-placeholder { z-index: 0; font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+/* 5. 버튼 스타일 */
+.action-btn { padding: 4px 10px; font-size: 0.8rem; border-radius: 8px; }
+.btn-add { background: #524dd3; border: none; font-size: 0.85rem; padding: 6px 16px; }
+
+/* 6. 상태 뱃지 스타일 (공통) */
+.badge-status-active   { background-color: rgba(25, 135, 84, 0.2)  !important; color: #198754 !important; border: 1px solid rgba(25, 135, 84, 0.3); }
+.badge-status-draft    { background-color: rgba(255, 193, 7, 0.2)  !important; color: #ffc107 !important; border: 1px solid rgba(255, 193, 7, 0.3); }
+.badge-status-inactive { background-color: rgba(220, 53, 69, 0.2)  !important; color: #dc3545 !important; border: 1px solid rgba(220, 53, 69, 0.3); }
+
+/* 7. 리스트용 배지 스타일 (상세 페이지 등) */
+.order-badge {
+    width: 28px; height: 28px;
+    background: rgba(82,77,211,0.3);
+    border: 1px solid rgba(82,77,211,0.5);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; color: #a5a0ff;
+}
+.badge-reverse {
+    background: rgba(239,68,68,0.2); color: #f87171;
+    border: 1px solid rgba(239,68,68,0.3);
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
+}
+.badge-domain {
+    background: rgba(14,165,233,0.2); color: #38bdf8;
+    border: 1px solid rgba(14,165,233,0.3);
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
+}

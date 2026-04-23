@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${test.title} + ' - 문답'">테스트 상세 정보</title>
+    <style>
+        #copyToast {
+            visibility: hidden; min-width: 200px; background-color: #ffffff; color: #000;
+            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
+            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #copyToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
+
+    <main class="main">
+        <section id="game-gallery-details" class="game-gallery-details section">
+            <div class="container" data-aos="fade-up" data-aos-delay="100">
+                <div class="row gy-5">
+                    <!-- 왼쪽 이미지 영역 -->
+                    <div class="col-lg-4 order-2 order-lg-1 d-none d-lg-block">
+                        <div class="game-gallery-details-media">
+                            <div class="main-image">
+                                <img th:src="${test.thumbnailImage != null} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'" 
+                                     alt="테스트 썸네일" class="img-fluid rounded-4 shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽 콘텐츠 영역 -->
+                    <div class="col-lg-8 order-1 order-lg-2">
+                        <div class="game-gallery-details-content">
+                            <h2 class="project-title fw-bold mb-4 text-center text-lg-start" th:text="${test.title}">테스트 제목</h2>
+                            
+                            <div class="project-meta text-center text-lg-start">
+                                <div class="date-client d-flex align-items-center justify-content-center justify-content-lg-start gap-3 flex-wrap">
+                                    <div class="meta-item">
+                                        <i class="bi bi-tag-fill"></i>
+                                        <span th:text="${test.category}">카테고리</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-stopwatch-fill"></i>
+                                        <span th:text="'약 ' + ${test.estimatedTime} + '분 소요'">시간</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="bi bi-check-square-fill"></i>
+                                        <span th:text="${#lists.size(test.questions)} + '문항'">문항수</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="project-overview mt-4 mb-4">
+                                <div class="accordion project-accordion" id="testAccordion">
+                                    <div class="accordion-item shadow-sm border-0 rounded overflow-hidden">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                                <i class="bi bi-info-circle-fill me-2"></i> 테스트 소개
+                                            </button>
+                                        </h2>
+                                        <div id="collapseOne" class="accordion-collapse collapse show">
+                                            <div class="accordion-body text-white" th:text="${test.description}">
+                                                소개 내용이 들어갑니다.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="button-group mt-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                        <i class="bi bi-link-45deg"></i> 링크 복사
+                                    </button>
+                                    
+                                    <a th:href="@{/test/{key}/questions(key=${test.testKey})}"
+                                       class="btn btn-primary flex-grow-1 py-2 rounded-5 shadow-sm fw-bold"
+                                       style="background: #524dd3; border: none;">
+                                        테스트 시작 <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script th:inline="javascript">
+        function copyLinkAction() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.getElementById("copyToast");
+                toast.className = "show";
+                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>

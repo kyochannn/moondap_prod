@@ -18,6 +18,7 @@ public interface MdTestMapper {
     void updateTest(MdTestDTO dto);
     void deleteTest(Long id);
     int countByTestKey(@Param("testKey") String testKey);
+    MdTestDTO selectTestByTestKey(@Param("testKey") String testKey);
     Integer selectMaxSequenceByDatePrefix(@Param("prefix") String prefix);
 
     // 질문 CRUD
