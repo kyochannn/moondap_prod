@@ -41,12 +41,13 @@ public class StandardBalanceGameService implements BalanceGameService {
 		try {
             String isSpicy = request.get("spicyFilter");
             String category = request.get("category");
+            String status = request.get("status");
             
             if (CommonUtil.isNull(isSpicy)) {
             	isSpicy = "0";
             }
 
-            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category, offset, limit);
+            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category, status, offset, limit);
 
             if (balanceGameList == null || balanceGameList.isEmpty()) {
                 log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}", isSpicy, category);
@@ -227,6 +228,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	String title = params.get("title");
     	String spicyFilter = params.get("spicyFilter");
     	String category = params.get("category");
+    	String status = params.getOrDefault("status", "draft");
     	String option1Text = params.get("option1Text");
     	String option2Text = params.get("option2Text");
 
@@ -247,6 +249,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	balanceGameDto.setTitle(title);
         balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
         balanceGameDto.setCategory(category);
+        balanceGameDto.setStatus(status);
         balanceGameDto.setOption1Text(option1Text);
         balanceGameDto.setOption2Text(option2Text);
         balanceGameDto.setOption1ImagePath(option1ImagePath);
@@ -280,6 +283,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	String title = params.get("title");
     	String spicyFilter = params.get("spicyFilter");
     	String category = params.get("category");
+    	String status = params.get("status");
     	String option1Text = params.get("option1Text");
     	String option2Text = params.get("option2Text");
     	String oldOption1ImagePath = params.get("oldOption1ImagePath");
@@ -304,6 +308,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	balanceGameDto.setTitle(title);
         balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
         balanceGameDto.setCategory(category);
+        balanceGameDto.setStatus(status);
         balanceGameDto.setOption1Text(option1Text);
         balanceGameDto.setOption2Text(option2Text);
     	balanceGameDto.setUserId(getCurrentUserId());

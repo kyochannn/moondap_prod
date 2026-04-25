@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moondap.mapper.MdTestCategoryMapper">
+
+    <select id="selectActiveCategories" resultType="com.moondap.dto.MdTestCategoryDTO">
+        SELECT id, category_name, display_name, icon, sort_order, active
+        FROM md_test_category
+        WHERE active = 1
+        ORDER BY sort_order ASC
+    </select>
+
+    <select id="selectAllCategories" resultType="com.moondap.dto.MdTestCategoryDTO">
+        SELECT id, category_name, display_name, icon, sort_order, active
+        FROM md_test_category
+        ORDER BY sort_order ASC
+    </select>
+
+    <insert id="insertCategory" parameterType="com.moondap.dto.MdTestCategoryDTO">
+        INSERT INTO md_test_category (category_name, display_name, icon, sort_order, active)
+        VALUES (#{categoryName}, #{displayName}, #{icon}, #{sortOrder}, #{active})
+    </insert>
+
+    <update id="updateCategory" parameterType="com.moondap.dto.MdTestCategoryDTO">
+        UPDATE md_test_category
+        SET category_name = #{categoryName},
+            display_name = #{displayName},
+            icon = #{icon},
+            sort_order = #{sortOrder},
+            active = #{active}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteCategory">
+        DELETE FROM md_test_category WHERE id = #{id}
+    </delete>
+
+</mapper>

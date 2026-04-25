@@ -9,6 +9,22 @@
 </head>
 
 <body layout:fragment="content">
+    <style>
+        #previewToast {
+            visibility: hidden; min-width: 250px; background-color: #ffc107; color: #000;
+            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
+            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #previewToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+    </style>
+
+    <div id="previewToast">
+        <i class="bi bi-eye-fill me-2"></i>관리자 미리보기 모드입니다.
+    </div>
+
     <main class="main">
         <div class="wizard-container" data-aos="fade-up">
             <!-- 프로그레스 바 -->
@@ -33,21 +49,40 @@
             </div>
         </div>
 
-        <!-- 결과 전송 폼 -->
-        <form id="submitForm" th:action="@{/test/{key}/submit(key=${test.testKey})}" method="post">
+        <!-- 결과 전송 폼 (미리보기 상태 유지) -->
+        <form id="submitForm" th:action="@{/test/{key}/submit(key=${test.testKey}, preview=${isPreview})}" method="post">
             <input type="hidden" id="answersInput" name="answers">
         </form>
     </main>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
+        window.onload = function() {
+            const isPreview = /*[[${isPreview}]]*/ false;
+            if (isPreview) {
+                const previewToast = document.getElementById("previewToast");
+                previewToast.style.visibility = "visible";
+                previewToast.style.animation = "fadein 0.5s, fadeout 0.5s 2.5s";
+                setTimeout(() => { previewToast.style.visibility = "hidden"; }, 3000);
+            }
+        };
+
+        // 뒤로가기 시 로딩 오버레이 숨기기 처리
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                if (typeof hideLoading === 'function') {
+                    hideLoading();
+                }
+            }
+        });
+
         // 서버에서 전달받은 질문 리스트 (Thymeleaf 리스트를 JS 객체로 변환)
         const questionsRaw = /*[[${test.questions}]]*/ [];
-        const options = ["매우 그렇다", "그렇다", "그렇지 않다", "매우 그렇지 않다"];
-        const optionScores = { "매우 그렇다": 4, "그렇다": 3, "그렇지 않다": 2, "매우 그렇지 않다": 1 };
+        const options = ["매우 그렇다", "그렇다", "보통이다", "그렇지 않다", "매우 그렇지 않다"];
+        const optionScores = { "매우 그렇다": 5, "그렇다": 4, "보통이다": 3, "그렇지 않다": 2, "매우 그렇지 않다": 1 };
         
         let currentIndex = 0;
-        const userAnswers = []; // 각 질문의 실제 점수(1~4)가 담길 예정
+        const userAnswers = []; // 각 질문의 실제 점수(1~5)가 담길 예정
 
         const container = document.getElementById("questionContainer");
         const progressBar = document.getElementById("progressBar");

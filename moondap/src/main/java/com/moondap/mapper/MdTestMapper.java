@@ -13,13 +13,14 @@ public interface MdTestMapper {
 
     // 테스트 CRUD
     List<MdTestDTO> selectTestList();
-    MdTestDTO selectTest(Long id);
+    MdTestDTO selectTest(@Param("id") Long id);
     void insertTest(MdTestDTO dto);
     void updateTest(MdTestDTO dto);
     void deleteTest(Long id);
     int countByTestKey(@Param("testKey") String testKey);
     MdTestDTO selectTestByTestKey(@Param("testKey") String testKey);
     Integer selectMaxSequenceByDatePrefix(@Param("prefix") String prefix);
+    void updatePlayCount(@Param("id") Long id);
 
     // 질문 CRUD
     List<MdTestQuestionDTO> selectQuestions(@Param("testId") Long testId);

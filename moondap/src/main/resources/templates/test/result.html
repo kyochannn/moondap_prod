@@ -17,12 +17,27 @@
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
         
-        .main-result-img { max-width: 500px; width: 100%; height: auto; aspect-ratio: 1/1; object-fit: cover; }
+        .main-result-img { 
+            max-width: 500px; 
+            width: 100%; 
+            aspect-ratio: 1 / 1 !important; 
+            object-fit: cover !important; 
+            border-radius: 20px;
+            max-height: none !important;
+            border: none !important;
+            background-color: transparent !important;
+        }
     </style>
 </head>
 
 <body layout:fragment="content">
     <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
+    <div id="previewToast" style="visibility: hidden; min-width: 250px; background-color: #ffc107; color: #000;
+            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
+            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <i class="bi bi-eye-fill me-2"></i>관리자 미리보기 모드입니다.
+    </div>
 
     <main class="main">
         <section id="starter-section" class="starter-section section p-3">
@@ -70,6 +85,16 @@
     </main>
 
     <script th:inline="javascript">
+        window.onload = function() {
+            const isPreview = /*[[${isPreview}]]*/ false;
+            if (isPreview) {
+                const previewToast = document.getElementById("previewToast");
+                previewToast.style.visibility = "visible";
+                previewToast.style.animation = "fadein 0.5s, fadeout 0.5s 2.5s";
+                setTimeout(() => { previewToast.style.visibility = "hidden"; }, 3000);
+            }
+        };
+
         function copyLinkAction() {
             const shareUrl = /*[[${shareUrl}]]*/ window.location.href;
             navigator.clipboard.writeText(shareUrl).then(() => {

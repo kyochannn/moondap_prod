@@ -39,6 +39,7 @@
 		   	let title = $('#title').val().trim();
 		   	let spicyFilter = $('#spicyFilter').is(':checked');
 		   	let category = $('#category').val().trim();
+		   	let status = $('#status').val().trim();
 		   	let option1Text = $('#option1Text').val().trim();
 		   	let option2Text = $('#option2Text').val().trim();
 
@@ -100,6 +101,7 @@
 		    formData.append('title', title);
 		    formData.append('spicyFilter', spicyFilter);
 		    formData.append('category', category);
+		    formData.append('status', status);
 		    formData.append('option1Text', option1Text);
 		    formData.append('option2Text', option2Text);
 			formData.append('option1Image', file1);
@@ -184,6 +186,23 @@
 								        </div>
 								    </div>
 								</div>
+
+								<div class="row leadership-slider pb-4">
+								    <div class="col-12">
+								    	<p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 상태를 선택할 수 있어요</p>
+								        <div class="">
+								            <!-- 상태 선택 -->
+											<div>
+								                <select class="form-select text-white bord-radius-20 d px-3 py-2" 
+								                        aria-label="Status select" id="status">
+								                    <option value="draft" selected>🚧 준비 중</option>
+								                    <option value="active">✅ 공개</option>
+								                    <option value="inactive">🔒 비공개</option>
+								                </select>
+								            </div>
+								        </div>
+								    </div>
+								</div>
 								
 								<div class="row leadership-slider pb-4">
 								    <div class="col-12">
@@ -194,18 +213,10 @@
 								                <select class="form-select text-white bord-radius-20 d px-3 py-2" 
 								                        aria-label="Category select" id="category">
 								                    <option value="" selected>📦 카테고리 선택</option>
-													<option value="love">💖 연애/결혼</option>
-    												<option value="food">🍕 음식/맛집</option>
-    												<option value="work">💼 직장/진로</option>
-    												<option value="daily">🏠 일상/생활</option>
-													<option value="money">💰 경제/자산</option>
-													<option value="hobby">🎮 취미/게임</option>
-													<option value="school">📚 학교/공부</option>
-													<option value="travel">✈️ 여행/휴식</option>
-													<option value="fashion">💄 패션/뷰티</option>
-													<option value="fantasy">⚡️ 판타지/IF</option>
-													<option value="adult">🔞 매운맛/19금</option>
-													<option value="etc">🧩 기타/랜덤</option>
+								                    <option th:each="cat : ${categories}" 
+								                            th:value="${cat.categoryName}" 
+								                            th:text="${cat.displayName}">
+								                    </option>
 								                </select>
 								            </div>
 					            

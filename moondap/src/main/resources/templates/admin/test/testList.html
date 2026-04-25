@@ -5,33 +5,24 @@
 <head>
     <meta charset="UTF-8">
     <title>테스트 관리 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
     <style>
-        .admin-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            backdrop-filter: blur(4px);
-        }
         .table-dark-custom {
-            --bs-table-bg: transparent;
             --bs-table-striped-bg: rgba(255,255,255,0.03);
-            --bs-table-hover-bg: rgba(255,255,255,0.06);
-            color: #fff;
+            min-width: 900px; /* 가로 스크롤 유도 */
+            table-layout: fixed; /* 컬럼 너비 고정 */
         }
         .table-dark-custom thead th {
-            border-bottom: 1px solid rgba(255,255,255,0.15);
             color: rgba(255,255,255,0.6);
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         .table-dark-custom td, .table-dark-custom th {
-            border-color: rgba(255,255,255,0.06);
-            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        .badge-status-active   { background: rgba(34,197,94,0.2);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3);  }
-        .badge-status-draft    { background: rgba(234,179,8,0.2);  color: #fbbf24; border: 1px solid rgba(234,179,8,0.3);  }
-        .badge-status-inactive { background: rgba(156,163,175,0.2); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
         .action-btn {
             padding: 4px 12px;
             font-size: 0.78rem;
@@ -90,50 +81,62 @@
                         <table class="table table-dark-custom table-hover align-middle mb-0 text-center">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>테스트 키</th>
-                                    <th>제목</th>
-                                    <th>카테고리</th>
-                                    <th>상태</th>
-                                    <th>질문수</th>
-                                    <th>관리</th>
+                                    <th style="width: 50px;">#</th>
+                                    <th style="width: 80px;">이미지</th>
+                                    <th style="width: 120px;">테스트 키</th>
+                                    <th style="width: auto;">제목</th>
+                                    <th style="width: 100px;">방식</th>
+                                    <th style="width: 130px;">카테고리</th>
+                                    <th style="width: 100px;">작성자</th>
+                                    <th style="width: 100px;">상태</th>
+                                    <th style="width: 100px;">참여수</th>
+                                    <th style="width: 80px;">문항수</th>
+                                    <th style="width: 200px;">관리</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="test, stat : ${testList}">
+                                <tr th:each="test, stat : ${testList}" 
+                                    th:onclick="|location.href='@{/admin/test/{id}/questions(id=${test.id})}'|"
+                                    style="cursor: pointer;">
                                     <td class="text-white small" th:text="${stat.count}"></td>
+                                    <td>
+                                        <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'"
+                                             class="rounded-2" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                                    </td>
                                     <td>
                                         <code class="text-info small" th:text="${test.testKey}"></code>
                                     </td>
                                     <td class="text-white small" th:text="${test.title}"></td>
-                                    <td class="text-white small" th:text="${test.category != null ? test.category : '-'}"></td>
                                     <td>
-                                        <span th:classappend="${test.status == 'active'} ? 'badge-status-active' : (${test.status == 'draft'} ? 'badge-status-draft' : 'badge-status-inactive')"
-                                        class="badge rounded-pill px-2 py-1 small"
-                                        th:text="${test.status}"></span>
+                                        <span th:if="${test.testType == 'SCORE'}" class="admin-badge badge-type-score">🔢 점수형</span>
+                                        <span th:if="${test.testType == 'TYPE'}" class="admin-badge badge-type-type">📊 유형형</span>
+                                    </td>
+                                    <td>
+                                        <span class="admin-badge badge-domain">[[${test.categoryDisplayName != null ? test.categoryDisplayName : (test.category != null ? test.category : '-')}]]</span>
+                                    </td>
+                                    <td class="text-white small" th:text="${test.createdBy != null ? test.createdBy : '-'}"></td>
+                                    <td>
+                                        <span th:if="${test.status == 'active'}" class="admin-badge badge-status-active">✅ 공개</span>
+                                        <span th:if="${test.status == 'draft'}" class="admin-badge badge-status-draft">🚧 준비 중</span>
+                                        <span th:if="${test.status == 'inactive'}" class="admin-badge badge-status-inactive">🔒 비공개</span>
+                                    </td>
+                                    <td class="text-white small">
+                                        [[${test.playCount != null ? test.playCount : 0}]]명
                                     </td>
                                     <td class="text-white small" th:text="${test.questionCount} + '개'"></td>
                                     <td>
                                         <div class="d-flex gap-1 justify-content-center flex-wrap">
-                                            <a th:href="@{/test/{key}(key=${test.testKey})}"
+                                            <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}"
                                                target="_blank"
-                                               class="btn btn-outline-primary action-btn">
-                                                <i class="bi bi-play-circle"></i> 테스트
-                                            </a>
-                                            <a th:href="@{/admin/test/{id}/questions(id=${test.id})}"
-                                               class="btn btn-outline-info action-btn">
-                                                <i class="bi bi-list-ul"></i> 질문
+                                               class="btn btn-outline-primary action-btn"
+                                               onclick="event.stopPropagation();">
+                                                <i class="bi bi-eye"></i> 미리보기
                                             </a>
                                             <a th:href="@{/admin/test/{id}/edit(id=${test.id})}"
-                                               class="btn btn-outline-warning action-btn">
+                                               class="btn btn-outline-warning action-btn"
+                                               onclick="event.stopPropagation();">
                                                 <i class="bi bi-pencil"></i> 수정
                                             </a>
-                                            <form th:action="@{/admin/test/{id}/delete(id=${test.id})}" method="post"
-                                                  onsubmit="return confirm('정말 삭제하시겠습니까?\n연관된 질문도 함께 삭제됩니다.')">
-                                                <button type="submit" class="btn btn-outline-danger action-btn">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>

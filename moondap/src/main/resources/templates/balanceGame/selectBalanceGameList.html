@@ -8,10 +8,21 @@
 	<title>세상의 모든 테스트, 문답</title>
 	<style>
 	</style>
-	<script>
+	<script th:inline="javascript">
 		// 전체 List에 적용되는 category
 		let listCategory;
 		let listSpicyFilter;
+
+		// DB 카테고리 맵 생성
+		const categoryMap = {};
+		/*[# th:if="${categories != null}"]*/
+		/*[# th:each="cat : ${categories}"]*/
+		categoryMap['[[${cat.categoryName}]]'] = {
+			displayName: '[[${cat.displayName}]]',
+			icon: '[[${cat.icon}]]'
+		};
+		/*[/]*/
+		/*[/]*/
 
 		document.addEventListener('DOMContentLoaded', function () {
 			listCategory = $('#category').val();
@@ -108,43 +119,11 @@
 				let teg = '';
 				let link = '/balanceGame/selectBalanceGameView?id=' + id + '&spicyFilter=' + listSpicyFilter + '&category=' + listCategory;
 
-				if (category === 'love') {
-					category = '연애/결혼';
-					teg = '<i class="bi bi-heart-fill"></i>';
-				} else if (category === 'food') {
-					category = '음식/맛집';
-					teg = '<i class="bi bi-fork-knife"></i>';
-				} else if (category === 'work') {
-					category = '직장/진로';
-					teg = '<i class="bi bi-person-workspace"></i>';
-				} else if (category === 'daily') {
-					category = '일상/생활';
-					teg = '<i class="bi bi-tree-fill"></i>';
-				} else if (category === 'money') {
-					category = '경제/자산';
-					teg = '<i class="bi bi-cash-coin"></i>';
-				} else if (category === 'hobby') {
-					category = '취미/게임';
-					teg = '<i class="bi bi-joystick"></i>';
-				} else if (category === 'school') {
-					category = '학교/공부';
-					teg = '<i class="bi bi-backpack2-fill"></i>';
-				} else if (category === 'travel') {
-					category = '여행/휴식';
-					teg = '<i class="bi bi-airplane-fill"></i>';
-				} else if (category === 'fashion') {
-					category = '패션/뷰티';
-					teg = '<i class="bi bi-signpost-fill"></i>';
-				} else if (category === 'fantasy') {
-					category = '판타지/IF';
-					teg = '<i class="bi bi-signpost-fill"></i>';
-				} else if (category === 'adult') {
-					category = '매운맛/19금';
-					teg = '<i class="bi bi-gender-ambiguous"></i>';
-				} else if (category === 'etc') {
-					category = '기타/랜덤';
-					teg = '<i class="bi bi-stack"></i>';
-				}
+				let catInfo = categoryMap[category] || { displayName: '기타/랜덤', icon: 'bi-stack' };
+				let displayCatName = catInfo.displayName;
+				let iconClass = catInfo.icon;
+				teg = `<i class="bi ${iconClass}"></i>`;
+				category = displayCatName;
 
 				let spicyFilterIcon;
 
@@ -265,18 +244,11 @@
 											<select class="form-select text-white bord-radius-20 d px-3 py-2"
 												aria-label="Category select" id="category">
 												<option value="all" selected>📦 전체</option>
-												<option value="love">💖 연애/결혼</option>
-												<option value="food">🍕 음식/맛집</option>
-												<option value="work">💼 직장/진로</option>
-												<option value="daily">🏠 일상/생활</option>
-												<option value="money">💰 경제/자산</option>
-												<option value="hobby">🎮 취미/게임</option>
-												<option value="school">📚 학교/공부</option>
-												<option value="travel">✈️ 여행/휴식</option>
-												<option value="fashion">💄 패션/뷰티</option>
-												<option value="fantasy">⚡️ 판타지/IF</option>
-												<option value="adult">🔞 매운맛/19금</option>
-												<option value="etc">🧩 기타/랜덤</option>
+												<option th:if="${categories != null}" 
+														th:each="cat : ${categories}" 
+														th:value="${cat.categoryName}" 
+														th:text="${cat.displayName}">
+												</option>
 											</select>
 										</div>
 

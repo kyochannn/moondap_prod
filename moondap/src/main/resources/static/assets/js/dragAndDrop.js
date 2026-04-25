@@ -41,7 +41,7 @@ function generateUUID() {
     );
 }
 
-// [3] 미리보기 함수 (콘솔 확인 로직 추가)
+// [3] 미리보기 함수 (크롭 로직 통합)
 async function previewImage(inputOrFile, targetId) {
     const preview = document.getElementById(targetId);
     const dropZone = preview.parentElement;
@@ -49,41 +49,45 @@ async function previewImage(inputOrFile, targetId) {
     let file = (inputOrFile instanceof File) ? inputOrFile : inputOrFile.files[0];
     if (!file) return null;
 
-    // [콘솔] 처리 시작 알림
     console.group(`📷 이미지 처리 시작: ${file.name}`);
-    console.log(`- 원본 파일명: ${file.name}`);
-    console.log(`- 원본 용량: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
 
     // 유효성 체크
     if (!validateImage(file)) {
-        console.warn("- [실패] 유효성 검사 통과 못함");
         if (!(inputOrFile instanceof File)) inputOrFile.value = ""; 
         console.groupEnd();
         return null;
     }
 
+    // [추가] 크롭 프로세스 시작
+    try {
+        const croppedBlob = await startCropper(file);
+        if (!croppedBlob) {
+            console.log("- 크롭 취소됨");
+            console.groupEnd();
+            return null;
+        }
+        file = croppedBlob; // 크롭된 데이터로 파일 교체
+    } catch (e) {
+        console.error("- 크롭 에러:", e);
+        console.groupEnd();
+        return null;
+    }
+
     // [로딩 시작]
-    showLoading(0, '이미지를 처리하고 있습니다', '품질을 유지하며 압축 중입니다...');
+    showLoading(0, '이미지를 최적화하고 있습니다', '품질을 유지하며 압축 중입니다...');
 
     try {
         // 압축 진행
         dropZone.style.opacity = "0.6"; 
-        console.log("- 압축 프로세스 진행 중...");
         let compressedFile = await compressImage(file);
         dropZone.style.opacity = "1";
         
-        // 파일 이름 UUID로 변경
-        const extension = file.name.split('.').pop();
+        // 파일 이름 UUID로 변경 (크롭 결과물은 blob이므로 원본 확장자 유지 시도)
+        const extension = (inputOrFile instanceof File) ? 'png' : inputOrFile.files[0].name.split('.').pop();
         const newFileName = `${generateUUID()}.${extension}`;
         
         // 새로운 File 객체 생성
         const finalFile = new File([compressedFile], newFileName, { type: compressedFile.type });
-
-        // [콘솔] 압축 결과 출력
-        const ratio = ((1 - (finalFile.size / file.size)) * 100).toFixed(1);
-        console.log(`- 새 파일명: ${finalFile.name}`);
-        console.log(`- 압축 후 용량: ${(finalFile.size / 1024 / 1024).toFixed(2)} MB`);
-        console.log(`- 압축률: ${ratio}% 감소`);
 
         // 미리보기 및 input 동기화
         const reader = new FileReader();
@@ -91,9 +95,6 @@ async function previewImage(inputOrFile, targetId) {
             preview.src = e.target.result;
             preview.style.display = 'block';
             dropZone.classList.add('has-image');
-            console.log("- 미리보기 이미지 로드 완료");
-            
-            // 미리보기 로드 완료 시 로딩 해제 (onload 내부)
             hideLoading();
         };
         reader.readAsDataURL(finalFile);
@@ -106,7 +107,7 @@ async function previewImage(inputOrFile, targetId) {
             console.log("- Input 요소 데이터 동기화 완료");
         }
 
-        console.groupEnd(); // 콘솔 그룹 종료
+        console.groupEnd();
         return finalFile; 
         
     } catch (error) {
@@ -115,6 +116,63 @@ async function previewImage(inputOrFile, targetId) {
         console.groupEnd();
         return null;
     }
+}
+
+// [3-1] Cropper.js 실행 함수
+let cropperInstance = null;
+function startCropper(file) {
+    return new Promise((resolve, reject) => {
+        const modalEl = document.getElementById('cropperModal');
+        if (!modalEl) {
+            console.warn("크롭 모달이 없습니다. 크롭 과정을 건너뜁니다.");
+            return resolve(file);
+        }
+
+        const modal = new bootstrap.Modal(modalEl);
+        const image = document.getElementById('cropperImage');
+        const cropButton = document.getElementById('cropButton');
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            image.src = e.target.result;
+            modal.show();
+        };
+        reader.readAsDataURL(file);
+
+        modalEl.addEventListener('shown.bs.modal', function () {
+            if (cropperInstance) cropperInstance.destroy();
+            cropperInstance = new Cropper(image, {
+                aspectRatio: 1, // 정사각형 고정
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true
+            });
+        }, { once: true });
+
+        // 적용 버튼 클릭
+        const handleCrop = () => {
+            const canvas = cropperInstance.getCroppedCanvas({
+                width: 800,
+                height: 800
+            });
+            canvas.toBlob((blob) => {
+                modal.hide();
+                resolve(blob);
+            }, 'image/jpeg', 0.9);
+            cropButton.removeEventListener('click', handleCrop);
+        };
+
+        cropButton.addEventListener('click', handleCrop);
+
+        // 모달 닫힐 때 처리
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            if (cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+            resolve(null); // 아무것도 반환하지 않고 종료
+        }, { once: true });
+    });
 }
 
 // [4] 개별 요소 드래그 앤 드롭 초기화 함수

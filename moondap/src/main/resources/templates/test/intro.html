@@ -21,6 +21,12 @@
 
 <body layout:fragment="content">
     <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
+    <div id="previewToast" style="visibility: hidden; min-width: 250px; background-color: #ffc107; color: #000;
+            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
+            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <i class="bi bi-eye-fill me-2"></i>관리자 미리보기 모드입니다.
+    </div>
 
     <main class="main">
         <section id="game-gallery-details" class="game-gallery-details section">
@@ -31,7 +37,7 @@
                         <div class="game-gallery-details-media">
                             <div class="main-image">
                                 <img th:src="${test.thumbnailImage != null} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'" 
-                                     alt="테스트 썸네일" class="img-fluid rounded-4 shadow-sm">
+                                     alt="테스트 썸네일" class="img-fluid rounded-4 shadow-sm" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover;">
                             </div>
                         </div>
                     </div>
@@ -44,8 +50,11 @@
                             <div class="project-meta text-center text-lg-start">
                                 <div class="date-client d-flex align-items-center justify-content-center justify-content-lg-start gap-3 flex-wrap">
                                     <div class="meta-item">
+                                        <span th:text="(${test.playCount != null ? test.playCount : 0}) + '명 참여'">참여수</span>
+                                    </div>
+                                    <div class="meta-item">
                                         <i class="bi bi-tag-fill"></i>
-                                        <span th:text="${test.category}">카테고리</span>
+                                        <span th:text="${test.categoryDisplayName != null ? test.categoryDisplayName : test.category}">카테고리</span>
                                     </div>
                                     <div class="meta-item">
                                         <i class="bi bi-stopwatch-fill"></i>
@@ -96,6 +105,16 @@
     </main>
 
     <script th:inline="javascript">
+        window.onload = function() {
+            const isPreview = /*[[${isPreview}]]*/ false;
+            if (isPreview) {
+                const previewToast = document.getElementById("previewToast");
+                previewToast.style.visibility = "visible";
+                previewToast.style.animation = "fadein 0.5s, fadeout 0.5s 2.5s";
+                setTimeout(() => { previewToast.style.visibility = "hidden"; }, 3000);
+            }
+        };
+
         function copyLinkAction() {
             const url = window.location.href;
             navigator.clipboard.writeText(url).then(() => {

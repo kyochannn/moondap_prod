@@ -8,7 +8,46 @@
 
     <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
     <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script th:src="@{/assets/js/dragAndDrop.js}" defer></script>
+    <style>
+        /* 테이블 고정 레이아웃 및 가로 스크롤 */
+        .table-dark-custom {
+            table-layout: fixed;
+            min-width: 900px;
+        }
+        .table-dark-custom td, .table-dark-custom th {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .table-responsive {
+            border-radius: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .custom-input-inline {
+            width: 100%;
+        }
+        
+        /* 모바일 헤더 버튼 2줄 정렬 */
+        @media (max-width: 768px) {
+            .header-action-group {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px !important;
+                width: 100%;
+            }
+            .header-action-group .btn {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 10px 5px !important;
+                font-size: 0.8rem !important;
+            }
+        }
+    </style>
 </head>
 
 <body layout:fragment="content">
@@ -27,10 +66,17 @@
                                 <h5 class="fw-bold text-white mb-0">테스트 정보 수정</h5>
                             </div>
                         </div>
-                        <div class="d-flex gap-2">
+                        <div class="header-action-group d-flex gap-2">
                             <a href="/admin/test/list" class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
                                 <i class="bi bi-arrow-left me-1"></i> 이전
                             </a>
+                            <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}" target="_blank" 
+                               class="btn btn-outline-info rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                                <i class="bi bi-eye me-1"></i> 미리보기
+                            </a>
+                            <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmDelete()" style="font-size: 0.85rem; padding: 6px 16px;">
+                                <i class="bi bi-trash me-1"></i> 삭제
+                            </button>
                             <button type="submit" class="btn btn-primary rounded-pill px-4 btn-add">
                                 <i class="bi bi-check-lg me-1"></i> 수정 완료
                             </button>
@@ -43,15 +89,13 @@
                             <i class="bi bi-info-circle text-info"></i>
                             <h6 class="text-white mb-0 fw-bold">테스트 기본 정보</h6>
                         </div>
-                        <div class="table-responsive">
+                        <div class="table-responsive mb-3">
                             <table class="table table-dark-custom align-middle mb-0 text-center">
                                 <thead>
                                     <tr>
                                         <th style="width:150px">대표 썸네일</th>
-                                        <th>제목</th>
-                                        <th style="width:160px">카테고리</th>
-                                        <th style="width:150px">상태</th>
-                                        <th style="width:100px">시간(분)</th>
+                                        <th style="width:auto">테스트 제목</th>
+                                        <th style="width:180px">카테고리</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -68,18 +112,41 @@
                                                        accept="image/*" onchange="previewImage(this, 'thumbnail-preview')">
                                             </div>
                                         </td>
-                                        <td>
-                                            <input type="text" name="title" class="custom-input-inline" placeholder="제목" th:value="${test.title}" required>
+                                        <td class="p-3">
+                                            <input type="text" name="title" class="custom-input-inline" placeholder="테스트 제목을 입력하세요" th:value="${test.title}" required>
                                             <input type="hidden" name="testKey" th:value="${test.testKey}">
                                         </td>
                                         <td>
                                             <select name="category" class="custom-input-inline text-center">
-                                                <option value="성격/심리" th:selected="${test.category == '성격/심리'}">🧠 성격/심리</option>
-                                                <option value="연애/관계" th:selected="${test.category == '연애/관계'}">💖 연애/관계</option>
-                                                <option value="직업/진로" th:selected="${test.category == '직업/진로'}">💼 직업/진로</option>
-                                                <option value="라이프스타일" th:selected="${test.category == '라이프스타일'}">🌿 라이프스타일</option>
-                                                <option value="재미/유머" th:selected="${test.category == '재미/유머'}">🎉 재미/유머</option>
-                                                <option value="기타" th:selected="${test.category == '기타'}">🔖 기타</option>
+                                                <option value="">카테고리 선택</option>
+                                                <option th:each="cat : ${categories}" 
+                                                        th:value="${cat.categoryName}" 
+                                                        th:text="${cat.displayName}"
+                                                        th:selected="${test.category == cat.categoryName}">
+                                                </option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-dark-custom align-middle mb-0 text-center">
+                                <thead>
+                                    <tr>
+                                        <th style="width:auto">테스트 방식(유형)</th>
+                                        <th style="width:180px">공개 상태</th>
+                                        <th style="width:140px">예상 시간(분)</th>
+                                        <th style="width:180px">작성자</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="p-3">
+                                            <select name="testType" id="testType" class="custom-input-inline" onchange="toggleScoreFields()">
+                                                <option value="TYPE" th:selected="${test.testType == 'TYPE'}">📊 유형형 (성향 매칭)</option>
+                                                <option value="SCORE" th:selected="${test.testType == 'SCORE'}">🔢 점수형 (백분율 매칭)</option>
                                             </select>
                                         </td>
                                         <td>
@@ -90,8 +157,14 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" name="estimatedTime" class="custom-input-inline text-center" min="1" 
-                                                   th:value="${test.estimatedTime != null ? test.estimatedTime : 3}">
+                                            <div class="input-group mx-auto" style="width: 110px;">
+                                                <input type="number" name="estimatedTime" class="custom-input-inline text-center" 
+                                                       min="1" th:value="${test.estimatedTime != null ? test.estimatedTime : 3}">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="createdBy" class="bg-transparent border-0 text-white-50 small text-center w-100" 
+                                                   th:value="${test.createdBy != null ? test.createdBy : ''}" readonly style="cursor: not-allowed; outline: none;">
                                         </td>
                                     </tr>
                                 </tbody>
@@ -122,7 +195,9 @@
                                         <th style="width:50px">#</th>
                                         <th style="width:100px">이미지</th>
                                         <th style="width:200px">결과 유형 (제목)</th>
-                                        <th>상세 설명</th>
+                                        <th class="score-col" style="width:100px">최소 점수</th>
+                                        <th class="score-col" style="width:100px">최대 점수</th>
+                                        <th style="width:auto">상세 설명</th>
                                         <th style="width:80px">삭제</th>
                                     </tr>
                                 </thead>
@@ -141,10 +216,16 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="text" class="custom-input-inline text-center r-title" placeholder="유형명" th:value="${r.resultTitle}" oninput="updateDomainOptions()">
+                                            <input type="text" class="custom-input-inline r-title" placeholder="결과 유형" th:value="${r.resultTitle}" oninput="updateDomainOptions()">
+                                        </td>
+                                        <td class="score-col">
+                                            <input type="number" class="custom-input-inline r-min-score" placeholder="Min (%)" th:value="${r.minScore}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                        </td>
+                                        <td class="score-col">
+                                            <input type="number" class="custom-input-inline r-max-score" placeholder="Max (%)" th:value="${r.maxScore}" readonly style="opacity: 0.7; cursor: not-allowed;">
                                         </td>
                                         <td>
-                                            <textarea class="custom-input-inline r-content" rows="2" placeholder="결과에 대한 분석 내용을 입력하세요" th:text="${r.resultContent}"></textarea>
+                                            <textarea class="custom-input-inline r-content" rows="2" placeholder="결과 상세 설명" th:text="${r.resultContent}"></textarea>
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-danger action-btn" onclick="removeRow(this, 'result')">
@@ -173,8 +254,8 @@
                                 <thead>
                                     <tr>
                                         <th style="width:50px">#</th>
-                                        <th>질문 내용</th>
-                                        <th style="width:200px">결과 유형</th>
+                                        <th style="width:auto">질문 내용</th>
+                                        <th class="domain-col" style="width:200px">결과 유형</th>
                                         <th style="width:100px">역채점</th>
                                         <th style="width:80px">삭제</th>
                                     </tr>
@@ -185,7 +266,7 @@
                                         <td>
                                             <textarea class="custom-input-inline q-text" rows="2" placeholder="질문 내용을 입력하세요" th:text="${q.questionText}"></textarea>
                                         </td>
-                                        <td>
+                                        <td class="domain-col">
                                             <select class="custom-input-inline text-center q-domain" th:attr="data-selected-domain=${q.domain}">
                                                 <option value="">결과 유형 선택</option>
                                             </select>
@@ -211,7 +292,45 @@
         </section>
     </main>
 
+    <!-- 삭제용 숨겨진 폼 -->
+    <form th:action="@{/admin/test/{id}/delete(id=${test.id})}" method="post" id="deleteForm" style="display:none;"></form>
+
+    <!-- 이미지 크롭 모달 -->
+    <div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-crop me-2"></i>이미지 편집</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="img-container mb-3" style="max-height: 500px; overflow: hidden; border-radius: 12px; background: #000;">
+                        <img id="cropperImage" src="" style="max-width: 100%;">
+                    </div>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-outline-light rounded-pill btn-sm px-3" onclick="cropperInstance.rotate(-90)">
+                            <i class="bi bi-arrow-counterclockwise"></i> 회전
+                        </button>
+                        <button type="button" class="btn btn-outline-light rounded-pill btn-sm px-3" onclick="cropperInstance.rotate(90)">
+                            <i class="bi bi-arrow-clockwise"></i> 회전
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="cropButton">적용하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script th:inline="javascript">
+        function confirmDelete() {
+            if (confirm('정말 이 테스트를 삭제하시겠습니까?\n연관된 질문과 결과 유형이 모두 영구적으로 삭제됩니다.')) {
+                document.getElementById('deleteForm').submit();
+            }
+        }
+        
         window.addEventListener('load', function () {
             if (typeof AOS !== 'undefined') AOS.init({ duration: 800, once: true });
             
@@ -220,7 +339,40 @@
             if ($('.question-row').length === 0) { addQuestionRow(); addQuestionRow(); addQuestionRow(); }
             
             updateDomainOptions();
+            lastTestType = $('#testType').val(); // 초기값 저장
+            toggleScoreFields();
         });
+
+        let lastTestType;
+
+        // 테스트 유형에 따라 결과 테이블의 점수 컬럼 토글
+        function toggleScoreFields() {
+            const testType = $('#testType').val();
+            const $scoreCols = $('.score-col');
+            const $domainCols = $('.domain-col'); // 질문 목록의 도메인 컬럼
+            const $table = $('#results-table');
+            
+            // SCORE -> TYPE 변경 시 확인창 (초기화 이후에만 작동)
+            if (lastTestType && lastTestType === 'SCORE' && testType === 'TYPE') {
+                const proceed = confirm('테스트 방식을 [유형형]으로 변경하시면, 모든 질문에 대해 결과 유형(도메인)을 다시 매칭해야 정상적으로 결과가 출력됩니다.\n변경하시겠습니까?');
+                if (!proceed) {
+                    $('#testType').val('SCORE');
+                    return;
+                }
+            }
+            lastTestType = testType;
+
+            if (testType === 'SCORE') {
+                $scoreCols.show();
+                $domainCols.hide(); // 점수형일 때 숨김
+                $table.css('min-width', '1100px');
+                reindexRows('result'); // 유형 변경 시 자동 배분 실행
+            } else {
+                $scoreCols.hide();
+                $domainCols.show(); // 유형형일 때 다시 표시
+                $table.css('min-width', '900px');
+            }
+        }
 
         /* ── 행 추가/삭제 로직 ── */
 
@@ -241,6 +393,12 @@
                     <td>
                         <input type="text" class="custom-input-inline text-center r-title" placeholder="유형명" oninput="updateDomainOptions()">
                     </td>
+                    <td class="score-col">
+                        <input type="number" class="custom-input-inline r-min-score" placeholder="Min (%)" readonly style="opacity: 0.7; cursor: not-allowed;">
+                    </td>
+                    <td class="score-col">
+                        <input type="number" class="custom-input-inline r-max-score" placeholder="Max (%)" readonly style="opacity: 0.7; cursor: not-allowed;">
+                    </td>
                     <td>
                         <textarea class="custom-input-inline r-content" rows="2" placeholder="결과에 대한 분석 내용을 입력하세요"></textarea>
                     </td>
@@ -252,6 +410,7 @@
                 </tr>
             `;
             $('#results-table tbody').append(html);
+            toggleScoreFields();
             reindexRows('result');
             
             // 드래그앤드롭 초기화
@@ -265,7 +424,7 @@
                     <td>
                         <textarea class="custom-input-inline q-text" rows="2" placeholder="질문 내용을 입력하세요"></textarea>
                     </td>
-                    <td>
+                    <td class="domain-col">
                         <select class="custom-input-inline text-center q-domain">
                             <option value="">결과 유형 선택</option>
                         </select>
@@ -295,8 +454,22 @@
         }
 
         function reindexRows(type) {
-            $(`.${type}-row`).each(function(idx) {
+            const $rows = $(`.${type}-row`);
+            const total = $rows.length;
+            const isScoreType = $('#testType').val() === 'SCORE';
+
+            $rows.each(function(idx) {
                 $(this).find('.index').text(idx + 1);
+                
+                // [추가] 결과 유형(result)이고 점수형(SCORE)일 경우 0~100% 자동 배분
+                if (type === 'result' && isScoreType && total > 0) {
+                    const step = 100 / total;
+                    const min = Math.round(idx * step);
+                    const max = (idx === total - 1) ? 100 : Math.round((idx + 1) * step) - 1;
+                    
+                    $(this).find('.r-min-score').val(min);
+                    $(this).find('.r-max-score').val(max);
+                }
             });
         }
 
@@ -353,6 +526,21 @@
             if ($('.result-row').length === 0) { alert('최소 한 개 이상의 결과 유형을 등록해야 합니다.'); return false; }
             if ($('.question-row').length === 0) { alert('최소 한 개 이상의 질문을 등록해야 합니다.'); return false; }
 
+            // 유형형(TYPE)일 경우 모든 질문에 도메인 매칭 여부 체크
+            const testType = $('#testType').val();
+            if (testType === 'TYPE') {
+                let allDomainsSelected = true;
+                $('.question-row').each(function(idx) {
+                    const domain = $(this).find('.q-domain').val();
+                    if (!domain) {
+                        alert((idx + 1) + '번 질문의 결과 유형을 선택해주세요.');
+                        allDomainsSelected = false;
+                        return false; 
+                    }
+                });
+                if (!allDomainsSelected) return false;
+            }
+
             $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 저장 중...');
 
             const formData = new FormData(form);
@@ -369,6 +557,8 @@
                     resultTitle: rTitle,
                     resultImage: $row.find('.r-image-name').val(),
                     resultContent: $row.find('.r-content').val().trim(),
+                    minScore: $row.find('.r-min-score').val() || null,
+                    maxScore: $row.find('.r-max-score').val() || null,
                     hasNewImage: hasNewImage
                 });
 

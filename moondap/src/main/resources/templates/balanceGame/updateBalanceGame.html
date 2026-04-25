@@ -42,6 +42,7 @@
 		   	let title = $('#title').val().trim();
 		   	let spicyFilter = $('#spicyFilter').is(':checked');
 		   	let category = $('#category').val().trim();
+		   	let status = $('#status').val().trim();
 		   	let option1Text = $('#option1Text').val().trim();
 		   	let option2Text = $('#option2Text').val().trim();
 		   	let oldOption1ImagePath = $('#oldOption1ImagePath').val().trim();
@@ -108,6 +109,7 @@
 		    formData.append('title', title);
 		    formData.append('spicyFilter', spicyFilter);
 		    formData.append('category', category);
+		    formData.append('status', status);
 		    formData.append('option1Text', option1Text);
 		    formData.append('option2Text', option2Text);
 		    formData.append('oldOption1ImagePath', oldOption1ImagePath);
@@ -245,6 +247,23 @@
 						
 							<div class="row leadership-slider pb-4">
 							    <div class="col-12">
+							    	<p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 상태를 변경할 수 있어요</p>
+							        <div class="">
+							            <!-- 상태 선택 -->
+										<div>
+							                <select class="form-select text-white bord-radius-20 d px-3 py-2" 
+							                        aria-label="Status select" id="status">
+							                    <option value="draft" th:selected="${balanceGame.status == 'draft'}">🚧 준비 중</option>
+							                    <option value="active" th:selected="${balanceGame.status == 'active'}">✅ 공개</option>
+							                    <option value="inactive" th:selected="${balanceGame.status == 'inactive'}">🔒 비공개</option>
+							                </select>
+							            </div>
+							        </div>
+							    </div>
+							</div>
+
+							<div class="row leadership-slider pb-4">
+							    <div class="col-12">
 							    	<p class="text-start ms-2 text-primary small mb-2"><i class="bi bi-info-circle-fill"></i> 카테고리를 변경할 수 있어요</p>
 							        <div class="">
 							            <!-- 카테고리 선택 -->
@@ -252,53 +271,10 @@
 							                <select class="form-select text-white bord-radius-20 d px-3 py-2" 
 							                        aria-label="Category select" id="category">
 						                        <option value="">📦 카테고리 선택</option>
-											    <option value="love"
-												        th:selected="${balanceGame.category == 'love'}">
-												    💖 연애/결혼
-												</option>
-												<option value="food"
-												        th:selected="${balanceGame.category == 'food'}">
-												    🍕 음식/맛집
-												</option>
-												<option value="work"
-												        th:selected="${balanceGame.category == 'work'}">
-												    💼 직장/진로
-												</option>
-												<option value="daily"
-												        th:selected="${balanceGame.category == 'daily'}">
-												    🏠 일상/생활
-												</option>
-												<option value="money"
-												        th:selected="${balanceGame.category == 'money'}">
-												    💰 경제/자산
-												</option>
-												<option value="hobby"
-												        th:selected="${balanceGame.category == 'hobby'}">
-												    🎮 취미/게임
-												</option>
-												<option value="school"
-												        th:selected="${balanceGame.category == 'school'}">
-												    📚 학교/공부
-												</option>
-												<option value="travel"
-												        th:selected="${balanceGame.category == 'travel'}">
-												    ✈️ 여행/휴식
-												</option>
-												<option value="fashion"
-												        th:selected="${balanceGame.category == 'fashion'}">
-												    💄 패션/뷰티
-												</option>
-												<option value="fantasy"
-												        th:selected="${balanceGame.category == 'fantasy'}">
-												    ⚡️ 판타지/IF
-												</option>
-												<option value="adult"
-												        th:selected="${balanceGame.category == 'adult'}">
-												    🔞 매운맛/19금
-												</option>
-												<option value="etc"
-												        th:selected="${balanceGame.category == 'etc'}">
-												    🧩 기타/랜덤
+											    <option th:each="cat : ${categories}" 
+												        th:value="${cat.categoryName}" 
+												        th:text="${cat.displayName}"
+												        th:selected="${balanceGame.category == cat.categoryName}">
 												</option>
 							                </select>
 							            </div>

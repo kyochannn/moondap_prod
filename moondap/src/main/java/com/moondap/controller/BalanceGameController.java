@@ -26,6 +26,7 @@ import com.moondap.config.auth.PrincipalDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.moondap.service.MdTestCategoryService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,6 +49,9 @@ public class BalanceGameController {
 	@Autowired
 	private BalanceGameService balanceGameService;
 
+	@Autowired
+	private MdTestCategoryService categoryService;
+
 	/**
 	 * 밸런스 게임 리스트 화면
 	 * 
@@ -63,6 +67,7 @@ public class BalanceGameController {
 		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request, 0, 10);
 
 		model.addAttribute("balanceGameList", balanceGameList);
+		model.addAttribute("categories", categoryService.getActiveCategories());
 
 		return "/balanceGame/selectBalanceGameList";
 	}
@@ -79,6 +84,11 @@ public class BalanceGameController {
 			Model model) {
 
 		log.info("조회 요청 데이터: {}", request);
+		
+		// 상태 필터 기본값 설정 (명시적인 요청이 없으면 'active'만 조회)
+		if (!request.containsKey("status")) {
+			request.put("status", "active");
+		}
 
 		int offset = Integer.parseInt(request.getOrDefault("offset", "0"));
 		int limit = Integer.parseInt(request.getOrDefault("limit", "10"));
@@ -130,6 +140,7 @@ public class BalanceGameController {
 		model.addAttribute("balanceGame", balanceGame);
 		model.addAttribute("currentUserId", getCurrentUserId());
 		model.addAttribute("isAnonymous", SecurityContextHolder.getContext().getAuthentication() instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
+		model.addAttribute("categories", categoryService.getActiveCategories());
 		return "balanceGame/selectBalanceGame";
 	}
 
@@ -263,11 +274,12 @@ public class BalanceGameController {
 	 * @return
 	 */
 	@GetMapping("/insertBalanceGameView")
-	public String insertBalanceGameView() {
+	public String insertBalanceGameView(Model model) {
 		// [보안] 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
 		if (!IsLoggedIn()) {
 			return "redirect:/loginView";
 		}
+		model.addAttribute("categories", categoryService.getActiveCategories());
 		return "balanceGame/insertBalanceGame";
 	}
 
@@ -333,6 +345,7 @@ public class BalanceGameController {
 		}
 
 		model.addAttribute("balanceGame", balanceGame);
+		model.addAttribute("categories", categoryService.getActiveCategories());
 		return "balanceGame/updateBalanceGame";
 	}
 

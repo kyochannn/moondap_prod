@@ -11,6 +11,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	           (SELECT COUNT(*) FROM moondap.balance_comments c WHERE c.question_id = q.id) AS comment_cnt
 	    FROM moondap.balance_questions q
 	    <where>
+	        <if test="status != null and status != ''">
+	            AND status = #{status}
+	        </if>
 	        <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
 	            AND is_spicy = 0
 	        </if>
@@ -43,6 +46,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         SELECT MAX(id)
         FROM moondap.balance_questions
         <where>
+            AND status = 'active'
         	<if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
 	            AND is_spicy = 0
 	        </if>
@@ -57,6 +61,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectMinBalanceGameId" resultType="string">
         SELECT MIN(id)
         FROM moondap.balance_questions
+        WHERE status = 'active'
     </select>
     
     <!-- 이전 / 다음 밸런스 게임 개별 조회 -->
@@ -89,6 +94,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 	
 	<sql id="balanceFilterCondition">
+	    AND status = 'active'
 	    <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
 	        AND is_spicy = 0
 	    </if>
@@ -142,10 +148,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <!-- 밸런스 게임 등록 -->
     <insert id="insertBalanceGame">
-        INSERT INTO moondap.balance_questions(id, title, is_spicy, category, 
+        INSERT INTO moondap.balance_questions(id, title, is_spicy, category, status,
         option_1_text, option_1_image_path, option_2_text, option_2_image_path, user_id,
         option_1_count, option_2_count, total_count)
-        VALUES (#{id}, #{title}, #{isSpicy}, #{category}, 
+        VALUES (#{id}, #{title}, #{isSpicy}, #{category}, #{status},
         #{option1Text}, #{option1ImagePath}, #{option2Text}, #{option2ImagePath}, #{userId},
         #{option1Count}, #{option2Count}, #{totalCount});
     </insert>
@@ -156,6 +162,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
            SET title = #{title}
               ,is_spicy = #{isSpicy}
               ,category = #{category}
+              ,status = #{status}
               ,option_1_text = #{option1Text}
               ,option_1_image_path = #{option1ImagePath}
               ,option_2_text = #{option2Text}

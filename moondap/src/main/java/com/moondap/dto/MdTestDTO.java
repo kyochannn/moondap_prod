@@ -13,9 +13,12 @@ public class MdTestDTO {
     private String description;
     private String thumbnailImage;
     private String category;
+    private String categoryDisplayName;
+    private String testType = "TYPE";
     private Integer estimatedTime;
     private String status;
     private String createdBy;
+    private Integer playCount;
 
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

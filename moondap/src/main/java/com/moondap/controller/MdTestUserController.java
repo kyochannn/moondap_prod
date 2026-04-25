@@ -28,12 +28,21 @@ public class MdTestUserController {
      * 테스트 랜딩 페이지 (Intro)
      */
     @GetMapping("/{testKey}")
-    public String testIntro(@PathVariable("testKey") String testKey, Model model) {
+    public String testIntro(@PathVariable("testKey") String testKey, 
+                            @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
+                            Model model) {
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
-        if (test == null || !"active".equals(test.getStatus())) {
-            return "redirect:/"; // 비활성 상태거나 없는 경우 메인으로
+        
+        // 데이터가 없으면 리다이렉트
+        if (test == null) return "redirect:/";
+        
+        // 미리보기 모드가 아니고 상태가 active가 아니면 리다이렉트
+        if (!preview && !"active".equals(test.getStatus())) {
+            return "redirect:/";
         }
+        
         model.addAttribute("test", test);
+        model.addAttribute("isPreview", preview); // 화면에서 미리보기 배지 등을 띄울 때 사용 가능
         return "test/intro";
     }
 
@@ -41,11 +50,20 @@ public class MdTestUserController {
      * 질문지 페이지
      */
     @GetMapping("/{testKey}/questions")
-    public String testQuestions(@PathVariable("testKey") String testKey, Model model) {
+    public String testQuestions(@PathVariable("testKey") String testKey, 
+                                @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
+                                Model model) {
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
+        
         if (test == null) return "redirect:/";
         
+        // 미리보기 모드가 아니고 상태가 active가 아니면 리다이렉트
+        if (!preview && !"active".equals(test.getStatus())) {
+            return "redirect:/test/" + testKey; // 인트로로 보내서 거기서 다시 체크하게 함
+        }
+        
         model.addAttribute("test", test);
+        model.addAttribute("isPreview", preview);
         return "test/questions";
     }
 
@@ -55,6 +73,7 @@ public class MdTestUserController {
     @PostMapping("/{testKey}/submit")
     public String submitAnswers(@PathVariable("testKey") String testKey,
                                 @RequestParam("answers") String answersJson,
+                                @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
                                 HttpServletRequest request,
                                 RedirectAttributes redirectAttributes) {
         try {
@@ -63,15 +82,25 @@ public class MdTestUserController {
 
             List<Integer> answers = objectMapper.readValue(answersJson, new TypeReference<List<Integer>>() {});
             MdTestResultDTO result = mdTestUserService.calculateResult(test.getId(), answers);
+            
+            // 미리보기 모드가 아닐 때만 참여 수 증가
+            if (!preview) {
+                mdTestUserService.incrementPlayCount(test.getId());
+            }
 
             request.getSession().setAttribute("currentTestResult", result);
             request.getSession().setAttribute("currentTestInfo", test);
 
-            return "redirect:/test/" + testKey + "/result";
+            // 미리보기 모드일 경우 결과 페이지 리다이렉트 시 파라미터 유지
+            String redirectUrl = "redirect:/test/" + testKey + "/result";
+            if (preview) {
+                redirectUrl += "?preview=true";
+            }
+            return redirectUrl;
         } catch (Exception e) {
             log.error("테스트 처리 중 오류 발생", e);
             redirectAttributes.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
-            return "redirect:/test/" + testKey;
+            return "redirect:/test/" + testKey + (preview ? "?preview=true" : "");
         }
     }
 
@@ -79,9 +108,13 @@ public class MdTestUserController {
      * 결과 페이지
      */
     @GetMapping("/{testKey}/result")
-    public String testResult(@PathVariable("testKey") String testKey, HttpServletRequest request, Model model) {
+    public String testResult(@PathVariable("testKey") String testKey, 
+                             @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
+                             HttpServletRequest request, Model model) {
         MdTestResultDTO result = (MdTestResultDTO) request.getSession().getAttribute("currentTestResult");
         MdTestDTO test = (MdTestDTO) request.getSession().getAttribute("currentTestInfo");
+        
+        model.addAttribute("isPreview", preview);
 
         if (result == null || test == null) {
             return "redirect:/test/" + testKey;

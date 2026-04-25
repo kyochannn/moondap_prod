@@ -11,14 +11,18 @@
             t.description,
             t.thumbnail_image,
             t.category,
+            c.display_name AS category_display_name,
+            t.test_type,
             t.estimated_time,
             t.status,
             t.created_by,
+            t.play_count,
             t.created_at,
             t.updated_at,
             COUNT(q.id) AS question_count
         FROM md_tests t
         LEFT JOIN md_test_questions q ON t.id = q.test_id AND q.is_active = 1
+        LEFT JOIN md_test_category c ON t.category = c.category_name
         GROUP BY t.id
         ORDER BY t.created_at DESC
     </select>
@@ -26,36 +30,44 @@
     <!-- 테스트 단건 조회 -->
     <select id="selectTest" resultType="com.moondap.dto.MdTestDTO">
         SELECT
-            id,
-            test_key,
-            title,
-            description,
-            thumbnail_image,
-            category,
-            estimated_time,
-            status,
-            created_by,
-            created_at,
-            updated_at
-        FROM md_tests
-        WHERE id = #{id}
+            t.id,
+            t.test_key,
+            t.title,
+            t.description,
+            t.thumbnail_image,
+            t.category,
+            c.display_name AS category_display_name,
+            t.test_type,
+            t.estimated_time,
+            t.status,
+            t.created_by,
+            t.play_count,
+            t.created_at,
+            t.updated_at
+        FROM md_tests t
+        LEFT JOIN md_test_category c ON t.category = c.category_name
+        WHERE t.id = #{id}
     </select>
 
     <select id="selectTestByTestKey" resultType="com.moondap.dto.MdTestDTO">
         SELECT
-            id,
-            test_key,
-            title,
-            description,
-            thumbnail_image,
-            category,
-            estimated_time,
-            status,
-            created_by,
-            created_at,
-            updated_at
-        FROM md_tests
-        WHERE test_key = #{testKey}
+            t.id,
+            t.test_key,
+            t.title,
+            t.description,
+            t.thumbnail_image,
+            t.category,
+            c.display_name AS category_display_name,
+            t.test_type,
+            t.estimated_time,
+            t.status,
+            t.created_by,
+            t.play_count,
+            t.created_at,
+            t.updated_at
+        FROM md_tests t
+        LEFT JOIN md_test_category c ON t.category = c.category_name
+        WHERE t.test_key = #{testKey}
     </select>
 
 
@@ -63,10 +75,10 @@
     <insert id="insertTest" parameterType="com.moondap.dto.MdTestDTO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO md_tests (
             test_key, title, description, thumbnail_image,
-            category, estimated_time, status, created_by
+            category, test_type, estimated_time, status, created_by
         ) VALUES (
             #{testKey}, #{title}, #{description}, #{thumbnailImage},
-            #{category}, #{estimatedTime}, #{status}, #{createdBy}
+            #{category}, #{testType}, #{estimatedTime}, #{status}, #{createdBy}
         )
     </insert>
 
@@ -77,8 +89,10 @@
             description     = #{description},
             thumbnail_image = #{thumbnailImage},
             category        = #{category},
+            test_type       = #{testType},
             estimated_time  = #{estimatedTime},
-            status          = #{status}
+            status          = #{status},
+            created_by      = #{createdBy}
         WHERE id = #{id}
     </update>
 
@@ -174,6 +188,8 @@
             result_title,
             result_content,
             result_image,
+            min_score,
+            max_score,
             created_at,
             updated_at
         FROM md_test_results
@@ -184,9 +200,9 @@
     <!-- 결과(Result) 등록 -->
     <insert id="insertResult" parameterType="com.moondap.dto.MdTestResultDTO">
         INSERT INTO md_test_results (
-            test_id, result_title, result_content, result_image
+            test_id, result_title, result_content, result_image, min_score, max_score
         ) VALUES (
-            #{testId}, #{resultTitle}, #{resultContent}, #{resultImage}
+            #{testId}, #{resultTitle}, #{resultContent}, #{resultImage}, #{minScore}, #{maxScore}
         )
     </insert>
 
@@ -195,5 +211,10 @@
         DELETE FROM md_test_results WHERE test_id = #{testId}
     </delete>
 
+
+    <!-- 참여 수 증가 -->
+    <update id="updatePlayCount">
+        UPDATE md_tests SET play_count = play_count + 1 WHERE id = #{id}
+    </update>
 
 </mapper>
