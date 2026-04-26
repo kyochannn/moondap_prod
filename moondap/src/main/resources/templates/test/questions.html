@@ -50,7 +50,7 @@
         </div>
 
         <!-- 결과 전송 폼 (미리보기 상태 유지) -->
-        <form id="submitForm" th:action="@{/test/{key}/submit(key=${test.testKey}, preview=${isPreview})}" method="post">
+        <form id="submitForm" th:action="@{/test/{key}/result(key=${test.testKey}, preview=${isPreview})}" method="post">
             <input type="hidden" id="answersInput" name="answers">
         </form>
     </main>

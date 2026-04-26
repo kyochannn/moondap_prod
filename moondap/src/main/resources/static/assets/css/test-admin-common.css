@@ -70,8 +70,10 @@ textarea.custom-input-inline {
 /* 4. 이미지 업로드/미리보기 영역 */
 .mini-drop-zone {
     width: 60px; height: 60px;
+    aspect-ratio: 1 / 1 !important;
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
+    align-self: center; /* 세로 늘어남 방지 */
     position: relative; overflow: hidden; cursor: pointer;
     background: rgba(0, 0, 0, 0.2);
     border: 1px dashed rgba(255, 255, 255, 0.3) !important;
@@ -102,6 +104,8 @@ textarea.custom-input-inline {
 .badge-status-active   { background-color: rgba(25, 135, 84, 0.2)  !important; color: #198754 !important; border: 1px solid rgba(25, 135, 84, 0.3); }
 .badge-status-draft    { background-color: rgba(255, 193, 7, 0.2)  !important; color: #ffc107 !important; border: 1px solid rgba(255, 193, 7, 0.3); }
 .badge-status-inactive { background-color: rgba(220, 53, 69, 0.2)  !important; color: #dc3545 !important; border: 1px solid rgba(220, 53, 69, 0.3); }
+.badge-status-suspended { background-color: rgba(255, 152, 0, 0.2) !important; color: #ff9800 !important; border: 1px solid rgba(255, 152, 0, 0.3); }
+.badge-status-deleted  { background-color: rgba(108, 117, 125, 0.2) !important; color: #adb5bd !important; border: 1px solid rgba(108, 117, 125, 0.3); }
 
 /* 7. 리스트용 배지 스타일 (상세 페이지 등) */
 .order-badge {
@@ -131,4 +135,137 @@ textarea.custom-input-inline {
 .badge-type-type {
     background: rgba(14,165,233,0.2) !important; color: #38bdf8 !important;
     border: 1px solid rgba(14,165,233,0.3) !important;
+}
+
+/* 8. 질문/결과 텍스트 영역 특화 (자동 확장 대응) */
+textarea.custom-input, textarea.custom-input-inline {
+    line-height: 1.6 !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    min-height: 80px;
+    white-space: pre-wrap !important;
+}
+
+/* 9. 테이블 및 레이아웃 공통 */
+.table-dark-custom {
+    table-layout: fixed;
+    min-width: 900px;
+}
+.table-dark-custom td, .table-dark-custom th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.table-responsive {
+    border-radius: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 10. 모바일 헤더 대응 */
+@media (max-width: 768px) {
+    .header-action-group {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px !important;
+        width: 100%;
+    }
+    .header-action-group .btn {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+}
+
+/* 11. 애니메이션 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 12. 테이블 정렬 스타일 */
+.table-dark-custom thead th.sortable {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+.table-dark-custom thead th.sortable:hover {
+    color: #fff !important;
+    background: rgba(255,255,255,0.05);
+}
+.table-dark-custom thead th.sortable.sort-asc::after {
+    content: ' ↑';
+    color: #524dd3;
+    font-weight: bold;
+}
+.table-dark-custom thead th.sortable.sort-desc::after {
+    content: ' ↓';
+    color: #524dd3;
+    font-weight: bold;
+}
+
+/* 13. 공통 모달 글래스모피즘 스타일 */
+.modal-content {
+    background: rgba(30, 34, 40, 0.7) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden;
+    color: #fff;
+}
+
+.modal-header {
+    background: linear-gradient(to bottom, rgba(82, 77, 211, 0.15), transparent) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 24px 30px !important;
+}
+
+.modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.modal-body {
+    padding: 30px !important;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 20px 30px !important;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* 모달 내 입력 필드 공통 스타일 */
+.modal-body .form-control, 
+.modal-body .form-select {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    transition: all 0.2s ease;
+}
+
+/* 셀렉트 박스 화살표 추가 */
+.modal-body .form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.6)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 16px center !important;
+    background-size: 14px !important;
+    padding-right: 45px !important;
+}
+
+.modal-body .form-control:focus, 
+.modal-body .form-select:focus {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: #524dd3 !important;
+    box-shadow: 0 0 0 4px rgba(82, 77, 211, 0.15) !important;
+}
+
+.modal-body label {
+    margin-bottom: 8px;
+    font-weight: 500;
 }

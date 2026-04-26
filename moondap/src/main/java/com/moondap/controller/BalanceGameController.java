@@ -138,6 +138,14 @@ public class BalanceGameController {
 		}
 
 		model.addAttribute("balanceGame", balanceGame);
+		
+		// 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
+		if (!"active".equals(balanceGame.getStatus())) {
+			if (!balanceGameService.CheckMyTest(balanceGame.getId())) {
+				throw new RuntimeException("해당 게임에 접근할 권한이 없습니다.");
+			}
+		}
+		
 		model.addAttribute("currentUserId", getCurrentUserId());
 		model.addAttribute("isAnonymous", SecurityContextHolder.getContext().getAuthentication() instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
 		model.addAttribute("categories", categoryService.getActiveCategories());

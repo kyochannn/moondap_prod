@@ -58,7 +58,8 @@ public class PrincipalDetails implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return true;
+		// 활성 상태인 사용자만 로그인 허용
+		return "ACTIVE".equals(user.getStatus());
 	}
 
 }

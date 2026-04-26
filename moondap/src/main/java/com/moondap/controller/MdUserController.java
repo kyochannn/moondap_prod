@@ -22,6 +22,8 @@ public class MdUserController {
 	@Autowired
 	private StandardMdUserService standardMdUserService; 
 	
+	@Autowired
+	private com.moondap.common.FileService fileService;	
 	/**
 	 * 로그인 화면 접근
 	 */
@@ -42,7 +44,19 @@ public class MdUserController {
 	 * 회원가입 화면 (권한 정보를 POST로 받음)
 	 */
 	@PostMapping("/joinView")
-	public String joinView(@RequestParam("role") String role, Model model) {
+	public String joinView(@RequestParam("role") String role, 
+						  @RequestParam(value = "adminKey", required = false) String adminKey,
+						  Model model, RedirectAttributes rttr) {
+		
+		// 관리자 가입 시 인증 코드 검증
+		if ("ROLE_ADMIN".equals(role)) {
+			if (!standardMdUserService.isAdminKeyCorrect(adminKey)) {
+				rttr.addFlashAttribute("errorMessage", "관리자 인증 코드가 올바르지 않습니다.");
+				return "redirect:/joinSelectView";
+			}
+			model.addAttribute("adminKey", adminKey);
+		}
+		
 		model.addAttribute("role", role);
 		return "/user/join";
 	}
@@ -79,26 +93,29 @@ public class MdUserController {
 	 * 회원가입 처리 로직
 	 */
 	@PostMapping("/joinProc")
-	public String joinProc(MdUserDTO user, RedirectAttributes rttr) {
+	public String joinProc(MdUserDTO user, 
+						   @RequestParam(value = "profileFile", required = false) org.springframework.web.multipart.MultipartFile profileFile,
+						   RedirectAttributes rttr) {
 		
 		try {
+			// 프로필 이미지 처리
+			if (profileFile != null && !profileFile.isEmpty()) {
+				String savedFilename = fileService.upload(profileFile);
+				user.setProfileImage(savedFilename);
+			}
+
 			standardMdUserService.joinProc(user);
 			
-			// FlashAttribute: 세션에 1회성 보관 (리다이렉트 직후 자동 삭제)
 			rttr.addFlashAttribute("nickname", user.getNickname());
 			rttr.addFlashAttribute("joinSuccess", true);
 			
 			return "redirect:/joinCompleteView";
 			
-		} catch (RuntimeException e) {
-			// 중복 가입 등 예외 발생 시 에러 메시지와 함께 다시 가입 페이지로 리다이렉트
+		} catch (Exception e) {
 			log.error("Join Error: {}", e.getMessage());
 			rttr.addFlashAttribute("errorMessage", e.getMessage());
-			
-			// 사용자 경험을 위해 입력했던 정보를 다시 전달
 			rttr.addFlashAttribute("user", user);
 			rttr.addFlashAttribute("role", user.getRole());
-			
 			return "redirect:/joinViewAfterError";
 		}
 	}

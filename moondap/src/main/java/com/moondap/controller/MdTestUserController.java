@@ -1,17 +1,22 @@
 package com.moondap.controller;
 
+import com.moondap.dto.MdContentItemDTO;
+import com.moondap.dto.MdTestCategoryDTO;
+import com.moondap.dto.MdTestDTO;
+import com.moondap.service.MdTestCategoryService;
+import com.moondap.service.MdTestUserService;
+import com.moondap.config.auth.PrincipalDetails;
+import com.moondap.dto.MdTestResultDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.moondap.dto.MdTestDTO;
-import com.moondap.dto.MdTestResultDTO;
-import com.moondap.service.MdTestUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -22,7 +27,48 @@ import java.util.List;
 public class MdTestUserController {
 
     private final MdTestUserService mdTestUserService;
+    private final MdTestCategoryService mdTestCategoryService;
     private final ObjectMapper objectMapper;
+
+    /**
+     * 테스트 목록 페이지
+     */
+    @GetMapping("/list")
+    public String list(@RequestParam(value = "category", required = false, defaultValue = "all") String category,
+                       @RequestParam(value = "sort", required = false, defaultValue = "popular") String sort,
+                       @RequestParam(value = "type", required = false, defaultValue = "all") String type,
+                       @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                       HttpServletRequest request,
+                       Model model) {
+        
+        int limit = 6;
+        int offset = page * limit;
+        
+        List<MdContentItemDTO> contentList = mdTestUserService.getAllContentList(category, sort, type, offset, limit + 1);
+        List<MdTestCategoryDTO> categories = mdTestCategoryService.getActiveCategories();
+        
+        boolean hasMore = contentList.size() > limit;
+        if (hasMore) {
+            contentList = contentList.subList(0, limit);
+        }
+        
+        model.addAttribute("contentList", contentList);
+        model.addAttribute("categories", categories);
+        model.addAttribute("currentCategory", category);
+        model.addAttribute("currentSort", sort);
+        model.addAttribute("currentType", type);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasMore", hasMore);
+
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            if ("true".equals(request.getHeader("X-Load-More"))) {
+                return "test/list :: #content-grid-items";
+            }
+            return "test/list :: #content-grid";
+        }
+        
+        return "test/list";
+    }
 
     /**
      * 테스트 랜딩 페이지 (Intro)
@@ -33,16 +79,17 @@ public class MdTestUserController {
                             Model model) {
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
         
-        // 데이터가 없으면 리다이렉트
         if (test == null) return "redirect:/";
         
-        // 미리보기 모드가 아니고 상태가 active가 아니면 리다이렉트
-        if (!preview && !"active".equals(test.getStatus())) {
-            return "redirect:/";
+        // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
+        if (!"active".equals(test.getStatus())) {
+            if (!isAdminOrAuthor(test.getCreatedBy())) {
+                throw new RuntimeException("해당 테스트에 접근할 권한이 없습니다.");
+            }
         }
         
         model.addAttribute("test", test);
-        model.addAttribute("isPreview", preview); // 화면에서 미리보기 배지 등을 띄울 때 사용 가능
+        model.addAttribute("isPreview", preview);
         return "test/intro";
     }
 
@@ -56,10 +103,12 @@ public class MdTestUserController {
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
         
         if (test == null) return "redirect:/";
-        
-        // 미리보기 모드가 아니고 상태가 active가 아니면 리다이렉트
-        if (!preview && !"active".equals(test.getStatus())) {
-            return "redirect:/test/" + testKey; // 인트로로 보내서 거기서 다시 체크하게 함
+
+        // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
+        if (!"active".equals(test.getStatus())) {
+            if (!isAdminOrAuthor(test.getCreatedBy())) {
+                throw new RuntimeException("해당 테스트에 접근할 권한이 없습니다.");
+            }
         }
         
         model.addAttribute("test", test);
@@ -68,65 +117,104 @@ public class MdTestUserController {
     }
 
     /**
-     * 답변 제출 및 결과 계산
+     * 결과 페이지 (POST: 테스트 직후 / GET: 공유 링크)
      */
-    @PostMapping("/{testKey}/submit")
-    public String submitAnswers(@PathVariable("testKey") String testKey,
-                                @RequestParam("answers") String answersJson,
-                                @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
-                                HttpServletRequest request,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            MdTestDTO test = mdTestUserService.getFullTestData(testKey);
-            if (test == null) throw new IllegalArgumentException("존재하지 않는 테스트입니다.");
-
-            List<Integer> answers = objectMapper.readValue(answersJson, new TypeReference<List<Integer>>() {});
-            MdTestResultDTO result = mdTestUserService.calculateResult(test.getId(), answers);
-            
-            // 미리보기 모드가 아닐 때만 참여 수 증가
-            if (!preview) {
-                mdTestUserService.incrementPlayCount(test.getId());
-            }
-
-            request.getSession().setAttribute("currentTestResult", result);
-            request.getSession().setAttribute("currentTestInfo", test);
-
-            // 미리보기 모드일 경우 결과 페이지 리다이렉트 시 파라미터 유지
-            String redirectUrl = "redirect:/test/" + testKey + "/result";
-            if (preview) {
-                redirectUrl += "?preview=true";
-            }
-            return redirectUrl;
-        } catch (Exception e) {
-            log.error("테스트 처리 중 오류 발생", e);
-            redirectAttributes.addFlashAttribute("errorMessage", "처리 중 오류가 발생했습니다.");
-            return "redirect:/test/" + testKey + (preview ? "?preview=true" : "");
-        }
-    }
-
-    /**
-     * 결과 페이지
-     */
-    @GetMapping("/{testKey}/result")
-    public String testResult(@PathVariable("testKey") String testKey, 
+    @RequestMapping(value = "/{testKey}/result", method = {RequestMethod.GET, RequestMethod.POST})
+    public String testResult(@PathVariable("testKey") String testKey,
+                             @RequestParam(value = "resultCode", required = false) String resultCode,
+                             @RequestParam(value = "score", required = false) Integer score,
+                             @RequestParam(value = "answers", required = false) String answersJson,
                              @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
-                             HttpServletRequest request, Model model) {
-        MdTestResultDTO result = (MdTestResultDTO) request.getSession().getAttribute("currentTestResult");
-        MdTestDTO test = (MdTestDTO) request.getSession().getAttribute("currentTestInfo");
+                             HttpServletRequest request,
+                             Model model) throws Exception {
         
+        MdTestDTO test = mdTestUserService.getFullTestData(testKey);
+        if (test == null) return "redirect:/";
+        
+        MdTestResultDTO matchedResult = null;
+
+        // 1. POST 방식: 방금 테스트를 마친 경우 (계산 수행)
+        if ("POST".equalsIgnoreCase(request.getMethod()) && answersJson != null) {
+            try {
+                List<Integer> answers = objectMapper.readValue(answersJson, new TypeReference<List<Integer>>() {});
+                matchedResult = mdTestUserService.calculateResult(test.getId(), answers);
+                
+                if (!preview) {
+                    mdTestUserService.incrementPlayCount(test.getId());
+                }
+                
+                // resultCode 세팅 (공유 URL용)
+                if (matchedResult != null) {
+                    resultCode = String.valueOf(matchedResult.getId());
+                    score = matchedResult.getCalculatedScore();
+                }
+            } catch (Exception e) {
+                log.error("결과 계산 오류", e);
+            }
+        } 
+        
+        // 2. GET 방식 또는 POST 계산 실패: 파라미터로 결과 찾기 (공유 링크 등)
+        if (matchedResult == null && resultCode != null) {
+            if (test.getResults() != null) {
+                String finalResultCode = resultCode;
+                matchedResult = test.getResults().stream()
+                        .filter(r -> {
+                            try {
+                                Long id = Long.parseLong(finalResultCode);
+                                if (r.getId().equals(id)) return true;
+                            } catch (NumberFormatException e) {}
+                            return r.getResultTitle().equals(finalResultCode);
+                        })
+                        .findFirst()
+                        .orElse(test.getResults().isEmpty() ? null : test.getResults().get(0));
+                
+                if (matchedResult != null && score != null) {
+                    matchedResult.setCalculatedScore(score);
+                }
+            }
+        }
+
+        if (matchedResult == null) return "redirect:/test/" + testKey;
+
+        // 결과 조회 시에도 권한 체크 (공유된 링크 등을 통한 우회 방지)
+        if (!"active".equals(test.getStatus())) {
+            if (!isAdminOrAuthor(test.getCreatedBy())) {
+                throw new RuntimeException("해당 테스트의 결과에 접근할 권한이 없습니다.");
+            }
+        }
+
+        model.addAttribute("test", test);
+        model.addAttribute("result", matchedResult);
+        model.addAttribute("resultCode", resultCode);
         model.addAttribute("isPreview", preview);
 
-        if (result == null || test == null) {
-            return "redirect:/test/" + testKey;
-        }
-
-        model.addAttribute("result", result);
-        model.addAttribute("test", test);
-        
-        // 공유 URL 등 추가 정보
+        // 공유용 URL 생성
         String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "");
-        model.addAttribute("shareUrl", baseUrl + "/test/" + testKey);
+        String shareUrl = baseUrl + "/test/" + testKey + "/result?resultCode=" + java.net.URLEncoder.encode(resultCode, "UTF-8");
+        if (score != null) {
+            shareUrl += "&score=" + score;
+        }
+        model.addAttribute("shareUrl", shareUrl);
 
         return "test/result";
+    }
+
+    private boolean isAdminOrAuthor(String createdBy) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || 
+            auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+            return false;
+        }
+        
+        if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return true;
+        }
+        
+        Object principal = auth.getPrincipal();
+        if (principal instanceof PrincipalDetails) {
+            String username = ((PrincipalDetails) principal).getUsername();
+            return username.equals(createdBy);
+        }
+        return auth.getName().equals(createdBy);
     }
 }

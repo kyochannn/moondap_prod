@@ -6,53 +6,70 @@
 <head>
     <meta charset="UTF-8">
     <title>문답 - 가입 완료</title>
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    <style>
+        .success-bg-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(82, 77, 211, 0.15) 0%, rgba(82, 77, 211, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
 </head>
 
 <body layout:fragment="content">
-    <div class="container">
-        <!-- Success Section -->
-        <section id="team" class="team section py-1 mb-5">
-            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+    <div class="container pb-5">
+        <section class="section py-1">
+            <div class="container px-0" data-aos="fade-up">
                 
                 <div class="row pt-5 mt-5">
-                    <div class="col-12 text-center" data-aos="zoom-in" data-aos-delay="200">
-                        <!-- Success Icon -->
-                        <div class="mb-4">
-                            <i class="bi bi-patch-check-fill text-primary" style="font-size: 6rem; filter: drop-shadow(0 0 15px rgba(13, 110, 253, 0.5));"></i>
-                        </div>
+                    <div class="col-lg-8 offset-lg-2">
                         
-                        <!-- Welcome Message -->
-                        <h2 class="text-white fw-bold mb-3">
-                            <span th:text="${nickname}" class="text-primary">사용자</span>님, 환영합니다!
-                        </h2>
-                        <h5 class="text-white-50 mb-5">
-                            문답 회원가입을 완료하였습니다.
-                        </h5>
-                    </div>
-                </div>
+                        <div class="success-bg-glow"></div>
 
-                <!-- Action Cards -->
-                <div class="row justify-content-center">
-                    <div class="col-lg-6">
-                        <div class="join-team-cta text-center" data-aos="fade-up" data-aos-delay="300" style="background: rgba(255,255,255,0.03); border: 1px solid #333447; padding: 3rem;">
-                            <div class="cta-icon mb-4">
-                                <i class="bi bi-rocket-takeoff-fill text-primary" style="font-size: 2.5rem;"></i>
+                        <div class="admin-cta-box text-center p-5" data-aos="zoom-in" data-aos-delay="200" style="border-radius: 30px;">
+                            <!-- Success Icon Overlay -->
+                            <div class="cta-icon mb-4 mx-auto" style="width: 100px; height: 100px; background: rgba(82, 77, 211, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-patch-check-fill text-primary" style="font-size: 4rem;"></i>
                             </div>
+                            
                             <div class="cta-content">
-                                <h4 class="text-white mb-3">이제 새로운 모험을 시작할까요?</h4>
-                                <p class="text-white-50 mb-4 px-lg-5">
-                                    세상의 모든 테스트, 문답
+                                <h2 class="text-white fw-bold mb-2">
+                                    <span th:text="${nickname}" class="text-primary">사용자</span>님, 환영합니다!
+                                </h2>
+                                <p class="text-white-50 fs-5 mb-5">
+                                    문답의 새로운 회원이 되신 것을 진심으로 축하드립니다.
                                 </p>
-                                <div class="cta-actions d-grid gap-3 d-sm-flex justify-content-center">
-                                    <a href="/loginView" class="btn btn-primary px-5 py-3 bord-radius-20 fw-bold">
-                                        <i class="bi bi-box-arrow-in-right me-2"></i>로그인
-                                    </a>
-                                    <a href="/" class="btn btn-outline-light px-5 py-3 bord-radius-20">
-                                        <i class="bi bi-house-door-fill me-2"></i>메인으로 이동
-                                    </a>
+
+                                <div class="mx-auto mb-5" style="width: 40px; height: 4px; background: #524dd3; border-radius: 2px;"></div>
+
+                                <div class="row g-3 justify-content-center">
+                                    <div class="col-sm-6 col-md-5">
+                                        <a href="/loginView" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>지금 로그인하기
+                                        </a>
+                                    </div>
+                                    <div class="col-sm-6 col-md-5">
+                                        <a href="/" class="btn btn-outline-light w-100 py-3 rounded-pill">
+                                            <i class="bi bi-house-door me-2"></i>메인 화면으로
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="mt-5 text-center" data-aos="fade-up" data-aos-delay="400">
+                            <p class="text-white-50 small">
+                                <i class="bi bi-info-circle me-1"></i> 이제 직접 테스트를 만들고 공유할 수 있습니다.
+                            </p>
+                        </div>
+
                     </div>
                 </div>
                 

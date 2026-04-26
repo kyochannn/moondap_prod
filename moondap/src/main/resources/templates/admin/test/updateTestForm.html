@@ -13,39 +13,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script th:src="@{/assets/js/dragAndDrop.js}" defer></script>
     <style>
-        /* 테이블 고정 레이아웃 및 가로 스크롤 */
-        .table-dark-custom {
-            table-layout: fixed;
-            min-width: 900px;
-        }
-        .table-dark-custom td, .table-dark-custom th {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .table-responsive {
-            border-radius: 12px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .custom-input-inline {
+        .preview-img {
             width: 100%;
-        }
-        
-        /* 모바일 헤더 버튼 2줄 정렬 */
-        @media (max-width: 768px) {
-            .header-action-group {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px !important;
-                width: 100%;
-            }
-            .header-action-group .btn {
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 10px 5px !important;
-                font-size: 0.8rem !important;
-            }
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 </head>
@@ -55,7 +26,7 @@
         <section class="section">
             <div class="container" data-aos="fade-up">
 
-                <form th:action="@{/admin/test/{id}/update(id=${test.id})}"
+                <form th:action="@{/test/manage/{id}/update(id=${test.id})}"
                       method="post" enctype="multipart/form-data" id="testForm" onsubmit="return handleSubmit(event)">
                     
                     <!-- 페이지 헤더 -->
@@ -67,7 +38,7 @@
                             </div>
                         </div>
                         <div class="header-action-group d-flex gap-2">
-                            <a href="/admin/test/list" class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                            <a href="/test/manage/list" class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
                                 <i class="bi bi-arrow-left me-1"></i> 이전
                             </a>
                             <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}" target="_blank" 
@@ -205,13 +176,19 @@
                                     <tr th:each="r, stat : ${test.results}" class="result-row">
                                         <td class="text-white small index" th:text="${stat.count}"></td>
                                         <td>
-                                            <div class="mini-drop-zone mx-auto" th:classappend="${r.resultImage != null and r.resultImage != ''} ? 'has-image' : ''">
-                                                <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;"
+                                            <div class="mini-drop-zone mx-auto active-upload" 
+                                                 th:classappend="${r.resultImage != null and r.resultImage != ''} ? 'has-image' : ''"
+                                                 style="cursor: pointer;">
+                                                <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3;"
                                                        th:onchange="|previewResultImage(this, 'res-preview-${stat.index}')|">
                                                 <img th:id="|res-preview-${stat.index}|" class="preview-img"
                                                      th:src="${r.resultImage != null and r.resultImage != ''} ? @{'/uploads/' + ${r.resultImage}} : ''"
                                                      onerror="handleImageError(this)">
-                                                <div class="upload-placeholder"><i class="bi bi-image"></i></div>
+                                                <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+                                                    <div class="icon-circle mb-1" style="width: 30px; height: 30px;">
+                                                        <i class="bi bi-plus-circle-fill text-white" style="font-size: 0.9rem;"></i>
+                                                    </div>
+                                                </div>
                                                 <input type="hidden" class="r-image-name" th:value="${r.resultImage}">
                                             </div>
                                         </td>
@@ -256,7 +233,7 @@
                                         <th style="width:50px">#</th>
                                         <th style="width:auto">질문 내용</th>
                                         <th class="domain-col" style="width:200px">결과 유형</th>
-                                        <th style="width:100px">역채점</th>
+                                        <th class="reverse-col" style="width:100px">역채점</th>
                                         <th style="width:80px">삭제</th>
                                     </tr>
                                 </thead>
@@ -271,7 +248,7 @@
                                                 <option value="">결과 유형 선택</option>
                                             </select>
                                         </td>
-                                        <td>
+                                        <td class="reverse-col">
                                             <div class="form-check form-switch d-flex justify-content-center align-items-center m-0" style="min-height: unset;">
                                                 <input class="form-check-input q-reverse" type="checkbox" th:checked="${q.reverse}" style="cursor: pointer;">
                                             </div>
@@ -287,13 +264,35 @@
                         </div>
                     </div>
 
+                    <!-- 4. 하단 액션 버튼 영역 -->
+                    <div class="row mt-5 mb-5">
+                        <div class="col-lg-8 offset-lg-2">
+                            <div class="admin-cta-box" data-aos="fade-up">
+                                <div class="cta-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
+                                <div class="cta-content text-center">
+                                    <h4>테스트 수정을 완료할까요?</h4>
+                                    <p>변경사항을 확인하고 저장해주세요.</p>
+                                    <div class="cta-actions">
+                                        <a class="btn btn-outline-light rounded-pill px-4" onclick="history.back()">취소</a>
+                                        <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}" target="_blank" 
+                                           class="btn btn-outline-info rounded-pill px-4">
+                                            <i class="bi bi-eye me-1"></i> 미리보기
+                                        </a>
+                                        <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmDelete()">삭제</button>
+                                        <button type="submit" class="btn btn-primary rounded-pill px-4">수정 완료</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </form>
             </div>
         </section>
     </main>
 
     <!-- 삭제용 숨겨진 폼 -->
-    <form th:action="@{/admin/test/{id}/delete(id=${test.id})}" method="post" id="deleteForm" style="display:none;"></form>
+    <form th:action="@{/test/manage/{id}/delete(id=${test.id})}" method="post" id="deleteForm" style="display:none;"></form>
 
     <!-- 이미지 크롭 모달 -->
     <div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
@@ -341,6 +340,11 @@
             updateDomainOptions();
             lastTestType = $('#testType').val(); // 초기값 저장
             toggleScoreFields();
+
+            // 기존 텍스트 영역 높이 초기화
+            $('textarea').each(function() {
+                autoExpand(this);
+            });
         });
 
         let lastTestType;
@@ -364,12 +368,14 @@
 
             if (testType === 'SCORE') {
                 $scoreCols.show();
-                $domainCols.hide(); // 점수형일 때 숨김
+                $domainCols.hide(); // 점수형일 때 도메인 매칭 숨김
+                $('.reverse-col').show(); // 점수형일 때 역채점 활성화
                 $table.css('min-width', '1100px');
-                reindexRows('result'); // 유형 변경 시 자동 배분 실행
+                reindexRows('result');
             } else {
                 $scoreCols.hide();
-                $domainCols.show(); // 유형형일 때 다시 표시
+                $domainCols.show(); // 유형형일 때 도메인 매칭 표시
+                $('.reverse-col').hide(); // 유형형일 때 역채점 불필요하므로 숨김
                 $table.css('min-width', '900px');
             }
         }
@@ -382,11 +388,15 @@
                 <tr class="result-row" style="animation: fadeIn 0.4s ease-out;">
                     <td class="text-white small index"></td>
                     <td>
-                        <div class="mini-drop-zone mx-auto">
-                            <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2;"
+                        <div class="mini-drop-zone mx-auto active-upload" style="cursor: pointer;">
+                            <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3;"
                                    onchange="previewResultImage(this, 'res-preview-${uid}')">
                             <img id="res-preview-${uid}" class="preview-img" onerror="handleImageError(this)">
-                            <div class="upload-placeholder"><i class="bi bi-image"></i></div>
+                            <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+                                <div class="icon-circle mb-1" style="width: 30px; height: 30px;">
+                                    <i class="bi bi-plus-circle-fill text-white" style="font-size: 0.9rem;"></i>
+                                </div>
+                            </div>
                             <input type="hidden" class="r-image-name" value="">
                         </div>
                     </td>
@@ -429,7 +439,7 @@
                             <option value="">결과 유형 선택</option>
                         </select>
                     </td>
-                    <td>
+                    <td class="reverse-col">
                         <div class="form-check form-switch d-flex justify-content-center align-items-center m-0" style="min-height: unset;">
                             <input class="form-check-input q-reverse" type="checkbox" style="cursor: pointer;">
                         </div>
@@ -452,6 +462,19 @@
             reindexRows(type);
             if (type === 'result') updateDomainOptions();
         }
+
+        // ─── 유틸리티 ───────────────────────────────────────────────
+        
+        // 텍스트 영역 높이 자동 조절
+        function autoExpand(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight + 10) + 'px'; // 여유 공간 추가
+        }
+
+        $(document).on('input', '.q-text, .r-content', function() {
+            autoExpand(this);
+        });
 
         function reindexRows(type) {
             const $rows = $(`.${type}-row`);
@@ -590,7 +613,7 @@
                 success: function (res) {
                     if (res.success) {
                         alert(res.message);
-                        window.location.href = '/admin/test/list';
+                        window.location.href = '/test/manage/list';
                     } else {
                         alert(res.message);
                         $submitBtn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i> 수정 완료');

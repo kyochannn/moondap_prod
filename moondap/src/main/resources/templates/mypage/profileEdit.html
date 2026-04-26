@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>회원 정보 수정 - 문답(MOONDAP)</title>
+    
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
+    <!-- 이미지 압축 라이브러리 -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
+    <style>
+        #profile-drop-zone {
+            max-width: 200px;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+            border-radius: 50% !important;
+            border: 2px dashed rgba(255, 255, 255, 0.4) !important;
+            background: #1a1b2e !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        #profile-drop-zone.has-image {
+            border: 2px dashed #524dd3 !important;
+        }
+        #profile-drop-zone:hover {
+            border-color: #ffffff !important;
+            transform: scale(1.02);
+        }
+        #profile-drop-zone img {
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .upload-guide-layer {
+            border-radius: 50% !important;
+        }
+        .security-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 40px;
+        }
+    </style>
+
+    <!-- dragAndDrop.js -->
+    <script th:src="@{/assets/js/dragAndDrop.js}" defer></script>
+</head>
+
+<body layout:fragment="content">
+    <div class="container pb-5">
+        <section class="section py-1 profile-edit-section">
+            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+
+                <div class="row">
+                    <div class="col-lg-8 offset-lg-2">
+
+                        <!-- 페이지 헤더 -->
+                        <div class="pt-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 px-2 py-3">
+                                <h5 class="text-white mb-0 fw-bold">
+                                    <i class="bi bi-person-gear me-2 text-primary"></i> 회원 정보 수정
+                                </h5>
+                                <a th:href="@{/mypage}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                                    <i class="bi bi-arrow-left me-1"></i> 돌아가기
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 플래시 메시지 -->
+                        <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span th:text="${errorMsg}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span th:text="${successMsg}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <form th:action="@{/mypage/edit}" method="post" enctype="multipart/form-data" id="profileForm">
+                            
+                            <!-- 프로필 이미지 섹션 -->
+                            <div class="leadership-slider text-center mb-5">
+                                <div class="leader-card selection-card p-0" style="background: transparent; border: none;">
+                                    <div class="leader-image drop-zone active-upload"
+                                         th:classappend="${user.profileImage != null and user.profileImage != '' and !user.profileImage.contains('default')} ? 'has-image' : ''"
+                                         id="profile-drop-zone"
+                                         onclick="document.getElementById('profile-file').click()">
+                                        
+                                        <img th:src="${user.profileImage != null and user.profileImage != '' and !user.profileImage.contains('default')} 
+                                                     ? (@{'/uploads/' + ${user.profileImage}}) 
+                                                     : @{/assets/img/misc/default-avatar.svg}"
+                                             alt="프로필"
+                                             id="profile-preview"
+                                             class="preview-img">
+                                        
+                                        <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+                                            <div class="icon-circle mb-2">
+                                                <i class="bi bi-plus-circle-fill text-white fs-3"></i>
+                                            </div>
+                                            <p class="guide-text mb-0 small">이미지 업로드</p>
+                                            <p class="guide-sub-text small">(드래그 또는 클릭)</p>
+                                        </div>
+                                        <input type="file"
+                                               name="profileFile"
+                                               id="profile-file"
+                                               style="display: none;"
+                                               accept="image/*"
+                                               onchange="previewImage(this, 'profile-preview')">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 기본 정보 입력 섹션 -->
+                            <div class="leadership-slider">
+                                <p class="text-start ms-2 text-primary small mb-2">
+                                    <i class="bi bi-person-badge"></i> 아이디 (변경 불가)
+                                </p>
+                                <input type="text" th:value="${user.username}" class="custom-input" readonly style="opacity: 0.5; cursor: not-allowed;">
+                            </div>
+
+                            <div class="leadership-slider">
+                                <p class="text-start ms-2 text-primary small mb-2">
+                                    <i class="bi bi-stars"></i> 닉네임
+                                </p>
+                                <input type="text" name="nickname" th:value="${user.nickname}" class="custom-input" placeholder="닉네임을 입력해주세요" required>
+                            </div>
+
+                            <div class="leadership-slider">
+                                <p class="text-start ms-2 text-primary small mb-2">
+                                    <i class="bi bi-envelope-fill"></i> 이메일 주소
+                                </p>
+                                <input type="email" name="email" th:value="${user.email}" class="custom-input" placeholder="example@moondap.com">
+                            </div>
+
+                            <div class="leadership-slider">
+                                <p class="text-start ms-2 text-primary small mb-1">
+                                    <i class="bi bi-chat-quote-fill"></i> 자기소개
+                                </p>
+                                <textarea name="bio" class="custom-input" rows="3" style="resize: none;" placeholder="나를 표현하는 한 마디를 적어주세요." th:text="${user.bio}"></textarea>
+                            </div>
+
+                            <!-- 보안 설정 섹션 (비밀번호 변경 분리 - 저장 버튼 위로 이동) -->
+                            <div class="security-card mb-4" data-aos="fade-up">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                    <div>
+                                        <h6 class="text-white mb-1 fw-bold"><i class="bi bi-shield-lock me-2 text-primary"></i> 계정 보안</h6>
+                                        <p class="text-white-50 small mb-0">비밀번호를 정기적으로 변경하여 계정을 안전하게 보호하세요.</p>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                                        비밀번호 변경
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill" style="background: #524dd3; border: none;">
+                                    <i class="bi bi-check-lg me-2"></i> 프로필 정보 저장
+                                </button>
+                            </div>
+
+                            <!-- 위험 구역 (회원 탈퇴) -->
+                            <div class="mt-5 pt-5 border-top border-secondary" style="opacity: 0.8;">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 rounded-4" style="background: rgba(220, 53, 69, 0.05); border: 1px solid rgba(220, 53, 69, 0.1);">
+                                    <div>
+                                        <h6 class="text-danger mb-1 fw-bold"><i class="bi bi-person-x-fill me-2"></i> 회원 탈퇴</h6>
+                                        <p class="text-white-50 small mb-0">계정을 삭제하면 모든 데이터가 보호 모드로 전환되며 로그인이 제한됩니다.</p>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                                        회원 탈퇴
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- 비밀번호 변경 모달 -->
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 24px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-key-fill me-2 text-primary"></i> 비밀번호 변경</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="pwdErrorMsg" class="alert alert-danger border-0 rounded-3 small mb-3 py-2 d-none"></div>
+                    <div id="pwdSuccessMsg" class="alert alert-success border-0 rounded-3 small mb-3 py-2 d-none"></div>
+
+                    <div class="leadership-slider mb-3">
+                        <p class="text-start ms-2 text-primary small mb-2">현재 비밀번호</p>
+                        <input type="password" id="currentPassword" class="custom-input" placeholder="현재 비밀번호를 입력하세요">
+                    </div>
+                    <div class="leadership-slider mb-3">
+                        <p class="text-start ms-2 text-primary small mb-2">새 비밀번호</p>
+                        <input type="password" id="newPassword" class="custom-input" placeholder="영문, 숫자, 특수문자 조합 8~20자">
+                    </div>
+                    <div class="leadership-slider mb-3">
+                        <p class="text-start ms-2 text-primary small mb-2">새 비밀번호 확인</p>
+                        <input type="password" id="confirmPassword" class="custom-input" placeholder="다시 한번 입력하세요">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="btnUpdatePassword" style="background: #524dd3; border: none;">
+                        비밀번호 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원 탈퇴 확인 모달 -->
+    <div class="modal fade" id="withdrawModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 24px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> 회원 탈퇴 확인</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="mb-4">탈퇴 시 모든 개인정보와 활동 데이터가 비활성화되며 로그인이 불가능해집니다.<br>계속하시려면 비밀번호를 입력해주세요.</p>
+                    
+                    <div id="withdrawErrorMsg" class="alert alert-danger border-0 rounded-3 small mb-3 py-2 d-none"></div>
+
+                    <div class="leadership-slider mb-0">
+                        <input type="password" id="withdrawPassword" class="custom-input" placeholder="비밀번호를 입력하세요">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="btnWithdrawSubmit">
+                        탈퇴 완료
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 크롭 모달 -->
+    <div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-crop me-2"></i>이미지 편집</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="img-container mb-3" style="max-height: 500px; overflow: hidden; border-radius: 12px; background: #000;">
+                        <img id="cropperImage" src="" style="max-width: 100%;">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="cropButton">적용하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 프로필 폼 제출 애니메이션
+        document.getElementById('profileForm').onsubmit = function(e) {
+            const $btn = $(this).find('button[type="submit"]');
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 저장 중...');
+            return true;
+        };
+
+        // 비밀번호 변경 AJAX
+        document.getElementById('btnUpdatePassword').onclick = function() {
+            const currentPwd = document.getElementById('currentPassword').value;
+            const newPwd = document.getElementById('newPassword').value;
+            const confirmPwd = document.getElementById('confirmPassword').value;
+            const $error = document.getElementById('pwdErrorMsg');
+            const $success = document.getElementById('pwdSuccessMsg');
+            const $btn = $(this);
+
+            $error.classList.add('d-none');
+            $success.classList.add('d-none');
+
+            if (!currentPwd || !newPwd || !confirmPwd) {
+                $error.textContent = "모든 항목을 입력해주세요.";
+                $error.classList.remove('d-none');
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                $error.textContent = "새 비밀번호가 일치하지 않습니다.";
+                $error.classList.remove('d-none');
+                return;
+            }
+
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...');
+
+            $.ajax({
+                url: '/mypage/updatePassword',
+                type: 'POST',
+                data: {
+                    currentPassword: currentPwd,
+                    newPassword: newPwd
+                },
+                success: function(res) {
+                    $btn.prop('disabled', false).text('비밀번호 저장');
+                    if (res.success) {
+                        $success.textContent = res.message;
+                        $success.classList.remove('d-none');
+                        // 2초 후 모달 닫기
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('passwordModal')).hide();
+                            // 입력 필드 초기화
+                            document.getElementById('currentPassword').value = '';
+                            document.getElementById('newPassword').value = '';
+                            document.getElementById('confirmPassword').value = '';
+                            $success.classList.add('d-none');
+                        }, 2000);
+                    } else {
+                        $error.textContent = res.message;
+                        $error.classList.remove('d-none');
+                    }
+                },
+                error: function() {
+                    $btn.prop('disabled', false).text('비밀번호 저장');
+                    $error.textContent = "오류가 발생했습니다. 다시 시도해주세요.";
+                    $error.classList.remove('d-none');
+                }
+            });
+        };
+
+        // 회원 탈퇴 AJAX
+        document.getElementById('btnWithdrawSubmit').onclick = function() {
+            const pwd = document.getElementById('withdrawPassword').value;
+            const $error = document.getElementById('withdrawErrorMsg');
+            const $btn = $(this);
+
+            if (!pwd) {
+                $error.textContent = "비밀번호를 입력해주세요.";
+                $error.classList.remove('d-none');
+                return;
+            }
+
+            if (!confirm('정말로 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없습니다.')) {
+                return;
+            }
+
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...');
+
+            $.ajax({
+                url: '/mypage/withdraw',
+                type: 'POST',
+                data: { password: pwd },
+                success: function(res) {
+                    if (res.success) {
+                        alert(res.message);
+                        location.href = '/';
+                    } else {
+                        $btn.prop('disabled', false).text('탈퇴 완료');
+                        $error.textContent = res.message;
+                        $error.classList.remove('d-none');
+                    }
+                },
+                error: function() {
+                    $btn.prop('disabled', false).text('탈퇴 완료');
+                    $error.textContent = "탈퇴 처리 중 오류가 발생했습니다.";
+                    $error.classList.remove('d-none');
+                }
+            });
+        };
+    </script>
+</body>
+</html>

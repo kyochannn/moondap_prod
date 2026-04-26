@@ -8,35 +8,42 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 밸런스 게임 목록 -->
 	<select id="selectBalanceGameList" resultType="BalanceGameDTO">
 	    SELECT q.*, 
+	           CONVERT(COALESCE(c.display_name, q.category) USING utf8mb4) as categoryDisplayName,
 	           (SELECT COUNT(*) FROM moondap.balance_comments c WHERE c.question_id = q.id) AS comment_cnt
 	    FROM moondap.balance_questions q
+	    LEFT JOIN moondap.md_test_category c ON q.category = c.category_name
 	    <where>
 	        <if test="status != null and status != ''">
-	            AND status = #{status}
+	            AND q.status = #{status}
 	        </if>
 	        <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
-	            AND is_spicy = 0
+	            AND q.is_spicy = 0
 	        </if>
 	        <if test="category != null and category != '' and category != 'all'">
-	            AND category = #{category}
+	            AND q.category = #{category}
+	        </if>
+	        <if test="userId != null and userId != ''">
+	            AND q.user_id = #{userId}
 	        </if>
 	    </where>
-	    ORDER BY created_at DESC
+	    ORDER BY q.created_at DESC
 	    LIMIT #{limit} OFFSET #{offset}
 	</select>
 
     <!-- 밸런스 게임 개별 조회 -->
 	<select id="selectBalanceGame" resultType="BalanceGameDTO">
-	    SELECT *
-	    FROM moondap.balance_questions
+	    SELECT q.*,
+	           CONVERT(COALESCE(c.display_name, q.category) USING utf8mb4) as categoryDisplayName
+	    FROM moondap.balance_questions q
+	    LEFT JOIN moondap.md_test_category c ON q.category = c.category_name
 	    <where>
-	        AND id = #{id}
+	        AND q.id = #{id}
 	        <if test="isSpicy != null and (isSpicy == 0 or isSpicy == '0'.toString())">
-	            AND is_spicy = 0
+	            AND q.is_spicy = 0
 	        </if>
 	        
 	        <if test="category != null and category != '' and category != 'all'">
-	            AND category = #{category}
+	            AND q.category = #{category}
 	        </if>
 	    </where>
 	</select>
@@ -114,8 +121,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	
 	<!-- 밸런스 게임 댓글 -->
     <insert id="insertBalanceGameComment">
-        INSERT INTO moondap.balance_comments(question_id, nickname, selected_side ,content)
-        VALUES (#{id}, #{nickname}, #{side}, #{content})
+        INSERT INTO moondap.balance_comments(question_id, nickname, selected_side ,content, user_id)
+        VALUES (#{id}, #{nickname}, #{side}, #{content}, #{userId})
     </insert>
     
 	<!-- 밸런스 게임 댓글 개수 -->

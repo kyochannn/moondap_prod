@@ -28,4 +28,31 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE nickname = #{nickname}
     </select>
 
+    <update id="updateUser">
+        UPDATE moondap.md_users
+        SET 
+            nickname = #{user.nickname},
+            email = #{user.email},
+            bio = #{user.bio},
+            profile_image = #{user.profileImage},
+            role = #{user.role},
+            point = #{user.point},
+            status = #{user.status}
+            <if test="user.password != null and user.password != ''">
+                , password = #{user.password}
+            </if>
+        WHERE username = #{user.username}
+    </update>
+
+    <select id="selectAllUsers" resultType="com.moondap.dto.MdUserDTO">
+        SELECT *
+        FROM moondap.md_users
+        ORDER BY created_at DESC
+    </select>
+
+    <delete id="deleteUserByUsername">
+        DELETE FROM moondap.md_users
+        WHERE username = #{username}
+    </delete>
+
 </mapper>

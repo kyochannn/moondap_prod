@@ -23,6 +23,11 @@
         FROM md_tests t
         LEFT JOIN md_test_questions q ON t.id = q.test_id AND q.is_active = 1
         LEFT JOIN md_test_category c ON t.category = c.category_name
+        <where>
+            <if test="createdBy != null and createdBy != ''">
+                AND t.created_by = #{createdBy}
+            </if>
+        </where>
         GROUP BY t.id
         ORDER BY t.created_at DESC
     </select>
@@ -217,4 +222,143 @@
         UPDATE md_tests SET play_count = play_count + 1 WHERE id = #{id}
     </update>
 
+    <!-- 통합 인기 콘텐츠 조회 (메인/리스트용) -->
+    <select id="selectPopularContent" resultType="com.moondap.dto.MdContentItemDTO">
+        SELECT * FROM (
+            SELECT 
+                CONVERT('NORMAL' USING utf8mb4) as type, 
+                CAST(t.id AS CHAR) as id, 
+                CONVERT(t.test_key USING utf8mb4) as `key`, 
+                CONVERT(t.title USING utf8mb4) as title, 
+                CONVERT(t.description USING utf8mb4) as description, 
+                CONVERT(t.thumbnail_image USING utf8mb4) as thumbnail, 
+                CONVERT(NULL USING utf8mb4) as thumbnail2, 
+                CONVERT(COALESCE(c.display_name, t.category) USING utf8mb4) as categoryName, 
+                t.play_count as playCount, 
+                t.created_at as createdAt,
+                (CASE WHEN DATEDIFF(NOW(), t.created_at) &lt;= 14 THEN 1 ELSE 0 END) as isNew,
+                0 as isSpicy
+            FROM md_tests t
+            LEFT JOIN md_test_category c ON t.category = c.category_name
+            WHERE t.status = 'active'
+
+            UNION ALL
+
+            SELECT 
+                CONVERT('BALANCE' USING utf8mb4) as type, 
+                CAST(bq.id AS CHAR) as id, 
+                CAST(bq.id AS CHAR) as `key`, 
+                CONVERT(bq.title USING utf8mb4) as title, 
+                CONVERT(bq.title USING utf8mb4) as description, 
+                CONVERT(bq.option_1_image_path USING utf8mb4) as thumbnail, 
+                CONVERT(bq.option_2_image_path USING utf8mb4) as thumbnail2, 
+                CONVERT(COALESCE(c2.display_name, bq.category) USING utf8mb4) as categoryName, 
+                bq.total_count as playCount, 
+                bq.created_at as createdAt,
+                (CASE WHEN DATEDIFF(NOW(), bq.created_at) &lt;= 14 THEN 1 ELSE 0 END) as isNew,
+                bq.is_spicy as isSpicy
+            FROM balance_questions bq
+            LEFT JOIN md_test_category c2 ON bq.category = c2.category_name
+            WHERE bq.status = 'active'
+
+            UNION ALL
+
+            SELECT 
+                CONVERT('EGEN' USING utf8mb4) as type, 
+                CAST('egen1' AS CHAR) as id, 
+                CONVERT('selectEgenTetoGame' USING utf8mb4) as `key`, 
+                CONVERT('에겐테토 성격 검사' USING utf8mb4) as title, 
+                CONVERT('나의 본모습을 찾아가는 정밀 성격 분석 테스트' USING utf8mb4) as description, 
+                CONVERT('/assets/img/testList/img3.png' USING utf8mb4) as thumbnail, 
+                CONVERT(NULL USING utf8mb4) as thumbnail2, 
+                CONVERT('심리/성격' USING utf8mb4) as categoryName, 
+                (SELECT COUNT(*) FROM egen_teto_test_result) as playCount, 
+                CONVERT('2024-01-01 00:00:00' USING utf8mb4) as createdAt,
+                0 as isNew,
+                0 as isSpicy
+            FROM DUAL
+        ) combined
+        ORDER BY playCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectAllContentList" resultType="com.moondap.dto.MdContentItemDTO">
+        SELECT * FROM (
+            SELECT 
+                CONVERT('NORMAL' USING utf8mb4) as type, 
+                CAST(t.id AS CHAR) as id, 
+                CONVERT(t.test_key USING utf8mb4) as `key`, 
+                CONVERT(t.title USING utf8mb4) as title, 
+                CONVERT(t.description USING utf8mb4) as description, 
+                CONVERT(t.thumbnail_image USING utf8mb4) as thumbnail, 
+                CONVERT(NULL USING utf8mb4) as thumbnail2, 
+                CONVERT(t.category USING utf8mb4) as categoryId, 
+                CONVERT(COALESCE(c.display_name, t.category) USING utf8mb4) as categoryName, 
+                t.play_count as playCount, 
+                t.created_at as createdAt,
+                (CASE WHEN DATEDIFF(NOW(), t.created_at) &lt;= 14 THEN 1 ELSE 0 END) as isNew,
+                0 as isSpicy
+            FROM md_tests t
+            LEFT JOIN md_test_category c ON t.category = c.category_name
+            WHERE t.status = 'active'
+
+            UNION ALL
+
+            SELECT 
+                CONVERT('BALANCE' USING utf8mb4) as type, 
+                CAST(bq.id AS CHAR) as id, 
+                CAST(bq.id AS CHAR) as `key`, 
+                CONVERT(bq.title USING utf8mb4) as title, 
+                CONVERT(bq.title USING utf8mb4) as description, 
+                CONVERT(bq.option_1_image_path USING utf8mb4) as thumbnail, 
+                CONVERT(bq.option_2_image_path USING utf8mb4) as thumbnail2, 
+                CONVERT(bq.category USING utf8mb4) as categoryId, 
+                CONVERT(COALESCE(c2.display_name, bq.category) USING utf8mb4) as categoryName, 
+                bq.total_count as playCount, 
+                bq.created_at as createdAt,
+                (CASE WHEN DATEDIFF(NOW(), bq.created_at) &lt;= 14 THEN 1 ELSE 0 END) as isNew,
+                bq.is_spicy as isSpicy
+            FROM balance_questions bq
+            LEFT JOIN md_test_category c2 ON bq.category = c2.category_name
+            WHERE bq.status = 'active'
+
+            UNION ALL
+
+            SELECT 
+                CONVERT('EGEN' USING utf8mb4) as type, 
+                CAST('egen1' AS CHAR) as id, 
+                CONVERT('selectEgenTetoGame' USING utf8mb4) as `key`, 
+                CONVERT('에겐테토 성격 검사' USING utf8mb4) as title, 
+                CONVERT('나의 본모습을 찾아가는 정밀 성격 분석 테스트' USING utf8mb4) as description, 
+                CONVERT('/assets/img/testList/img3.png' USING utf8mb4) as thumbnail, 
+                CONVERT(NULL USING utf8mb4) as thumbnail2, 
+                CONVERT('selectEgenTetoGame' USING utf8mb4) as categoryId, 
+                CONVERT('심리/성격' USING utf8mb4) as categoryName, 
+                (SELECT COUNT(*) FROM egen_teto_test_result) as playCount, 
+                CONVERT('2024-01-01 00:00:00' USING utf8mb4) as createdAt,
+                0 as isNew,
+                0 as isSpicy
+            FROM DUAL
+        ) combined
+        <where>
+            <if test="category != null and category != '' and category != 'all'">
+                AND categoryId = #{category}
+            </if>
+            <if test="type != null and type != '' and type != 'all'">
+                <choose>
+                    <when test="type == 'NORMAL'">
+                        AND type IN ('NORMAL', 'EGEN')
+                    </when>
+                    <otherwise>
+                        AND type = #{type}
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'popular'">ORDER BY playCount DESC</when>
+            <otherwise>ORDER BY createdAt DESC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 </mapper>

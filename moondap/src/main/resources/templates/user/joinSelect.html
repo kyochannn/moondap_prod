@@ -1,78 +1,155 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{/layout/main_layout}"
-      >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>문답 - 권한 선택</title>
     
-    <script>
-        function selectRole(role) {
-            $('#roleInput').val(role);
-            document.roleForm.submit();
+    <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+
+    <style>
+        .role-selection-container {
+            padding-top: 80px;
+            padding-bottom: 100px;
+            max-width: 900px;
+            margin: 0 auto;
         }
-    </script>
+        /* EgenTeto 스타일 커스텀 보완 */
+        .gender-card {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 2px solid rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(10px);
+        }
+        .gender-card.male:hover {
+            border-color: #3876f2 !important;
+            background: rgba(56, 118, 242, 0.1) !important;
+        }
+        .gender-card.female:hover {
+            border-color: #524dd3 !important;
+            background: rgba(82, 77, 211, 0.1) !important;
+        }
+        .gender-card h3 {
+            color: white !important;
+            margin-top: 10px;
+        }
+        .gender-card p {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        .gender-card .icon-box i {
+            transition: all 0.3s ease;
+        }
+        .gender-card:hover .icon-box i {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 
 <body layout:fragment="content">
-    <div class="container">
-        <!-- Role Selection Section -->
-        <section id="team" class="team section py-1 mb-5">
-            <div class="container px-0" data-aos="fade-up" data-aos-delay="100">
+    <main class="main">
+        <section class="role-selection-container">
+            <div class="container" data-aos="fade-up">
                 
-                <div class="pt-3 text-center">
-                    <div class="d-flex justify-content-center align-items-center flex-wrap mb-4 px-2 py-3">
-                        <h5 class="text-white mb-0 fw-bold">
-                            회원가입 권한을 선택해주세요
-                        </h5>
+                <div class="section-title text-center mb-5">
+                    <h2 class="text-white fw-bold mb-3">회원가입 권한 선택</h2>
+                    <p class="text-white-50 fs-5">당신에게 맞는 가입 유형을 선택해주세요.</p>
+                    <div class="mx-auto" style="width: 50px; height: 4px; background: #524dd3; border-radius: 2px;"></div>
+                </div>
+
+                <!-- 에러 메시지 (인증 실패 시) -->
+                <div th:if="${errorMessage}" class="row mb-4">
+                    <div class="col-md-6 offset-md-3">
+                        <div class="alert alert-danger border-0 rounded-3 text-center py-2 small">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span th:text="${errorMessage}"></span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="row leadership-slider">
-                    <!-- 일반 회원 카드 -->
-                    <div class="col-6 pe-1">
-                        <div class="leader-card selection-card" onclick="selectRole('ROLE_USER')" style="cursor: pointer;">
-                            <div class="leader-image d-flex align-items-center justify-content-center" 
-                                 style="background: #1e213a; height: 200px; border-radius: 20px; border: 1px solid #333447;">
-                                <i class="bi bi-person-fill text-primary" style="font-size: 5rem;"></i>
+                <div class="row justify-content-center g-4">
+                    <!-- 일반 사용자 카드 -->
+                    <div class="col-md-5">
+                        <div class="gender-card male" onclick="selectRole('ROLE_USER')">
+                            <div class="select-badge"><i class="bi bi-check-circle-fill text-primary"></i></div>
+                            <div class="icon-box">
+                                <i class="bi bi-people-fill"></i>
                             </div>
-                            <div class="leader-info text-center mt-3">
-                                <h5 class="text-white">일반 회원 가입</h5>
-                                <p class="text-white-50 small">테스트를 즐기고 싶으신가요?</p>
-                            </div>
+                            <h3>일반 사용자</h3>
+                            <p>재미있는 테스트와 밸런스 게임을 즐기고 나만의 퀴즈를 만들어보세요.</p>
                         </div>
                     </div>
 
                     <!-- 관리자 카드 -->
-                    <div class="col-6 ps-1">
-                        <div class="leader-card selection-card" onclick="selectRole('ROLE_ADMIN')" style="cursor: pointer;">
-                            <div class="leader-image d-flex align-items-center justify-content-center" 
-                                 style="background: #251b3a; height: 200px; border-radius: 20px; border: 1px solid #333447;">
-                                <i class="bi bi-shield-lock-fill text-danger" style="font-size: 5rem;"></i>
+                    <div class="col-md-5">
+                        <div class="gender-card female" onclick="openAdminModal()">
+                            <div class="select-badge"><i class="bi bi-check-circle-fill" style="color: #524dd3;"></i></div>
+                            <div class="icon-box">
+                                <i class="bi bi-shield-lock-fill" style="color: #524dd3;"></i>
                             </div>
-                            <div class="leader-info text-center mt-3">
-                                <h5 class="text-white">관리자 가입</h5>
-                                <p class="text-white-50 small">콘텐츠를 관리하고 싶으신가요?</p>
-                            </div>
+                            <h3>콘텐츠 관리자</h3>
+                            <p>공식 테스트를 운영하고 플랫폼의 소중한 콘텐츠들을 전문적으로 관리합니다.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Hidden Form for POST -->
-                <form action="/joinView" method="POST" name="roleForm" style="display: none;">
-                    <input type="hidden" id="roleInput" name="role" value="">
-                </form>
-
-                <div class="row mt-5">
-                    <div class="col-12 text-center">
-                        <a href="/loginView" class="btn px-5 text-white">이미 계정이 있나요? <u>로그인</u></a>
-                    </div>
+                <div class="text-center mt-5">
+                    <p class="text-white-50">
+                        이미 계정이 있으신가요? <a href="/loginView" class="text-primary text-decoration-none fw-bold"><u>로그인하기</u></a>
+                    </p>
                 </div>
+
+                <!-- Hidden Form for ROLE_USER -->
+                <form action="/joinView" method="POST" id="roleForm" style="display: none;">
+                    <input type="hidden" name="role" id="roleInput">
+                </form>
 
             </div>
         </section>
-    </div>
+
+        <!-- 관리자 인증 모달 -->
+        <div class="modal fade" id="adminAuthModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 24px; background: #1a1b2e !important;">
+                    <div class="modal-body p-5 text-center">
+                        <div style="width: 70px; height: 70px; background: rgba(82, 77, 211, 0.1); color: #524dd3; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 25px;">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <h3 class="fw-bold mb-2">관리자 인증</h3>
+                        <p class="text-white-50 mb-4 small">부여받은 관리자 인증 코드를 입력해주세요.</p>
+                        
+                        <form action="/joinView" method="POST">
+                            <input type="hidden" name="role" value="ROLE_ADMIN">
+                            <div class="leadership-slider mb-4">
+                                <input type="text" name="adminKey" class="custom-input text-center" 
+                                       placeholder="인증 코드를 입력하세요" required autofocus>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary py-3 fw-bold rounded-pill" style="background: #524dd3; border: none;">
+                                    인증 및 가입하기
+                                </button>
+                                <button type="button" class="btn btn-link text-white-50 text-decoration-none small mt-2" data-bs-dismiss="modal">
+                                    취소
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function selectRole(role) {
+            document.getElementById('roleInput').value = role;
+            document.getElementById('roleForm').submit();
+        }
+
+        function openAdminModal() {
+            const myModal = new bootstrap.Modal(document.getElementById('adminAuthModal'));
+            myModal.show();
+        }
+    </script>
 </body>
 </html>

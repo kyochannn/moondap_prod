@@ -92,10 +92,24 @@
 			transition: 0.3s;
 			cursor: pointer;
 		}
+
+		/* 토스트 알림 스타일 */
+		#errorToast {
+			visibility: hidden; min-width: 250px; background-color: #ff3e3e; color: #fff;
+			text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
+			z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
+			font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+		}
+		#errorToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+		@keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
+		@keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 	</style>
 </head>
 
 <body class="login-body">
+
+	<!-- 토스트 알림 영역 -->
+	<div id="errorToast"><i class="bi bi-exclamation-circle-fill me-2"></i><span id="errorMsg"></span></div>
 
 	<!-- layout: 헤더 영역 -->
 	<main>
@@ -136,8 +150,28 @@
 		</div>
 
 	</main>
-	<!-- layout: 헤더 영역 -->
 
+	<script th:inline="javascript">
+		window.onload = function() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const error = urlParams.get('error');
+			const exception = urlParams.get('exception');
+
+			if (error && exception) {
+				const toast = document.getElementById("errorToast");
+				const msgSpan = document.getElementById("errorMsg");
+				
+				msgSpan.innerText = decodeURIComponent(exception);
+				toast.className = "show";
+				
+				setTimeout(() => { 
+					toast.className = toast.className.replace("show", ""); 
+					// URL에서 파라미터 제거 (깔끔하게)
+					window.history.replaceState({}, document.title, "/loginView");
+				}, 3000);
+			}
+		};
+	</script>
 </body>
 
 </html>

@@ -42,15 +42,16 @@ public class StandardBalanceGameService implements BalanceGameService {
             String isSpicy = request.get("spicyFilter");
             String category = request.get("category");
             String status = request.get("status");
+            String userId = request.get("userId"); // 신규 추가
             
             if (CommonUtil.isNull(isSpicy)) {
             	isSpicy = "0";
             }
 
-            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category, status, offset, limit);
+            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category, status, userId, offset, limit);
 
             if (balanceGameList == null || balanceGameList.isEmpty()) {
-                log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}", isSpicy, category);
+                log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}, 사용자: {}", isSpicy, category, userId);
                 return Collections.emptyList();
             }
 
@@ -63,7 +64,18 @@ public class StandardBalanceGameService implements BalanceGameService {
             throw new RuntimeException("시스템 오류가 발생했습니다.");
         }
 	}
-    
+
+    @Override
+    public List<BalanceGameDTO> selectBalanceGameListByUser(String userId) {
+        log.info("========== 사용자별 밸런스 게임 리스트 조회: {} ==========", userId);
+        try {
+            // 모든 상태(draft, active, inactive), 모든 카테고리 조회
+            return balanceGameMapper.selectBalanceGameList(null, null, null, userId, 0, 1000);
+        } catch (Exception e) {
+            log.error("사용자별 밸런스 게임 조회 실패", e);
+            return Collections.emptyList();
+        }
+    }    
 	// 밸런스 게임 조회
     @Override
     public BalanceGameDTO selectBalanceGame(String id, String spicyFilter, String category) throws Exception {
@@ -160,6 +172,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     	String nickname = request.get("nickname");
     	String side = request.get("side");
     	String content = request.get("content");
+    	String userId = request.get("userId");
     	
     	if (CommonUtil.isNull(id) || CommonUtil.isNull(nickname) || CommonUtil.isNull(side) || CommonUtil.isNull(content)) {
             return null;
@@ -174,7 +187,7 @@ public class StandardBalanceGameService implements BalanceGameService {
     		throw new RuntimeException("댓글은 50자 이내로 입력 가능합니다.");
     	}
     	
-    	int updatedRows = balanceGameMapper.insertBalanceGameComment(id, nickname, side, content);
+    	int updatedRows = balanceGameMapper.insertBalanceGameComment(id, nickname, side, content, userId);
     	if (updatedRows == 1) {
     		return selectBalanceGameComment(id);
     	}

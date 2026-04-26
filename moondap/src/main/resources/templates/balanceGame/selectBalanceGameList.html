@@ -125,12 +125,9 @@
 				teg = `<i class="bi ${iconClass}"></i>`;
 				category = displayCatName;
 
-				let spicyFilterIcon;
-
+				let spicyBadge = '';
 				if (spicyFilter) {
-					spicyFilterIcon = '🌶️';
-				} else {
-					spicyFilterIcon = '';
+					spicyBadge = `<span class="badge bg-danger rounded-pill me-1" style="font-size: 0.65rem; vertical-align: middle; padding: 3px 7px;">매운맛</span>`;
 				}
 
 				let balanceGameListHtml = `
@@ -140,7 +137,7 @@
 		                    	` + teg + `
 		                  	</div>
 		                  	<div class="card-content">
-		                    	<h4 class="mt-1"> ` + spicyFilterIcon + ` ${balanceGame.title}</h4>
+		                    	<h4 class="mt-1">${spicyBadge} ${balanceGame.title}</h4>
 								<p class="fw-light"><i class="bi bi-tags-fill"></i> ` + category + `</p>
 		                    	<span class="response-time">
 									<span class="me-2">

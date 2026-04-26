@@ -12,7 +12,7 @@ import java.util.List;
 public interface MdTestMapper {
 
     // 테스트 CRUD
-    List<MdTestDTO> selectTestList();
+    List<MdTestDTO> selectTestList(@Param("createdBy") String createdBy);
     MdTestDTO selectTest(@Param("id") Long id);
     void insertTest(MdTestDTO dto);
     void updateTest(MdTestDTO dto);
@@ -35,4 +35,8 @@ public interface MdTestMapper {
     List<MdTestResultDTO> selectResults(@Param("testId") Long testId);
     void insertResult(MdTestResultDTO dto);
     void deleteResultsByTestId(@Param("testId") Long testId);
+
+    // 통합 조회 (메인/리스트용)
+    List<com.moondap.dto.MdContentItemDTO> selectPopularContent(@Param("limit") int limit);
+    List<com.moondap.dto.MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("offset") int offset, @Param("limit") int limit);
 }

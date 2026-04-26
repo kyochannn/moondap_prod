@@ -26,6 +26,7 @@ public class BalanceGameDTO {
     private String title;
     private Boolean isSpicy;
     private String category;
+    private String categoryDisplayName;
     private String status = "draft"; // draft, active, inactive
 
     // 선택지 정보

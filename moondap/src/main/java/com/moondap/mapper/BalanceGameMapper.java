@@ -12,7 +12,7 @@ import com.moondap.dto.BalanceGameDTO;
 public interface BalanceGameMapper {
 
 	// 밸런스 게임 목록 조회
-	public List<BalanceGameDTO> selectBalanceGameList(@Param("isSpicy") String isSpicy, @Param("category") String category, @Param("status") String status, @Param("offset") int offset, @Param("limit") int limit) throws Exception;
+	public List<BalanceGameDTO> selectBalanceGameList(@Param("isSpicy") String isSpicy, @Param("category") String category, @Param("status") String status, @Param("userId") String userId, @Param("offset") int offset, @Param("limit") int limit) throws Exception;
 	
 	// 밸런스 게임 개별 조회
 	public BalanceGameDTO selectBalanceGame(@Param("id") String id, @Param("isSpicy") String isSpicy, @Param("category") String category) throws Exception;
@@ -34,7 +34,7 @@ public interface BalanceGameMapper {
 	public int vote(@Param("id") String id, @Param("option1Count") int option1Count, @Param("option2Count") int option2Count);
 	
 	// 밸런스 게임 댓글 추가
-	public int insertBalanceGameComment(@Param("id") String id, @Param("nickname") String nickname, @Param("side") String side, @Param("content") String content);
+	public int insertBalanceGameComment(@Param("id") String id, @Param("nickname") String nickname, @Param("side") String side, @Param("content") String content, @Param("userId") String userId);
 
 	// 밸런스 게임 댓글 개수
 	public int selectBalanceGameCount(@Param("id") String id, @Param("isSpicy") String isSpicy, @Param("category") String category);

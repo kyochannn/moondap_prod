@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>사용자 관리 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    <style>
+        .table-dark-custom {
+            --bs-table-striped-bg: rgba(255,255,255,0.03);
+        }
+        .table-dark-custom thead th {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .action-btn {
+            padding: 4px 12px;
+            font-size: 0.78rem;
+            border-radius: 20px;
+        }
+        .profile-img-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <!-- 페이지 헤더 -->
+                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h4 class="fw-bold text-white mb-1">👥 사용자 관리</h4>
+                        <p class="text-white-50 mb-0 small">회원 정보를 관리하고 권한을 설정합니다.</p>
+                    </div>
+                    <button class="btn btn-outline-light btn-sm rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#statusGuide">
+                        <i class="bi bi-info-circle me-1"></i> 상태/권한 가이드
+                    </button>
+                </div>
+
+                <!-- 상태/권한 가이드 영역 -->
+                <div class="collapse mb-4" id="statusGuide">
+                    <div class="admin-card p-4">
+                        <!-- 사용자 상태 가이드 -->
+                        <div class="mb-4">
+                            <h6 class="text-white mb-3 small fw-bold"><i class="bi bi-shield-check me-2 text-primary"></i> 사용자 상태 (Status)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark-custom border-0 small mb-0 text-center">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;">#</th>
+                                            <th>DB 값</th>
+                                            <th>표시명</th>
+                                            <th>로그인</th>
+                                            <th>설명</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-white-50">1</td>
+                                            <td><code>ACTIVE</code></td>
+                                            <td><span class="admin-badge badge-status-active">활성</span></td>
+                                            <td class="text-success">허용</td>
+                                            <td class="text-white-50">정상적으로 서비스를 이용 중인 상태</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-white-50">2</td>
+                                            <td><code>INACTIVE</code></td>
+                                            <td><span class="admin-badge badge-status-inactive">비활성</span></td>
+                                            <td class="text-danger">차단</td>
+                                            <td class="text-white-50">본인 요청 또는 관리자에 의한 임시 비활성</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-white-50">3</td>
+                                            <td><code>SUSPENDED</code></td>
+                                            <td><span class="admin-badge badge-status-suspended">정지</span></td>
+                                            <td class="text-danger">차단</td>
+                                            <td class="text-white-50">정책 위반 등으로 인한 이용 제한 상태</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-white-50">4</td>
+                                            <td><code>DELETED</code></td>
+                                            <td><span class="admin-badge badge-status-deleted">탈퇴</span></td>
+                                            <td class="text-danger">차단</td>
+                                            <td class="text-white-50">회원 탈퇴 처리된 상태 (삭제 대기)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 사용자 권한 가이드 -->
+                        <div>
+                            <h6 class="text-white mb-3 small fw-bold"><i class="bi bi-key me-2 text-info"></i> 사용자 권한 (Role)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark-custom border-0 small mb-0 text-center">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;">#</th>
+                                            <th>DB 값</th>
+                                            <th>표시명</th>
+                                            <th>설명</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-white-50">1</td>
+                                            <td><code>ROLE_USER</code></td>
+                                            <td><span class="admin-badge badge-type-score">일반유저</span></td>
+                                            <td class="text-white-50">일반적인 서비스 이용 및 테스트 참여 가능</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-white-50">2</td>
+                                            <td><code>ROLE_ADMIN</code></td>
+                                            <td><span class="admin-badge badge-reverse">관리자</span></td>
+                                            <td class="text-white-50">모든 관리자 도구 및 데이터 제어 권한 보유</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 사용자 목록 테이블 -->
+                <div class="admin-card p-4">
+                    <div th:if="${#lists.isEmpty(users)}" class="text-center py-5 text-white-50">
+                        <i class="bi bi-people fs-1 d-block mb-2"></i>
+                        <p>등록된 사용자가 없습니다.</p>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(users)}" class="table-responsive">
+                        <table class="table table-dark-custom table-hover align-middle mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable(0)" style="width: 50px;">#</th>
+                                    <th style="width: 80px;">프로필</th>
+                                    <th class="sortable" onclick="sortTable(2)">아이디</th>
+                                    <th class="sortable" onclick="sortTable(3)">닉네임</th>
+                                    <th class="sortable" onclick="sortTable(4)">이메일</th>
+                                    <th class="sortable" onclick="sortTable(5)">권한</th>
+                                    <th class="sortable" onclick="sortTable(6)">포인트</th>
+                                    <th class="sortable" onclick="sortTable(7)">상태</th>
+                                    <th class="sortable" onclick="sortTable(8)">가입일</th>
+                                    <th style="width: 120px;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u, stat : ${users}">
+                                    <td class="text-white-50 small" th:text="${stat.count}"></td>
+                                    <td>
+                                        <img th:src="${u.profileImage != null and !#strings.isEmpty(u.profileImage) and !#strings.contains(u.profileImage, 'default')} ? @{'/uploads/' + ${u.profileImage}} : @{/assets/img/misc/default-avatar.svg}"
+                                             class="profile-img-sm">
+                                    </td>
+                                    <td class="text-white fw-bold" th:text="${u.username}"></td>
+                                    <td class="text-white" th:text="${u.nickname}"></td>
+                                    <td class="text-white-50 small" th:text="${u.email}"></td>
+                                    <td>
+                                        <span th:if="${u.role == 'ROLE_ADMIN'}" class="admin-badge badge-reverse">관리자</span>
+                                        <span th:if="${u.role == 'ROLE_USER'}" class="admin-badge badge-type-score">일반유저</span>
+                                    </td>
+                                    <td class="text-info" th:text="${#numbers.formatInteger(u.point != null ? u.point : 0, 0, 'COMMA')}"></td>
+                                    <td>
+                                        <span th:if="${u.status == 'ACTIVE' or u.status == null}" class="admin-badge badge-status-active">활성</span>
+                                        <span th:if="${u.status == 'INACTIVE'}" class="admin-badge badge-status-inactive">비활성</span>
+                                        <span th:if="${u.status == 'SUSPENDED'}" class="admin-badge badge-status-suspended">정지</span>
+                                        <span th:if="${u.status == 'DELETED'}" class="admin-badge badge-status-deleted">탈퇴</span>
+                                    </td>
+                                    <td class="text-white-50 small" th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd')}"></td>
+                                    <td>
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="button" class="btn btn-primary action-btn"
+                                                    th:data-username="${u.username}"
+                                                    th:data-nickname="${u.nickname}"
+                                                    th:data-email="${u.email}"
+                                                    th:data-role="${u.role}"
+                                                    th:data-point="${u.point}"
+                                                    th:data-status="${u.status != null ? u.status : 'ACTIVE'}"
+                                                    th:data-profile="${u.profileImage}"
+                                                    onclick="editUser(this)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger action-btn"
+                                                    th:data-username="${u.username}"
+                                                    onclick="if(confirm('정말 삭제하시겠습니까?')) deleteUser(this.dataset.username)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- 사용자 수정 모달 -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="userForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">사용자 정보 수정</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <img id="modalProfilePreview" src="/assets/img/misc/default-avatar.svg" 
+                                     class="profile-img-lg" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); cursor: pointer;"
+                                     onclick="document.getElementById('modalProfileFile').click()">
+                                <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 30px; height: 30px; cursor: pointer;"
+                                     onclick="document.getElementById('modalProfileFile').click()">
+                                    <i class="bi bi-camera-fill text-white small"></i>
+                                </div>
+                                <input type="file" id="modalProfileFile" name="profileFile" style="display: none;" accept="image/*"
+                                       onchange="previewModalImage(this)">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">아이디</label>
+                            <input type="text" class="form-control" id="username" name="username" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">닉네임</label>
+                            <input type="text" class="form-control" id="nickname" name="nickname" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">이메일</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-white-50">권한</label>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="ROLE_USER">일반유저</option>
+                                    <option value="ROLE_ADMIN">관리자</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-white-50">포인트</label>
+                                <input type="number" class="form-control" id="point" name="point">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">상태</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="ACTIVE">활성</option>
+                                <option value="INACTIVE">비활성</option>
+                                <option value="SUSPENDED">정지</option>
+                                <option value="DELETED">탈퇴</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-danger rounded-pill px-4" 
+                                    onclick="if(confirm('정말 삭제하시겠습니까?')) deleteUser(document.getElementById('username').value)">삭제</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">저장</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/assets/js/admin-table-sorter.js}"></script>
+    <script th:inline="javascript">
+        function editUser(btn) {
+            document.getElementById('username').value = btn.dataset.username || '';
+            document.getElementById('nickname').value = btn.dataset.nickname || '';
+            document.getElementById('email').value = btn.dataset.email || '';
+            document.getElementById('role').value = btn.dataset.role || 'ROLE_USER';
+            document.getElementById('point').value = btn.dataset.point || 0;
+            document.getElementById('status').value = btn.dataset.status || 'ACTIVE';
+            
+            const profileImg = btn.dataset.profile;
+            const defaultImg = '/assets/img/misc/default-avatar.svg';
+            
+            if (!profileImg || profileImg === 'null' || profileImg === 'undefined' || profileImg === '' || profileImg.includes('default')) {
+                document.getElementById('modalProfilePreview').src = defaultImg;
+            } else {
+                document.getElementById('modalProfilePreview').src = '/uploads/' + profileImg;
+            }
+            document.getElementById('modalProfileFile').value = '';
+            
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+
+        function previewModalImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('modalProfilePreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/admin/user/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('처리 중 오류가 발생했습니다.');
+            });
+        });
+
+        function deleteUser(username) {
+            fetch('/admin/user/delete/' + username, {
+                method: 'POST'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('삭제 중 오류가 발생했습니다.');
+            });
+        }
+    </script>
+</body>
+</html>

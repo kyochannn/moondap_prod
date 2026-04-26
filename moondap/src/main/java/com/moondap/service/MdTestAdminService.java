@@ -25,7 +25,20 @@ public class MdTestAdminService {
     // ─── 테스트 CRUD ───────────────────────────────────────────
 
     public List<MdTestDTO> getTestList() {
-        return mdTestMapper.selectTestList();
+        return mdTestMapper.selectTestList(null);
+    }
+
+    public List<MdTestDTO> getTestListByUser(String username) {
+        return mdTestMapper.selectTestList(username);
+    }
+
+    /**
+     * 해당 테스트에 대한 권한이 있는지 확인 (작성자 또는 관리자)
+     */
+    public boolean checkOwnership(Long testId, String username, boolean isAdmin) {
+        if (isAdmin) return true;
+        MdTestDTO test = mdTestMapper.selectTest(testId);
+        return test != null && username.equals(test.getCreatedBy());
     }
 
     public MdTestDTO getTest(Long id) {
@@ -154,12 +167,20 @@ public class MdTestAdminService {
         }
     }
 
+    @Transactional
     public void deleteTest(Long id) {
         MdTestDTO existing = mdTestMapper.selectTest(id);
         if (existing != null) {
+            // 1. 물리 파일 삭제
             fileService.deleteFile(existing.getThumbnailImage());
+            
+            // 2. 관련 데이터(결과, 질문) 우선 삭제 (FK 제약 조건 대응)
+            mdTestMapper.deleteResultsByTestId(id);
+            mdTestMapper.deleteQuestionsByTestId(id);
+            
+            // 3. 테스트 본체 삭제
+            mdTestMapper.deleteTest(id);
         }
-        mdTestMapper.deleteTest(id);
     }
 
     // ─── 질문 CRUD ───────────────────────────────────────────

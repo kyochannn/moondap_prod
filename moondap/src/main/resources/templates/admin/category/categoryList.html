@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>카테고리 관리 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    <style>
+        .table-dark-custom {
+            --bs-table-striped-bg: rgba(255,255,255,0.03);
+        }
+        .table-dark-custom thead th {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .action-btn {
+            padding: 4px 12px;
+            font-size: 0.78rem;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <!-- 페이지 헤더 -->
+                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h4 class="fw-bold text-white mb-1">📂 카테고리 관리</h4>
+                        <p class="text-white-50 mb-0 small">콘텐츠 분류를 위한 카테고리를 관리합니다.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary rounded-pill px-4"
+                            style="background:#524dd3; border:none;"
+                            data-bs-toggle="modal" data-bs-target="#categoryModal"
+                            onclick="resetModal()">
+                        <i class="bi bi-plus-lg me-1"></i> 새 카테고리 추가
+                    </button>
+                </div>
+
+                <!-- 카테고리 목록 테이블 -->
+                <div class="admin-card p-4">
+                    <div th:if="${#lists.isEmpty(categories)}" class="text-center py-5 text-white-50">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        <p>등록된 카테고리가 없습니다.</p>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(categories)}" class="table-responsive">
+                        <table class="table table-dark-custom table-hover align-middle mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable(0)" style="width: 60px;">#</th>
+                                    <th class="sortable" onclick="sortTable(1)">표시 이름</th>
+                                    <th class="sortable" onclick="sortTable(2)">실제 값</th>
+                                    <th class="sortable" onclick="sortTable(3)">아이콘</th>
+                                    <th class="sortable" onclick="sortTable(4)">정렬 순서</th>
+                                    <th class="sortable" onclick="sortTable(5)">상태</th>
+                                    <th style="width: 150px;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="cat : ${categories}">
+                                    <td class="text-white small" th:text="${cat.id}"></td>
+                                    <td class="text-white fw-bold" th:text="${cat.displayName}"></td>
+                                    <td>
+                                        <code class="text-info small" th:text="${cat.categoryName}"></code>
+                                    </td>
+                                    <td class="text-white">
+                                        <i th:class="|bi ${cat.icon} me-2|"></i>
+                                        <span th:text="${cat.icon}" class="small text-white-50"></span>
+                                    </td>
+                                    <td class="text-white" th:text="${cat.sortOrder}"></td>
+                                    <td>
+                                        <span th:if="${cat.active}" class="admin-badge badge-status-active">활성</span>
+                                        <span th:unless="${cat.active}" class="admin-badge badge-status-inactive">비활성</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="button" class="btn btn-primary action-btn"
+                                                    th:data-id="${cat.id}"
+                                                    th:data-name="${cat.categoryName}"
+                                                    th:data-display="${cat.displayName}"
+                                                    th:data-icon="${cat.icon}"
+                                                    th:data-order="${cat.sortOrder}"
+                                                    th:data-active="${cat.active}"
+                                                    onclick="editCategory(this)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-danger action-btn"
+                                                    th:onclick="|if(confirm('정말 삭제하시겠습니까?')) deleteCategory(${cat.id})|">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- 카테고리 추가/수정 모달 -->
+    <div class="modal fade" id="categoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId" name="id">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">새 카테고리 추가</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">표시 이름 (예: 💖 연애/결혼)</label>
+                            <input type="text" class="form-control" id="displayName" name="displayName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">실제 값 (예: PSYCHOLOGY)</label>
+                            <input type="text" class="form-control" id="categoryName" name="categoryName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">아이콘 클래스 (Bootstrap Icons)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-white">
+                                    <i id="iconPreview" class="bi bi-tag"></i>
+                                </span>
+                                <input type="text" class="form-control" id="icon" name="icon" placeholder="bi-tag" required
+                                       oninput="document.getElementById('iconPreview').className = 'bi ' + this.value">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-white-50">정렬 순서</label>
+                                <input type="number" class="form-control" id="sortOrder" name="sortOrder" value="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-white-50">활성화 여부</label>
+                                <select class="form-select" id="active" name="active">
+                                    <option value="true">활성</option>
+                                    <option value="false">비활성</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnDeleteCategory" class="btn btn-danger rounded-pill px-4 d-none" 
+                                    onclick="if(confirm('정말 삭제하시겠습니까?')) deleteCategory(document.getElementById('categoryId').value)">삭제</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">저장</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/assets/js/admin-table-sorter.js}"></script>
+    <script th:inline="javascript">
+        function resetModal() {
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryId').value = '';
+            document.getElementById('modalTitle').innerText = '새 카테고리 추가';
+            document.getElementById('iconPreview').className = 'bi bi-tag';
+            document.getElementById('btnDeleteCategory').classList.add('d-none');
+        }
+
+        function editCategory(btn) {
+            document.getElementById('categoryId').value = btn.dataset.id;
+            document.getElementById('categoryName').value = btn.dataset.name;
+            document.getElementById('displayName').value = btn.dataset.display;
+            document.getElementById('icon').value = btn.dataset.icon;
+            document.getElementById('sortOrder').value = btn.dataset.order;
+            document.getElementById('active').value = btn.dataset.active;
+            
+            document.getElementById('modalTitle').innerText = '카테고리 수정';
+            document.getElementById('iconPreview').className = 'bi ' + btn.dataset.icon;
+            document.getElementById('btnDeleteCategory').classList.remove('d-none');
+            
+            new bootstrap.Modal(document.getElementById('categoryModal')).show();
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const id = formData.get('id');
+            const url = id ? '/admin/category/update' : '/admin/category/create';
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('처리 중 오류가 발생했습니다.');
+            });
+        });
+
+        function deleteCategory(id) {
+            fetch('/admin/category/delete/' + id, {
+                method: 'POST'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('삭제 중 오류가 발생했습니다.');
+            });
+        }
+    </script>
+</body>
+</html>

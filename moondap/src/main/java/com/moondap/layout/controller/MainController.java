@@ -17,9 +17,14 @@ public class MainController {
 	private final BalanceGameService balanceGameService;
 	private final StatService statService;
 	private final EgenTetoService egenTetoService;
+	private final com.moondap.service.MdTestCategoryService categoryService;
+	private final com.moondap.service.MdTestUserService mdTestUserService;
 
 	@GetMapping("/")
-	public String index(Model model) {
+	public String index(@org.springframework.web.bind.annotation.RequestParam(value = "normalSort", defaultValue = "popular") String normalSort,
+	                    @org.springframework.web.bind.annotation.RequestParam(value = "balanceSort", defaultValue = "popular") String balanceSort,
+	                    jakarta.servlet.http.HttpServletRequest request,
+	                    Model model) {
 		// 방문자 수 1 증가
 		statService.incrementVisitCount();
 
@@ -31,9 +36,27 @@ public class MainController {
 		java.util.Map<String, Object> egenStats = egenTetoService.getScoreStatistics();
 		long egenTetoTotalCount = ((Number) egenStats.getOrDefault("totalCount", 0L)).longValue();
 
+		// 심리테스트 상위 6개 조회 (독립 정렬)
+		java.util.List<com.moondap.dto.MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", normalSort, "NORMAL", 0, 6);
+
+		// 밸런스 게임 상위 6개 조회 (독립 정렬)
+		java.util.List<com.moondap.dto.MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", balanceSort, "BALANCE", 0, 6);
+		
+		// 활성 카테고리 조회
+		java.util.List<com.moondap.dto.MdTestCategoryDTO> categories = categoryService.getActiveCategories();
+
 		model.addAttribute("totalParticipantCount", totalParticipantCount);
 		model.addAttribute("todayVisitCount", todayVisitCount);
 		model.addAttribute("egenTetoTotalCount", egenTetoTotalCount);
+		model.addAttribute("popularNormalTests", popularNormalTests);
+		model.addAttribute("popularBalanceTests", popularBalanceTests);
+		model.addAttribute("categories", categories);
+		model.addAttribute("currentNormalSort", normalSort);
+		model.addAttribute("currentBalanceSort", balanceSort);
+
+		if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+			return "index :: #main-content";
+		}
 
 		return "index";
 	}

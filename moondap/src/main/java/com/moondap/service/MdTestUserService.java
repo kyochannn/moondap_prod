@@ -50,16 +50,27 @@ public class MdTestUserService {
         // 1. 점수 합산 (모든 유형 공통)
         Map<String, Double> domainScores = new HashMap<>();
         Map<String, Integer> domainCounts = new HashMap<>();
+        List<MdTestResultDTO.ScoreBreakdown> breakdown = new java.util.ArrayList<>();
         int totalScore = 0;
 
         for (int i = 0; i < questions.size(); i++) {
             MdTestQuestionDTO q = questions.get(i);
-            int score = answers.get(i);
+            int originalAnswer = answers.get(i);
+            int score = originalAnswer;
 
             // 역채점 처리 (5점 척도 기준)
-            if (Boolean.TRUE.equals(q.getReverse())) {
+            boolean reverse = Boolean.TRUE.equals(q.getReverse());
+            if (reverse) {
                 score = 6 - score;
             }
+
+            // 브레이크다운 기록
+            MdTestResultDTO.ScoreBreakdown b = new MdTestResultDTO.ScoreBreakdown();
+            b.setQuestionText(q.getQuestionText());
+            b.setOriginalAnswer(originalAnswer);
+            b.setFinalScore(score);
+            b.setReverse(reverse);
+            breakdown.add(b);
 
             String domain = q.getDomain();
             domainScores.put(domain, domainScores.getOrDefault(domain, 0.0) + score);
@@ -78,11 +89,17 @@ public class MdTestUserService {
             log.info("SCORE Test [id:{}] - Total: {}, Max: {}, Raw%: {}%, Rounded%: {}%", 
                      testId, totalScore, maxPossibleScore, rawPercentage, percentage);
 
-            return results.stream()
+            MdTestResultDTO matchedResult = results.stream()
                     .filter(r -> r.getMinScore() != null && r.getMaxScore() != null)
                     .filter(r -> percentage >= r.getMinScore() && percentage <= r.getMaxScore())
                     .findFirst()
                     .orElse(results.isEmpty() ? null : results.get(0));
+
+            if (matchedResult != null) {
+                matchedResult.setCalculatedScore(percentage);
+                matchedResult.setBreakdown(breakdown);
+            }
+            return matchedResult;
         } else {
             // [유형형] 도메인별 평균 점수가 가장 높은 결과 매칭 (기존 로직)
             String bestDomain = null;
@@ -97,10 +114,15 @@ public class MdTestUserService {
             }
 
             final String targetDomain = bestDomain;
-            return results.stream()
+            MdTestResultDTO matchedResult = results.stream()
                     .filter(r -> r.getResultTitle().equals(targetDomain))
                     .findFirst()
                     .orElse(results.isEmpty() ? null : results.get(0));
+            
+            if (matchedResult != null) {
+                matchedResult.setBreakdown(breakdown);
+            }
+            return matchedResult;
         }
     }
 
@@ -109,5 +131,19 @@ public class MdTestUserService {
      */
     public void incrementPlayCount(Long testId) {
         mdTestMapper.updatePlayCount(testId);
+    }
+
+    /**
+     * 메인 페이지용 인기 콘텐츠 리스트를 조회합니다.
+     */
+    public List<com.moondap.dto.MdContentItemDTO> getPopularContent(int limit) {
+        return mdTestMapper.selectPopularContent(limit);
+    }
+
+    /**
+     * 전체 리스트 페이지용 콘텐츠 리스트를 조회합니다.
+     */
+    public List<com.moondap.dto.MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit) {
+        return mdTestMapper.selectAllContentList(category, sort, type, offset, limit);
     }
 }

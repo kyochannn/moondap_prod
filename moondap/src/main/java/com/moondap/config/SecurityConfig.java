@@ -9,6 +9,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+@lombok.RequiredArgsConstructor
 public class SecurityConfig {
 
     @Bean
@@ -17,6 +19,8 @@ public class SecurityConfig {
 	    return new BCryptPasswordEncoder();
 	}
 
+    private final com.moondap.config.auth.CustomAuthFailureHandler customAuthFailureHandler;
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -24,10 +28,14 @@ public class SecurityConfig {
         	.requestMatchers("/", "/loginView", "/joinView", "/joinSelectView", "/joinProc", "/joinCompleteView", "/joinViewAfterError", "/assets/**", "/privacy", "/terms").permitAll()
         	.requestMatchers("/checkUsername", "/checkNickname", "/checkAdminKey").permitAll()
         	.requestMatchers("/uploads/**").permitAll()
-        	.requestMatchers("/balanceGame/**").permitAll()
+            .requestMatchers("/test/manage/**", "/balanceGame/manage/**").hasAnyRole("ADMIN", "USER")
+            .requestMatchers("/balanceGame/**").permitAll()
             .requestMatchers("/egenTeto/**").permitAll()
         	.requestMatchers("/profile/**").permitAll()
         	.requestMatchers("/.well-known/**").permitAll()
+            .requestMatchers("/test/manage/**", "/balanceGame/manage/**").hasAnyRole("ADMIN", "USER")
+            .requestMatchers("/test/**").permitAll()
+            .requestMatchers("/balanceGame/**").permitAll()
             .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
 //            .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
             .anyRequest().authenticated()
@@ -36,6 +44,7 @@ public class SecurityConfig {
         http.formLogin((auth) -> auth.loginPage("/loginView")
             .loginProcessingUrl("/loginProc")
             .defaultSuccessUrl("/", true)
+            .failureHandler(customAuthFailureHandler)
             .permitAll()
         );
 

@@ -12,6 +12,8 @@ public interface BalanceGameService {
 
 	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request, int offset, int limit);
 	
+	public List<BalanceGameDTO> selectBalanceGameListByUser(String userId);
+	
 	public BalanceGameDTO selectBalanceGame(String id, String spicyFilter, String category) throws Exception;
 	
 	public String nextOrPrevBalanceGameIdSelect(Map<String, String> request) throws Exception;

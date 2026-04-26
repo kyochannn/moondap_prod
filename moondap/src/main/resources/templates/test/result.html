@@ -6,79 +6,137 @@
     <meta charset="UTF-8">
     <title th:text="'테스트 결과 - ' + ${test.title}">테스트 결과</title>
     <link th:href="@{/assets/css/testResult-page.css}" rel="stylesheet">
-    <style>
-        #copyToast {
-            visibility: hidden; min-width: 200px; background-color: #ffffff; color: #000;
-            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
-            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
-            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        #copyToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
-        @keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
-        
-        .main-result-img { 
-            max-width: 500px; 
-            width: 100%; 
-            aspect-ratio: 1 / 1 !important; 
-            object-fit: cover !important; 
-            border-radius: 20px;
-            max-height: none !important;
-            border: none !important;
-            background-color: transparent !important;
-        }
-    </style>
 </head>
 
 <body layout:fragment="content">
     <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
-    <div id="previewToast" style="visibility: hidden; min-width: 250px; background-color: #ffc107; color: #000;
-            text-align: center; border-radius: 10px; padding: 12px 24px; position: fixed;
-            z-index: 10000; bottom: 50px; left: 50%; transform: translateX(-50%);
-            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-        <i class="bi bi-eye-fill me-2"></i>관리자 미리보기 모드입니다.
-    </div>
+    <div id="previewToast"><i class="bi bi-eye-fill me-2"></i>관리자 미리보기 모드입니다.</div>
 
     <main class="main">
         <section id="starter-section" class="starter-section section p-3">
             <div class="container section-title pb-2" data-aos="fade-up">
-                <h2 th:text="${test.title}">테스트 제목</h2>
-                <p>테스트가 완료되었습니다! 당신의 유형을 확인해 보세요.</p>
+                <h2 th:text="${test.title}" class="fw-bold text-white">테스트 제목</h2>
+                <p class="text-white-50">테스트가 완료되었습니다! 당신의 리포트를 확인해 보세요.</p>
             </div>
         </section>
 
         <section class="section p-0">
-            <div class="container pb-4" data-aos="fade-up">
-                <div class="px-2 text-center" style="max-width: 800px; width: 100%; margin: 0 auto;">
+            <div class="container pb-5" data-aos="fade-up">
+                <div class="result-report-card mx-auto overflow-hidden shadow-lg">
                     
-                    <!-- 결과 이미지 및 타이틀 -->
-                    <div class="result-image-wrapper">
-                        <img th:src="${result.resultImage != null} ? @{'/uploads/' + ${result.resultImage}} : '/assets/img/testList/default-img.png'" 
-                             class="img-fluid mb-3 main-result-img shadow rounded-4">
-                        <h3 class="fw-bold mt-4" th:text="'당신은 [' + ${result.resultTitle} + '] 유형입니다.'">결과 타이틀</h3>
-                    </div>
+                    <!-- 상단 컬러 바 -->
+                    <div class="report-accent-bar"></div>
 
-                    <!-- 결과 상세 설명 -->
-                    <div class="light-background p-4 rounded-4 mt-4 text-start">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-chat-left-dots-fill text-primary me-2"></i>상세 분석</h5>
-                        <p class="text-white mb-0" style="white-space: pre-wrap; line-height: 1.8;" th:text="${result.resultContent}">
-                            상세 분석 내용이 출력됩니다.
-                        </p>
-                    </div>
+                    <div class="p-4 p-md-5 text-center">
+                        <!-- 결과 이미지 -->
+                        <div class="position-relative d-inline-block mb-4">
+                            <img th:src="${result.resultImage != null} ? @{'/uploads/' + ${result.resultImage}} : '/assets/img/testList/default-img.png'" 
+                                 class="img-fluid main-result-img shadow-lg">
+                        </div>
 
-                    <!-- 하단 액션 버튼 -->
-                    <div class="mt-5 d-flex flex-wrap justify-content-center gap-3">
-                        <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
-                            <i class="bi bi-arrow-repeat"></i> 다시 하기
-                        </a>
-                        <a href="/" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
-                            <i class="bi bi-grid-fill"></i> 다른 테스트 보기
-                        </a>
-                        <button onclick="copyLinkAction()" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow text-white">
-                            <i class="bi bi-share-fill"></i> 공유하기
-                        </button>
-                    </div>
+                        <!-- 결과 타이틀 -->
+                        <div class="mb-4">
+                            <span class="text-white-50 small text-uppercase tracking-widest mb-2 d-block">당신의 유형은?</span>
+                            <h3 class="fw-bold text-white" th:text="${result.resultTitle}">결과 타이틀</h3>
+                        </div>
 
+                        <!-- 점수형일 때 전용 게이지 섹션 -->
+                        <div th:if="${test.testType == 'SCORE'}" class="score-visualization mb-5">
+                            <div class="d-flex justify-content-between align-items-end mb-2">
+                                <span class="text-white-50 small"><i class="bi bi-graph-up-arrow me-1"></i> 종합 점수</span>
+                                <span class="fw-bold text-primary fs-3"><span th:text="${result.calculatedScore}">0</span>%</span>
+                            </div>
+                            <div class="progress score-progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated score-progress-bar" 
+                                     role="progressbar" 
+                                     style="width: 0%;"
+                                     th:attr="data-score=${result.calculatedScore}"
+                                     id="scoreProgressBar"></div>
+                            </div>
+                            <p class="mt-3 text-white-50 small mb-0">문항 분석을 통한 당신의 객관적인 수치입니다.</p>
+                        </div>
+
+                        <!-- 상세 설명 (본문) -->
+                        <div class="text-start mb-5">
+                            <div class="d-flex align-items-center mb-3">
+                                <div style="width: 4px; height: 20px; background: #524dd3; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">상세 분석 리포트</h5>
+                            </div>
+                            <div class="analysis-box">
+                                <p class="text-white-50 mb-0 analysis-text" th:text="${result.resultContent}">
+                                    상세 분석 내용이 출력됩니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 처방전 섹션 -->
+                        <div class="text-start mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div style="width: 4px; height: 20px; background: #ffc107; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">문답의 마음 처방전</h5>
+                            </div>
+                            <div class="prescription-box">
+                                <p class="text-white-50 small mb-0">
+                                    <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+                                    이 결과는 당신의 일면일 뿐입니다. 오늘 하루는 스스로를 더 아껴보는 건 어떨까요? <br class="d-none d-md-block">
+                                    가장 소중한 건 타인의 시선이 아닌 당신의 마음입니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 액션 버튼 -->
+                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-3">
+                            <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm btn-result-action">
+                                <i class="bi bi-arrow-repeat me-1"></i> 다시 하기
+                            </a>
+                            <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-share-fill me-1"></i> 공유하기
+                            </button>
+                            <a href="/" class="btn btn-link text-white-50 text-decoration-none w-100 mt-2 small">
+                                <i class="bi bi-house-door me-1"></i> 메인으로 돌아가기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 디버그 정보 (미리보기 모드에서 더 유용함) -->
+                <div class="mt-5 text-center pb-5">
+                    <button class="btn btn-sm btn-outline-secondary opacity-50" type="button" data-bs-toggle="collapse" data-bs-target="#debugInfo">
+                        <i class="bi bi-bug-fill me-1"></i> 문항별 점수 계산 분석 (Debug)
+                    </button>
+                    <div th:class="${isPreview} ? 'collapse show mt-3' : 'collapse mt-3'" id="debugInfo">
+                        <div class="card card-body bg-dark text-white border-secondary small text-start mx-auto" style="max-width: 800px; border-radius: 20px; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(10px);">
+                            <h6 class="fw-bold mb-3 text-info d-flex justify-content-between">
+                                <span><i class="bi bi-calculator me-1"></i> 점수 계산 상세 내역</span>
+                                <span class="text-white-50" style="font-size: 0.7rem;">* R: 역채점 문항</span>
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-sm mb-0 align-middle" style="font-size: 0.85rem; --bs-table-bg: transparent;">
+                                    <thead>
+                                        <tr class="text-white-50 border-secondary">
+                                            <th style="width: 40px;">#</th>
+                                            <th>질문 문구</th>
+                                            <th class="text-center" style="width: 80px;">선택값</th>
+                                            <th class="text-center" style="width: 80px;">계산점수</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item, stat : ${result.breakdown}" class="border-secondary">
+                                            <td th:text="${stat.count}" class="text-white-50">1</td>
+                                            <td>
+                                                <span th:text="${item.questionText}">질문</span>
+                                                <span th:if="${item.isReverse}" class="badge bg-danger ms-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span>
+                                            </td>
+                                            <td class="text-center" th:text="${item.originalAnswer}">3</td>
+                                            <td class="text-center fw-bold text-warning">
+                                                <span th:text="${item.finalScore}">3</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -86,12 +144,22 @@
 
     <script th:inline="javascript">
         window.onload = function() {
+            // 프리뷰 모드 토스트
             const isPreview = /*[[${isPreview}]]*/ false;
             if (isPreview) {
                 const previewToast = document.getElementById("previewToast");
                 previewToast.style.visibility = "visible";
                 previewToast.style.animation = "fadein 0.5s, fadeout 0.5s 2.5s";
                 setTimeout(() => { previewToast.style.visibility = "hidden"; }, 3000);
+            }
+
+            // 점수 게이지 애니메이션
+            const progressBar = document.getElementById("scoreProgressBar");
+            if (progressBar) {
+                const targetScore = progressBar.getAttribute("data-score");
+                setTimeout(() => {
+                    progressBar.style.width = targetScore + "%";
+                }, 300);
             }
         };
 
