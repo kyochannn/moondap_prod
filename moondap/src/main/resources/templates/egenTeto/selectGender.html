@@ -6,50 +6,52 @@
     <meta charset="UTF-8">
     <title>에겐/테토 테스트 - 성별 선택</title>
     <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/selection-card.css}" rel="stylesheet">
 </head>
 
 <body layout:fragment="content">
     <main class="main">
-        <section class="section">
-            <div class="container gender-selection-container" data-aos="fade-up">
-                <div class="section-title text-center mb-4">
-                    <h2 class="mb-2">성별 선택</h2>
-                    <p class="fs-5">정확한 분석을 위해 당신의 성별을 선택해 주세요.</p>
+        <section class="section py-5">
+            <div class="container selection-container" data-aos="fade-up">
+                
+                <div class="section-title text-center mb-5">
+                    <h2 class="text-white fw-bold mb-3">성별 선택</h2>
+                    <p class="text-white-50 fs-5">정확한 분석을 위해 당신의 성별을 선택해 주세요.</p>
+                    <div class="mx-auto" style="width: 50px; height: 4px; background: #7d77ff; border-radius: 2px;"></div>
                 </div>
 
-                <div class="row justify-content-center g-3 g-md-4">
+                <div class="row justify-content-center g-4">
                     <!-- 남성 선택 카드 -->
                     <div class="col-6 col-md-5">
-                        <div class="gender-card male" onclick="selectGender('M')">
-                            <div class="select-badge"><i class="bi bi-check-circle-fill"></i></div>
+                        <div class="selection-card theme-blue" onclick="selectGender('M')">
                             <div class="icon-box">
                                 <i class="bi bi-gender-male"></i>
                             </div>
                             <h3>남자 (M)</h3>
                             <p>
-                               <span class="fw-bold text-teto">[[${#numbers.formatInteger(maleCount, 0, 'COMMA')}]]명이 참여했어요.</span>
+                               <span class="fw-bold" style="color: #3876f2;">[[${#numbers.formatInteger(maleCount, 0, 'COMMA')}]]명이 참여했어요.</span>
                             </p>
                         </div>
                     </div>
 
                     <!-- 여성 선택 카드 -->
                     <div class="col-6 col-md-5">
-                        <div class="gender-card female" onclick="selectGender('W')">
-                            <div class="select-badge"><i class="bi bi-check-circle-fill"></i></div>
+                        <div class="selection-card theme-pink" onclick="selectGender('W')">
                             <div class="icon-box">
                                 <i class="bi bi-gender-female"></i>
                             </div>
                             <h3>여자 (W)</h3>
                             <p>
-                               <span class="fw-bold text-egen">[[${#numbers.formatInteger(femaleCount, 0, 'COMMA')}]]명이 참여했어요.</span>
+                               <span class="fw-bold" style="color: #ff4d94;">[[${#numbers.formatInteger(femaleCount, 0, 'COMMA')}]]명이 참여했어요.</span>
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div class="text-center mt-5">
-                    <p class="text-secondary small">
-                        * 성별에 따라 분석 기준과 질문 문항이 다르게 구성되어 있어요.<br/>
+                    <p class="text-white-50 small">
+                        * 성별에 따라 분석 기준과 질문 문항이 다르게 구성되어 있어요.
                     </p>
                 </div>
             </div>

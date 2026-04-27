@@ -156,6 +156,7 @@ function startCropper(file) {
                 height: 800
             });
             canvas.toBlob((blob) => {
+                cropButton.blur(); // 포커스 해제로 aria-hidden 경고 방지
                 modal.hide();
                 resolve(blob);
             }, 'image/jpeg', 0.9);

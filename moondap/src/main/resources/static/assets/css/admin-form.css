@@ -110,7 +110,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 @keyframes dash-move {
@@ -245,37 +244,7 @@
     }
 }
 
-.admin-cta-box .cta-content .cta-actions .btn {
-    padding: 12px 32px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.admin-cta-box .cta-content .cta-actions .btn.btn-primary {
-    background: var(--accent-color);
-    color: var(--contrast-color);
-    border: 1px solid var(--accent-color);
-}
-/* ... rest of hovers ... */
-
-.admin-cta-box .cta-content .cta-actions .btn.btn-primary:hover {
-    background: color-mix(in srgb, var(--accent-color), black 15%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-color), transparent 65%);
-}
-
-.admin-cta-box .cta-content .cta-actions .btn.btn-outline {
-    background: transparent;
-    color: var(--accent-color);
-    border: 1px solid var(--accent-color);
-}
-
-.admin-cta-box .cta-content .cta-actions .btn.btn-outline:hover {
-    background: var(--accent-color);
-    color: var(--contrast-color);
-    transform: translateY(-2px);
-}
+/* CTA Buttons are now managed via .btn.rounded-pill classes below */
 
 /* Question Dynamic Management Styles */
 .question-card {
@@ -326,4 +295,167 @@
     letter-spacing: 1px;
 }
 
+/* ───────────── New Premium Admin UI Components ───────────── */
 
+/* Premium Dark Card Style */
+.item-card-dark {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 24px !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+.item-card-dark:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Label Pill Style */
+.label-pill {
+    background: rgba(82, 77, 211, 0.1);
+    color: #8c88ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Standardized Buttons (Rounded Pill & Global Transition) */
+.btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.check-btn:hover, .check-btn:active, .check-btn:focus {
+    transform: none !important;
+}
+
+.btn.rounded-pill {
+    border-radius: 50px !important;
+    padding: 8px 24px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.btn-primary.rounded-pill {
+    background: linear-gradient(135deg, #7d77ff 0%, #524dd3 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(82, 77, 211, 0.3);
+}
+
+.btn-primary.rounded-pill:hover {
+    background: linear-gradient(135deg, #8c88ff 0%, #5d58e6 100%) !important;
+    box-shadow: 0 8px 25px rgba(82, 77, 211, 0.4);
+    color: #fff !important;
+}
+
+.btn-outline-light.rounded-pill {
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light.rounded-pill:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: #fff !important;
+}
+
+/* Stepper Indicator Styles */
+.registration-stepper {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+    z-index: 1;
+}
+.stepper-track {
+    position: absolute;
+    top: 25px;
+    left: 50px;
+    right: 50px;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    z-index: -1;
+}
+.stepper-items {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+}
+.step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    border: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+}
+.step-label {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.3);
+    font-weight: 500;
+}
+.step-item.active .step-icon {
+    border-color: #7d77ff;
+    color: #7d77ff;
+    background: rgba(125, 119, 255, 0.1);
+    box-shadow: 0 0 15px rgba(125, 119, 255, 0.3);
+}
+.step-item.active .step-label {
+    color: white;
+}
+.step-item.completed .step-icon {
+    border-color: #00d2ff;
+    color: #00d2ff;
+}
+
+/* Action Buttons (Trash, etc.) */
+.action-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none !important;
+}
+
+.action-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.btn-danger.action-btn {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+}
+
+.btn-danger.action-btn:hover {
+    background: #ff6b6b;
+    color: #fff;
+}

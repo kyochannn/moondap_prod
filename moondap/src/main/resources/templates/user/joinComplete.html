@@ -33,25 +33,25 @@
                         
                         <div class="success-bg-glow"></div>
 
-                        <div class="admin-cta-box text-center p-5" data-aos="zoom-in" data-aos-delay="200" style="border-radius: 30px;">
+                        <div class="item-card-dark text-center p-5" data-aos="zoom-in" data-aos-delay="200" style="border-radius: 32px; border: 1px solid rgba(125, 119, 255, 0.2);">
                             <!-- Success Icon Overlay -->
-                            <div class="cta-icon mb-4 mx-auto" style="width: 100px; height: 100px; background: rgba(82, 77, 211, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                <i class="bi bi-patch-check-fill text-primary" style="font-size: 4rem;"></i>
+                            <div class="cta-icon mb-4 mx-auto" style="width: 100px; height: 100px; background: rgba(125, 119, 255, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(125, 119, 255, 0.2);">
+                                <i class="bi bi-patch-check-fill" style="font-size: 4rem; color: #7d77ff;"></i>
                             </div>
                             
                             <div class="cta-content">
                                 <h2 class="text-white fw-bold mb-2">
-                                    <span th:text="${nickname}" class="text-primary">사용자</span>님, 환영합니다!
+                                    <span th:text="${nickname}" style="color: #7d77ff;">사용자</span>님, 환영합니다!
                                 </h2>
                                 <p class="text-white-50 fs-5 mb-5">
                                     문답의 새로운 회원이 되신 것을 진심으로 축하드립니다.
                                 </p>
 
-                                <div class="mx-auto mb-5" style="width: 40px; height: 4px; background: #524dd3; border-radius: 2px;"></div>
+                                <div class="mx-auto mb-5" style="width: 40px; height: 4px; background: #7d77ff; border-radius: 2px;"></div>
 
                                 <div class="row g-3 justify-content-center">
                                     <div class="col-sm-6 col-md-5">
-                                        <a href="/loginView" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm">
+                                        <a href="/loginView" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow">
                                             <i class="bi bi-box-arrow-in-right me-2"></i>지금 로그인하기
                                         </a>
                                     </div>

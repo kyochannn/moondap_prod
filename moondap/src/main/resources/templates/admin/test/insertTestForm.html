@@ -32,7 +32,9 @@
             left: 0;
             width: 100%;
             height: 100%;
+            border: none !important;
         }
+        #thumbnail-drop-zone.has-image { border: none !important; }
 
         /* 결과 유형 이미지 업로드 영역: 정사각형 비율, 점선 테두리 */
         .mini-drop-zone {
@@ -62,22 +64,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        /* 결과/질문 카드 공통 배경 (Thymeleaf 렌더링 항목, JS 동적 추가 항목이 함께 사용) */
-        .item-card-dark {
-            background: rgba(255, 255, 255, 0.03);
-            border-color: rgba(255, 255, 255, 0.1) !important;
+            border: none !important;
         }
 
         /* 단계(step) 패널 진입 애니메이션 */
         .step-panel { animation: fadeIn 0.4s ease-out; }
-
-        .preview-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
     </style>
 
     <!-- defer: DOM 파싱 완료 후 실행하여 렌더링 블로킹 방지 -->
@@ -101,62 +92,83 @@
                             </div>
                         </div>
 
+                        <!-- 1~3단계 스테퍼 인디케이터 -->
+                        <div class="registration-stepper mb-5" data-aos="fade-up">
+                            <div class="stepper-track"></div>
+                            <div class="stepper-items">
+                                <div class="step-item active" id="step-dot-1">
+                                    <div class="step-icon"><i class="bi bi-info-circle"></i></div>
+                                    <div class="step-label">기본 정보</div>
+                                </div>
+                                <div class="step-item" id="step-dot-2">
+                                    <div class="step-icon"><i class="bi bi-trophy"></i></div>
+                                    <div class="step-label">결과 구성</div>
+                                </div>
+                                <div class="step-item" id="step-dot-3">
+                                    <div class="step-icon"><i class="bi bi-chat-left-dots"></i></div>
+                                    <div class="step-label">질문 구성</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <form th:action="${test.id != null}
                                           ? @{/test/manage/{id}/update(id=${test.id})}
                                           : @{/test/manage/create}"
                               method="post"
                               enctype="multipart/form-data"
                               id="testForm"
+                              novalidate
                               onsubmit="return handleSubmit(event)">
 
                             <!-- ───────────── 1단계: 기본 정보 ───────────── -->
                             <div id="step-1" class="step-panel">
-                                <input type="hidden" name="testKey" th:value="${test.testKey}">
+                                <div class="item-card-dark p-3 p-md-4 mb-4">
+                                    <input type="hidden" name="testKey" th:value="${test.testKey}">
 
-                                <div class="leadership-slider">
-                                    <p class="text-start ms-2 text-primary small mb-2">
-                                        <i class="bi bi-info-circle-fill"></i> 어떤 테스트인가요? 제목을 알려주세요.
-                                    </p>
-                                    <input type="text"
-                                           name="title"
-                                           id="test-title"
-                                           class="custom-input"
-                                           placeholder="테스트 제목을 입력해주세요"
-                                           maxlength="100"
-                                           th:value="${test.title}">
-                                </div>
-
-                                <div class="leadership-slider">
-                                    <p class="text-start ms-2 text-primary small mb-2">
-                                        <i class="bi bi-gear-fill"></i> 테스트 방식
-                                    </p>
-                                    <select name="testType" id="test-type" class="form-select text-white bord-radius-20 d px-3 py-2" onchange="toggleScoreFields()">
-                                        <option value="TYPE" th:selected="${test.testType == 'TYPE'}">📊 유형형 (가장 높은 점수의 성향 매칭)</option>
-                                        <option value="SCORE" th:selected="${test.testType == 'SCORE'}">🔢 점수형 (총점 백분율 구간 매칭)</option>
-                                    </select>
-                                 </div>
-
-                                <div class="row leadership-slider g-3">
-                                    <div class="col-md-7">
+                                    <div class="leadership-slider">
                                         <p class="text-start ms-2 text-primary small mb-2">
-                                            <i class="bi bi-tag-fill"></i> 카테고리
+                                            <i class="bi bi-info-circle-fill"></i> 어떤 테스트인가요? 제목을 알려주세요.
                                         </p>
-                                        <select name="category"
-                                                id="test-category"
-                                                class="form-select text-white bord-radius-20 d px-3 py-2">
-                                            <option value="">카테고리 선택</option>
-                                            <option th:each="cat : ${categories}" 
-                                                    th:value="${cat.categoryName}" 
-                                                    th:text="${cat.displayName}"
-                                                    th:selected="${test.category == cat.categoryName}">
-                                            </option>
-                                        </select>
+                                        <input type="text"
+                                               name="title"
+                                               id="test-title"
+                                               class="custom-input"
+                                               placeholder="테스트 제목을 입력해주세요"
+                                               maxlength="100"
+                                               th:value="${test.title}">
                                     </div>
-                                    <div class="col-md-5">
+
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <p class="text-start ms-2 text-primary small mb-2">
+                                                <i class="bi bi-gear-fill"></i> 테스트 방식
+                                            </p>
+                                            <select name="testType" id="test-type" class="form-select text-white bord-radius-20 d px-3 py-2" onchange="toggleScoreFields()"
+                                                    style="background-color: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                                <option value="TYPE" th:selected="${test.testType == 'TYPE'}">📊 유형형 (성향 매칭)</option>
+                                                <option value="SCORE" th:selected="${test.testType == 'SCORE'}">🔢 점수형 (총점 매칭)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="text-start ms-2 text-primary small mb-2">
+                                                <i class="bi bi-tags-fill"></i> 카테고리
+                                            </p>
+                                            <select name="category" id="test-category" class="form-select text-white bord-radius-20 d px-3 py-2"
+                                                    style="background-color: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                                <option value="">카테고리 선택</option>
+                                                <option th:each="cat : ${categories}"
+                                                        th:value="${cat.categoryName}"
+                                                        th:text="${cat.displayName}"
+                                                        th:selected="${test.category == cat.categoryName}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="leadership-slider">
                                         <p class="text-start ms-2 text-primary small mb-2">
                                             <i class="bi bi-stopwatch-fill"></i> 소요 시간(분)
                                         </p>
-                                        <!-- estimatedTime이 null일 수 있으므로 null 체크 후 비교 -->
                                         <input type="number"
                                                name="estimatedTime"
                                                class="custom-input"
@@ -164,62 +176,61 @@
                                                max="60"
                                                th:value="${test.estimatedTime != null and test.estimatedTime > 0 ? test.estimatedTime : 3}">
                                     </div>
-                                </div>
 
+                                    <div class="leadership-slider">
+                                        <p class="text-start ms-2 text-primary small mb-2">
+                                            <i class="bi bi-card-text"></i> 테스트 소개 문구
+                                        </p>
+                                        <textarea name="description"
+                                                  class="custom-input"
+                                                  rows="3"
+                                                  style="resize: none;"
+                                                  placeholder="사용자에게 보여질 테스트 설명을 적어주세요."
+                                                  th:text="${test.description}"></textarea>
+                                    </div>
 
-                                <div class="leadership-slider">
-                                    <p class="text-start ms-2 text-primary small mb-2">
-                                        <i class="bi bi-card-text"></i> 테스트 소개 문구를 적어주세요.
-                                    </p>
-                                    <textarea name="description"
-                                              class="custom-input"
-                                              rows="4"
-                                              style="resize: none;"
-                                              placeholder="사용자에게 보여질 테스트 설명을 자세히 적어주세요."
-                                              th:text="${test.description}"></textarea>
-                                </div>
+                                    <div class="leadership-slider">
+                                        <p class="text-start ms-2 text-primary small mb-2">
+                                            <i class="bi bi-eye-fill"></i> 현재 상태
+                                        </p>
+                                        <select name="status" class="form-select text-white bord-radius-20 d px-3 py-2"
+                                                style="background-color: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                            <option value="draft"    th:selected="${test.status == 'draft' or test.status == null}">⏳ Draft (준비 중)</option>
+                                            <option value="active"   th:selected="${test.status == 'active'}">✅ Active (공개 중)</option>
+                                            <option value="inactive" th:selected="${test.status == 'inactive'}">🚫 Inactive (비공개)</option>
+                                        </select>
+                                    </div>
 
-                                <div class="leadership-slider">
-                                    <p class="text-start ms-2 text-primary small mb-2">
-                                        <i class="bi bi-eye-fill"></i> 현재 상태
-                                    </p>
-                                    <select name="status" class="form-select text-white bord-radius-20 d px-3 py-2">
-                                        <option value="draft"    th:selected="${test.status == 'draft' or test.status == null}">⏳ Draft (준비 중)</option>
-                                        <option value="active"   th:selected="${test.status == 'active'}">✅ Active (공개 중)</option>
-                                        <option value="inactive" th:selected="${test.status == 'inactive'}">🚫 Inactive (비공개)</option>
-                                    </select>
-                                </div>
-
-                                <div class="leadership-slider">
-                                    <p class="text-start ms-2 text-primary small mb-2">
-                                        <i class="bi bi-image"></i> 대표 썸네일 이미지
-                                    </p>
-                                    <!-- th:with로 중복 조건식을 변수로 추출 -->
-                                    <div class="leader-card selection-card p-0"
-                                         style="background: transparent; border: none;"
-                                         th:with="hasThumbnail=${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'}">
-                                        <div class="leader-image drop-zone active-upload"
-                                             th:classappend="${hasThumbnail} ? 'has-image' : ''"
-                                             id="thumbnail-drop-zone"
-                                             onclick="document.getElementById('thumbnail-file').click()">
-                                            <img th:src="${hasThumbnail} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'"
-                                                 alt="썸네일"
-                                                 id="thumbnail-preview"
-                                                 class="preview-img"
-                                                 onerror="handleImageError(this)">
-                                            <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
-                                                <div class="icon-circle mb-2">
-                                                    <i class="bi bi-plus-circle-fill text-white fs-3"></i>
+                                    <div class="leadership-slider mb-0">
+                                        <p class="text-start ms-2 text-primary small mb-2">
+                                            <i class="bi bi-image"></i> 대표 썸네일 이미지
+                                        </p>
+                                        <div class="leader-card selection-card p-0"
+                                             style="background: transparent; border: none;"
+                                             th:with="hasThumbnail=${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'}">
+                                            <div class="leader-image drop-zone active-upload"
+                                                 th:classappend="${hasThumbnail} ? 'has-image' : ''"
+                                                 id="thumbnail-drop-zone"
+                                                 onclick="document.getElementById('thumbnail-file').click()">
+                                                <img th:src="${hasThumbnail} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'"
+                                                     alt="썸네일"
+                                                     id="thumbnail-preview"
+                                                     class="preview-img"
+                                                     onerror="handleImageError(this)">
+                                                <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
+                                                    <div class="icon-circle mb-2">
+                                                        <i class="bi bi-plus-circle-fill text-white fs-3"></i>
+                                                    </div>
+                                                    <p class="guide-text mb-0">이미지 업로드</p>
+                                                    <p class="guide-sub-text">(드래그 또는 클릭)</p>
                                                 </div>
-                                                <p class="guide-text mb-0">썸네일 이미지 업로드</p>
-                                                <p class="guide-sub-text">(드래그 또는 클릭)</p>
+                                                <input type="file"
+                                                       name="thumbnailFile"
+                                                       id="thumbnail-file"
+                                                       style="display: none;"
+                                                       accept="image/*"
+                                                       onchange="previewImage(this, 'thumbnail-preview')">
                                             </div>
-                                            <input type="file"
-                                                   name="thumbnailFile"
-                                                   id="thumbnail-file"
-                                                   style="display: none;"
-                                                   accept="image/*"
-                                                   onchange="previewImage(this, 'thumbnail-preview')">
                                         </div>
                                     </div>
                                 </div>
@@ -230,8 +241,8 @@
                                         <h4>기본 정보 입력을 마쳤나요?</h4>
                                         <p>다음은 테스트 결과 유형을 구성할 차례입니다.</p>
                                         <div class="cta-actions">
-                                            <a class="btn btn-outline px-5" th:href="@{/test/manage/list}">취소</a>
-                                            <button type="button" class="btn btn-primary px-5" onclick="nextStep(2)">결과 구성하기</button>
+                                            <a class="btn btn-outline-light rounded-pill px-5" th:href="@{/test/manage/list}">취소</a>
+                                            <button type="button" class="btn btn-primary rounded-pill px-5" onclick="nextStep(2)">결과 구성하기</button>
                                         </div>
                                     </div>
                                 </div>
@@ -244,24 +255,19 @@
                                         <p class="text-primary small mb-0">
                                             <i class="bi bi-trophy-fill"></i> 결과 유형 구성
                                         </p>
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                                onclick="addResult()">
-                                            <i class="bi bi-plus-lg me-1"></i> 결과 유형 추가
-                                        </button>
                                     </div>
                                     <p class="text-white-50 small ms-2 mb-3">사용자가 받을 수 있는 결과 유형들을 정의해주세요.</p>
                                     <div id="results-container">
                                         <div th:each="r, iter : ${test.results}"
-                                             class="result-item item-card-dark mb-4 p-3 border rounded shadow-sm">
+                                             class="result-item item-card-dark mb-4 p-3 rounded shadow-sm">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <h6 class="text-white mb-0 small fw-bold">
                                                     결과 유형 #<span class="r-index" th:text="${iter.count}">1</span>
                                                 </h6>
                                                 <button type="button"
-                                                        class="btn btn-sm btn-danger border-0"
+                                                        class="btn btn-danger action-btn"
                                                         onclick="removeResult(this)">
-                                                    <i class="bi bi-trash3"></i>
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
                                             <div class="row g-2">
@@ -288,31 +294,47 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-9">
+                                                    <!-- 결과 제목 -->
                                                     <div class="mb-2">
+                                                        <div class="mb-2">
+                                                            <span class="label-pill"><i class="bi bi-type"></i> 결과 제목</span>
+                                                        </div>
                                                         <input type="text"
                                                                class="custom-input r-title"
-                                                               placeholder="결과 제목을 입력해주세요"
+                                                               placeholder="결과 제목을 입력하세요"
                                                                th:value="${r.resultTitle}"
                                                                oninput="updateDomainOptions()">
                                                     </div>
-                                                     <div class="score-fields" style="display: none;">
-                                                        <p class="text-white-50 small ms-1 mb-2"><i class="bi bi-info-circle"></i> 결과 구간 자동 배분 (0~100%)</p>
-                                                        <div class="row g-2 mb-2">
-                                                            <div class="col-6">
-                                                                <input type="number" class="custom-input r-min-score" placeholder="최소 (%)" th:value="${r.minScore}" readonly style="opacity: 0.7; cursor: not-allowed;">
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <input type="number" class="custom-input r-max-score" placeholder="최대 (%)" th:value="${r.maxScore}" readonly style="opacity: 0.7; cursor: not-allowed;">
-                                                            </div>
-                                                        </div>
-                                                     </div>
-                                                    <input type="hidden" class="r-image-name" th:value="${r.resultImage}">
+                                                    
+                                                    <!-- 상세 설명 -->
                                                     <div class="mb-0">
+                                                        <div class="mb-2">
+                                                            <span class="label-pill"><i class="bi bi-justify-left"></i> 상세 설명</span>
+                                                        </div>
                                                         <textarea class="custom-input r-content"
                                                                   rows="2"
                                                                   style="font-size: 0.9rem;"
                                                                   placeholder="결과 유형에 대한 상세 설명을 입력하세요"
                                                                   th:text="${r.resultContent}"></textarea>
+                                                    </div>
+
+                                                    <input type="hidden" class="r-image-name" th:value="${r.resultImage}">
+
+                                                    <!-- 점수 설정 -->
+                                                    <div class="score-fields" style="display: none;">
+                                                        <div class="mb-2">
+                                                            <div class="mb-2">
+                                                                <span class="label-pill"><i class="bi bi-percent"></i> 점수 설정 (0~100%)</span>
+                                                            </div>
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <input type="number" class="custom-input r-min-score" placeholder="최소 (%)" th:value="${r.minScore}" min="0" max="100">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <input type="number" class="custom-input r-max-score" placeholder="최대 (%)" th:value="${r.maxScore}" min="0" max="100">
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -324,71 +346,86 @@
                                             등록된 결과 유형이 없습니다.
                                         </div>
                                     </div>
-                                </div>
+                                    
+                                    <div class="text-center mt-3 mb-5">
+                                        <button type="button" class="btn btn-primary rounded-pill btn-sm px-3" onclick="addResult()">
+                                            <i class="bi bi-plus-lg me-1"></i> 결과 추가
+                                        </button>
+                                    </div>
 
-                                <div class="admin-cta-box" data-aos="fade-up">
-                                    <div class="cta-icon"><i class="bi bi-2-circle-fill"></i></div>
-                                    <div class="cta-content">
-                                        <h4>결과 유형을 모두 만드셨나요?</h4>
-                                        <p>마지막으로 테스트 질문을 구성합니다.</p>
-                                        <div class="cta-actions">
-                                            <button type="button" class="btn btn-outline px-5" onclick="prevStep(1)">이전으로</button>
-                                            <button type="button" class="btn btn-primary px-5" onclick="nextStep(3)">질문 구성하기</button>
+                                    <div class="admin-cta-box" data-aos="fade-up">
+                                        <div class="cta-icon"><i class="bi bi-2-circle-fill"></i></div>
+                                        <div class="cta-content">
+                                            <h4>결과 유형을 모두 만드셨나요?</h4>
+                                            <p>마지막으로 테스트 질문을 구성합니다.</p>
+                                            <div class="cta-actions">
+                                                <button type="button" class="btn btn-outline-light rounded-pill px-5" onclick="prevStep(1)">이전으로</button>
+                                                <button type="button" class="btn btn-primary rounded-pill px-5" onclick="nextStep(3)">질문 구성하기</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+
+
                             <!-- ───────────── 3단계: 질문 구성 ───────────── -->
                             <div id="step-3" class="step-panel" style="display: none;">
                                 <div class="leadership-slider">
-                                    <div class="mb-3 ms-2 d-flex justify-content-between align-items-center">
                                         <p class="text-primary small mb-0">
                                             <i class="bi bi-list-check"></i> 질문 구성
                                         </p>
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                                onclick="addQuestion()">
-                                            <i class="bi bi-plus-lg me-1"></i> 질문 추가
-                                        </button>
                                     </div>
                                     <div id="questions-container">
                                         <div th:each="q, stat : ${test.questions}"
-                                             class="question-item item-card-dark mb-4 p-3 border rounded">
+                                             class="question-item item-card-dark mb-4 p-3 rounded">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <h6 class="text-white mb-0 small fw-bold">
                                                     질문 #<span class="q-index" th:text="${stat.count}">1</span>
                                                 </h6>
                                                 <button type="button"
-                                                        class="btn btn-sm btn-danger border-0"
+                                                        class="btn btn-danger rounded-pill action-btn"
                                                         onclick="removeQuestion(this)">
-                                                    <i class="bi bi-trash3"></i>
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
-                                            <div class="mb-3">
+                                            <!-- 질문 내용 -->
+                                            <div class="mb-0">
+                                                <div class="mb-2">
+                                                    <span class="label-pill"><i class="bi bi-chat-left-text"></i> 질문 내용</span>
+                                                </div>
                                                 <textarea class="custom-input q-text"
                                                           rows="2"
                                                           placeholder="질문 내용을 입력하세요"
-                                                          required
                                                           th:text="${q.questionText}"></textarea>
                                             </div>
-                                            <div class="row g-2">
-                                                <div class="col-8 domain-col">
-                                                    <select class="form-select text-white q-domain"
-                                                            style="font-size: 0.85rem; background-color: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);"
-                                                            th:attr="data-selected-domain=${q.domain}">
-                                                        <option value="">결과 유형 선택</option>
-                                                    </select>
+
+                                            <!-- 결과 유형 선택 -->
+                                            <div class="mb-2 domain-col">
+                                                <div class="mb-2">
+                                                    <span class="label-pill"><i class="bi bi-check-circle"></i> 결과 유형</span>
                                                 </div>
-                                                <div class="col-4 d-flex align-items-center justify-content-end">
-                                                    <div class="form-check form-switch d-flex align-items-center m-0 ps-5">
+                                                <select class="form-select text-white q-domain"
+                                                        style="font-size: 0.85rem; background-color: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);"
+                                                        th:attr="data-selected-domain=${q.domain}">
+                                                    <option value="">결과 유형 선택</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- 역채점 설정 (수직 배치) -->
+                                            <div class="mb-0 reverse-col">
+                                                <div class="mb-2">
+                                                    <span class="label-pill"><i class="bi bi-arrow-left-right"></i> 역채점 활성화</span>
+                                                </div>
+                                                <div class="mb-2 ms-1 d-flex align-items-center gap-2">
+                                                    <div class="form-check form-switch m-0">
                                                         <input class="form-check-input q-reverse"
                                                                type="checkbox"
                                                                value="true"
                                                                th:checked="${q.reverse}"
-                                                               style="cursor: pointer; margin-top: 0;">
-                                                        <label class="form-check-label text-white-50 small ms-2">역채점</label>
+                                                               style="cursor: pointer; width: 2.2em; height: 1.1em;">
                                                     </div>
+                                                    <p class="text-white-50 mb-0" style="font-size: 0.7rem;">* 활성화 시 선택한 결과와 반대되는 점수가 부여됩니다.</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -399,7 +436,15 @@
                                             등록된 질문이 없습니다.
                                         </div>
                                     </div>
-                                </div>
+
+                                    <div class="text-center mt-3 mb-5">
+                                        <button type="button"
+                                                class="btn btn-primary rounded-pill px-5 shadow"
+                                                onclick="addQuestion()">
+                                            <i class="bi bi-plus-lg me-1"></i> 질문 추가하기
+                                        </button>
+                                    </div>
+
 
                                 <div class="admin-cta-box" data-aos="fade-up">
                                     <div class="cta-icon"><i class="bi bi-3-circle-fill"></i></div>
@@ -471,6 +516,46 @@
                 addQuestion();
                 addQuestion();
             }
+
+            // [추가] 결과 구간 점수 변경 시 연쇄 반응 로직 (안전한 로드 시점)
+            $(document).on('input', '.r-min-score, .r-max-score', function() {
+                const $currentInput = $(this);
+                const $container = $('#results-container');
+                const $items = $container.find('.result-item');
+                const $row = $currentInput.closest('.result-item');
+                const index = $items.index($row);
+                let val = parseInt($currentInput.val());
+
+                if (isNaN(val)) return;
+
+                // 0~100 범위 강제 제한
+                if (val < 0) val = 0;
+                if (val > 100) val = 100;
+                
+                // 마지막 행이 아닌데 최대값이 100이 되려 하면 99로 제한 (다음 행이 101이 되는 것 방지)
+                if ($currentInput.hasClass('r-max-score') && index < $items.length - 1 && val >= 100) {
+                    val = 99;
+                }
+                
+                $currentInput.val(val);
+
+                if ($currentInput.hasClass('r-max-score')) {
+                    if (index >= 0 && index < $items.length - 1) {
+                        const $nextRow = $items.eq(index + 1);
+                        $nextRow.find('.r-min-score').val(val + 1);
+                    }
+                } else if ($currentInput.hasClass('r-min-score')) {
+                    if (index > 0) {
+                        const $prevRow = $items.eq(index - 1);
+                        $prevRow.find('.r-max-score').val(val - 1);
+                    }
+                }
+            });
+
+            // [추가] 텍스트 영역 높이 자동 조절
+            $(document).on('input', '.q-text, .r-content', function() {
+                autoExpand(this);
+            });
         });
 
         // 테스트 유형에 따라 점수 필드 토글
@@ -492,25 +577,38 @@
             if (testType === 'SCORE') {
                 $('.score-fields').show();
                 $('.domain-col').hide(); // 점수형일 때 결과 유형 선택 숨김
-                $('.reverse-col').show(); // 점수형일 때 역채점 활성화
                 reindexResults(); // 유형 변경 시 자동 배분 실행
             } else {
                 $('.score-fields').hide();
                 $('.domain-col').show(); // 유형형일 때 다시 표시
-                $('.reverse-col').hide(); // 유형형일 때 역채점 불필요
             }
         }
 
         /* ── 단계 이동 ── */
 
         function nextStep(step) {
+            console.log(`[Step Transition] Moving to step ${step}`);
+            
+            // 스테퍼 업데이트
+            $(`.step-item`).removeClass('active completed');
+            for(let i=1; i<=step; i++) {
+                if(i < step) $(`#step-dot-${i}`).addClass('completed');
+                if(i === step) $(`#step-dot-${i}`).addClass('active');
+            }
+            
+            // 스테퍼 업데이트
+            $(`.step-item`).removeClass('active completed');
+            for(let i=1; i<=step; i++) {
+                if(i < step) $(`#step-dot-${i}`).addClass('completed');
+                if(i === step) $(`#step-dot-${i}`).addClass('active');
+            }
+
             if (step === 2) {
                 const title    = $('#test-title').val().trim();
                 const category = $('#test-category').val();
                 if (!title)    { alert('테스트 제목을 입력해주세요.');    return; }
                 if (!category) { alert('카테고리를 선택해주세요.'); return; }
                 
-                // 썸네일 필수 체크
                 const hasThumbnail = $('#thumbnail-preview').attr('src') && !$('#thumbnail-preview').attr('src').includes('default-img.png');
                 const hasNewThumbnail = $('#thumbnail-file')[0].files.length > 0;
                 if (!hasThumbnail && !hasNewThumbnail) {
@@ -527,9 +625,10 @@
                     const title = $item.find('.r-title').val().trim();
                     const content = $item.find('.r-content').val().trim();
                     
-                    // 이미지 존재 여부 확인 (기존 이미지 또는 새로 선택한 이미지)
-                    const hasImage = $item.find('.preview-img').attr('src') && $item.find('.preview-img').attr('src') !== '';
-                    const hasNewImage = $item.find('.r-file')[0].files.length > 0;
+                    const src = $item.find('.preview-img').attr('src');
+                    const hasImage = src && src.length > 0 && !src.includes('undefined');
+                    const fileInput = $item.find('.r-file')[0];
+                    const hasNewImage = fileInput && fileInput.files && fileInput.files.length > 0;
 
                     if (!title || !content || (!hasImage && !hasNewImage)) {
                         alert(`#${index + 1}번째 결과 유형의 제목, 이미지, 상세 설명을 모두 등록해주세요.`);
@@ -539,14 +638,32 @@
                 });
                 if (!allFilled) return;
             }
-            // [id^="step-"] 속성 선택자 대신 .step-panel 클래스 선택자 사용
+
             $('.step-panel').hide();
-            $(`#step-${step}`).show();
+            const $targetStep = $(`#step-${step}`);
+            if ($targetStep.length === 0) {
+                console.error(`[Step Transition] Target step panel #step-${step} not found!`);
+                return;
+            }
+            $targetStep.show();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (step === 3) updateDomainOptions();
+            
+            if (step === 3) {
+                console.log('[Step Transition] Updating domain options for step 3');
+                updateDomainOptions();
+            }
         }
 
         function prevStep(step) {
+            console.log(`[Step Transition] Back to step ${step}`);
+            
+            // 스테퍼 업데이트
+            $(`.step-item`).removeClass('active completed');
+            for(let i=1; i<=step; i++) {
+                if(i < step) $(`#step-dot-${i}`).addClass('completed');
+                if(i === step) $(`#step-dot-${i}`).addClass('active');
+            }
+
             $('.step-panel').hide();
             $(`#step-${step}`).show();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -571,18 +688,17 @@
         /* ── 결과 유형 관리 ── */
 
         function addResult() {
-            const container   = document.getElementById('results-container');
-            const noResultMsg = document.getElementById('no-results-msg');
-            if (noResultMsg) noResultMsg.style.display = 'none';
+            const container   = document.getElementById("results-container");
+            const noResultMsg = document.getElementById("no-results-msg");
+            if (noResultMsg) noResultMsg.style.display = "none";
 
-            // 동적 생성 요소의 이미지 미리보기 ID 충돌 방지를 위한 고유 식별자
             const uid = Date.now() + Math.random().toString(36).substring(2, 7);
             const html = `
-                <div class="result-item item-card-dark mb-4 p-3 border rounded shadow-sm" style="animation: fadeIn 0.4s ease-out;">
+                <div class="result-item item-card-dark mb-4 p-3 rounded shadow-sm" style="animation: fadeIn 0.4s ease-out;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="text-white mb-0 small fw-bold">결과 유형 #<span class="r-index"></span></h6>
-                        <button type="button" class="btn btn-sm btn-danger border-0" onclick="removeResult(this)">
-                            <i class="bi bi-trash3"></i>
+                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeResult(this)">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </div>
                     <div class="row g-2">
@@ -603,37 +719,49 @@
                         </div>
                         <div class="col-md-9">
                             <div class="mb-2">
-                                <input type="text" class="custom-input r-title"
-                                       placeholder="결과 제목을 입력해주세요" oninput="updateDomainOptions()">
+                                <div class="mb-2">
+                                    <span class="label-pill"><i class="bi bi-type"></i> 결과 제목</span>
+                                </div>
+                                <input type="text" class="custom-input r-title" placeholder="결과 제목을 입력하세요" oninput="updateDomainOptions()">
                             </div>
-                             <div class="score-fields" style="display: none;">
-                                <p class="text-white-50 small ms-1 mb-2"><i class="bi bi-info-circle"></i> 결과 구간 자동 배분 (0~100%)</p>
-                                <div class="row g-2 mb-2">
-                                    <div class="col-6">
-                                        <input type="number" class="custom-input r-min-score" placeholder="최소 (%)" readonly style="opacity: 0.7; cursor: not-allowed;">
+
+                            <div class="mb-0">
+                                <div class="mb-2">
+                                    <span class="label-pill"><i class="bi bi-justify-left"></i> 상세 설명</span>
+                                </div>
+                                <textarea class="custom-input r-content" rows="2" style="font-size: 0.9rem;" placeholder="결과 유형에 대한 상세 설명을 입력하세요"></textarea>
+                            </div>
+
+                            <input type="hidden" class="r-image-name" value="">
+
+                            <div class="score-fields" style="display: none;">
+                                <div class="mb-2">
+                                    <div class="mb-2">
+                                        <span class="label-pill"><i class="bi bi-percent"></i> 점수 설정 (0~100%)</span>
                                     </div>
-                                    <div class="col-6">
-                                        <input type="number" class="custom-input r-max-score" placeholder="최대 (%)" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="number" class="custom-input r-min-score" placeholder="최소 (%)" min="0" max="100">
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" class="custom-input r-max-score" placeholder="최대 (%)" min="0" max="100">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <input type="hidden" class="r-image-name" value="">
-                            <div class="mb-0">
-                                <textarea class="custom-input r-content" rows="2" style="font-size: 0.9rem;"
-                                          placeholder="결과에 대한 상세 설명을 입력하세요"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-            container.insertAdjacentHTML('beforeend', html);
-            toggleScoreFields(); // 새로 추가된 행의 점수 필드 가시성 갱신
+            container.insertAdjacentHTML("beforeend", html);
+            toggleScoreFields();
 
-            const newZone = container.lastElementChild.querySelector('.drop-zone');
-            if (typeof initDragAndDrop === 'function') initDragAndDrop(newZone);
+            const newZone = container.lastElementChild.querySelector(".drop-zone");
+            if (typeof initDragAndDrop === "function") initDragAndDrop(newZone);
 
             reindexResults();
         }
+
 
         function removeResult(btn) {
             if (!confirm('이 결과 유형을 삭제하시겠습니까?')) return;
@@ -652,20 +780,30 @@
             $items.each(function (idx) {
                 $(this).find('.r-index').text(idx + 1);
                 
-                // [추가] 점수형(SCORE)일 경우 결과 유형 개수에 따라 0~100% 자동 배분
                 if (isScoreType && total > 0) {
                     const step = 100 / total;
                     const min = Math.round(idx * step);
                     const max = (idx === total - 1) ? 100 : Math.round((idx + 1) * step) - 1;
                     
-                    $(this).find('.r-min-score').val(min);
-                    $(this).find('.r-max-score').val(max);
-                }
+                    const $minInput = $(this).find('.r-min-score');
+                    const $maxInput = $(this).find('.r-max-score');
 
-                // 텍스트 영역 높이 조절
-                $(this).find('textarea').each(function() {
-                    autoExpand(this);
-                });
+                    $minInput.val(min);
+                    $maxInput.val(max);
+
+                    // 첫 번째 행의 최소값(0)과 마지막 행의 최대값(100)은 고정 및 강조
+                    if (idx === 0) {
+                        $minInput.prop('readonly', true).css({'opacity': '0.7', 'cursor': 'not-allowed'});
+                    } else {
+                        $minInput.prop('readonly', false).css({'opacity': '1', 'cursor': 'text'});
+                    }
+
+                    if (idx === total - 1) {
+                        $maxInput.prop('readonly', true).css({'opacity': '0.7', 'cursor': 'not-allowed'});
+                    } else {
+                        $maxInput.prop('readonly', false).css({'opacity': '1', 'cursor': 'text'});
+                    }
+                }
             });
         }
 
@@ -706,29 +844,43 @@
 
             // q-index는 reindexQuestions()가 즉시 올바른 번호로 갱신하므로 초기값 불필요
             const html = `
-                <div class="question-item item-card-dark mb-4 p-3 border rounded" style="animation: fadeIn 0.4s ease-out;">
+                <div class="question-item item-card-dark mb-4 p-3 rounded" style="animation: fadeIn 0.4s ease-out;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="text-white mb-0 small fw-bold">질문 #<span class="q-index"></span></h6>
-                        <button type="button" class="btn btn-sm btn-danger border-0" onclick="removeQuestion(this)">
-                            <i class="bi bi-trash3"></i>
+                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeQuestion(this)">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                    <div class="mb-3">
-                        <textarea class="custom-input q-text" rows="2"
-                                  placeholder="질문 내용을 입력하세요" required></textarea>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-8 domain-col">
-                            <select class="form-select text-white q-domain"
-                                    style="font-size: 0.85rem; background-color: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-                                <option value="">결과 유형 선택</option>
-                            </select>
+                    <!-- 질문 내용 -->
+                    <div class="mb-0">
+                        <div class="mb-2">
+                            <span class="label-pill"><i class="bi bi-chat-left-text"></i> 질문 내용</span>
                         </div>
-                        <div class="col-4 d-flex align-items-center justify-content-end reverse-col">
-                            <div class="form-check form-switch d-flex align-items-center m-0 ps-5">
-                                <input class="form-check-input q-reverse" type="checkbox" value="true" style="cursor: pointer; margin-top: 0;">
-                                <label class="form-check-label text-white-50 small ms-2">역채점</label>
+                        <textarea class="custom-input q-text" rows="2"
+                                  placeholder="질문 내용을 입력하세요"></textarea>
+                    </div>
+                    <!-- 결과 유형 선택 -->
+                    <div class="mb-2 domain-col">
+                        <div class="mb-2">
+                            <span class="label-pill"><i class="bi bi-check-circle"></i> 결과 유형</span>
+                        </div>
+                        <select class="form-select text-white q-domain"
+                                style="font-size: 0.85rem; background-color: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                            <option value="">결과 유형 선택</option>
+                        </select>
+                    </div>
+
+                    <!-- 역채점 설정 (수직 배치) -->
+                    <div class="mb-0 reverse-col">
+                        <div class="mb-2">
+                            <span class="label-pill"><i class="bi bi-arrow-left-right"></i> 역채점 활성화</span>
+                        </div>
+                        <div class="mb-2 ms-1 d-flex align-items-center gap-2">
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input q-reverse" type="checkbox" value="true" 
+                                       style="cursor: pointer; width: 2.2em; height: 1.1em;">
                             </div>
+                            <p class="text-white-50 mb-0" style="font-size: 0.7rem;">* 활성화 시 선택한 결과와 반대되는 점수가 부여됩니다.</p>
                         </div>
                     </div>
                 </div>
@@ -761,17 +913,20 @@
 
         function handleSubmit(event) {
             event.preventDefault();
+            console.log('[Form Submit] Starting...');
 
             const form            = event.target;
             const $submitBtn      = $(form).find('button[type="submit"]');
             const originalBtnText = $submitBtn.text();
 
+            if ($submitBtn.prop('disabled')) return false;
+
+            // 1. 유효성 검사
             if ($('.question-item').length === 0) {
                 alert('최소 한 개 이상의 질문을 등록해야 합니다.');
                 return false;
             }
 
-            // [추가] 유형형(TYPE)일 경우 모든 질문에 도메인 매칭 여부 체크
             const testType = $('#test-type').val();
             if (testType === 'TYPE') {
                 let allDomainsSelected = true;
@@ -783,52 +938,74 @@
                         return false; 
                     }
                 });
-                if (!allDomainsSelected) {
-                    return false;
-                }
+                if (!allDomainsSelected) return false;
+            } else if (testType === 'SCORE') {
+                let allScoresFilled = true;
+                $('.result-item').each(function(idx) {
+                    const min = $(this).find('.r-min-score').val();
+                    const max = $(this).find('.r-max-score').val();
+                    if (min === '' || max === '') {
+                        alert((idx + 1) + '번 결과 유형의 점수 범위를 입력해주세요.');
+                        allScoresFilled = false;
+                        return false;
+                    }
+                });
+                if (!allScoresFilled) return false;
             }
 
-            $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...');
-
+            // 2. 데이터 수집
             const formData = new FormData(form);
             const results  = [];
 
-            $('.result-item').each(function () {
-                const $item       = $(this);
-                const title       = $item.find('.r-title').val().trim();
-                const hasNewImage = $item.attr('data-has-new-image') === 'true';
+            try {
+                $('.result-item').each(function () {
+                    const $item       = $(this);
+                    const title       = $item.find('.r-title').val().trim();
+                    const hasNewImage = $item.attr('data-has-new-image') === 'true';
 
-                if (!title) return;
+                    if (!title) return;
 
-                results.push({
-                    resultTitle:   title,
-                    resultImage:   $item.find('.r-image-name').val(),
-                    resultContent: $item.find('.r-content').val().trim(),
-                    minScore:      $item.find('.r-min-score').val() || null,
-                    maxScore:      $item.find('.r-max-score').val() || null,
-                    hasNewImage:   hasNewImage
+                    results.push({
+                        resultTitle:   title,
+                        resultImage:   $item.find('.r-image-name').val(),
+                        resultContent: $item.find('.r-content').val().trim(),
+                        minScore:      $item.find('.r-min-score').val() || null,
+                        maxScore:      $item.find('.r-max-score').val() || null,
+                        hasNewImage:   hasNewImage
+                    });
+
+                    if (hasNewImage) {
+                        const fileInput = $item.find('.r-file')[0];
+                        if (fileInput && fileInput.files && fileInput.files[0]) {
+                            formData.append('resultFiles', fileInput.files[0]);
+                        }
+                    }
                 });
 
-                if (hasNewImage) {
-                    formData.append('resultFiles', $item.find('.r-file')[0].files[0]);
-                }
-            });
-
-            const questions = [];
-            $('.question-item').each(function () {
-                const $item = $(this);
-                const text  = $item.find('.q-text').val().trim();
-                if (!text) return;
-                questions.push({
-                    questionText: text,
-                    domain:       $item.find('.q-domain').val(),
-                    reverse:      $item.find('.q-reverse').is(':checked'),
-                    active:       true
+                const questions = [];
+                $('.question-item').each(function () {
+                    const $item = $(this);
+                    const text  = $item.find('.q-text').val().trim();
+                    if (!text) return;
+                    questions.push({
+                        questionText: text,
+                        domain:       $item.find('.q-domain').val(),
+                        reverse:      $item.find('.q-reverse').is(':checked'),
+                        active:       true
+                    });
                 });
-            });
 
-            formData.append('resultsJson',   JSON.stringify(results));
-            formData.append('questionsJson', JSON.stringify(questions));
+                formData.append('resultsJson',   JSON.stringify(results));
+                formData.append('questionsJson', JSON.stringify(questions));
+
+            } catch (err) {
+                console.error('[Form Submit] Data collection error:', err);
+                alert('데이터 준비 중 오류가 발생했습니다: ' + err.message);
+                return false;
+            }
+
+            // 3. 서버 전송
+            $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 처리 중...');
 
             $.ajax({
                 url:         form.action,
@@ -841,12 +1018,13 @@
                         alert(res.message);
                         window.location.href = '/test/manage/list';
                     } else {
-                        alert(res.message);
+                        alert('실패: ' + (res.message || '알 수 없는 오류'));
                         $submitBtn.prop('disabled', false).text(originalBtnText);
                     }
                 },
-                error: function () {
-                    alert('서버와의 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                error: function (xhr, status, error) {
+                    console.error('[Form Submit] AJAX Error:', status, error);
+                    alert('서버 전송 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.');
                     $submitBtn.prop('disabled', false).text(originalBtnText);
                 }
             });
@@ -863,9 +1041,7 @@
             el.style.height = (el.scrollHeight + 10) + 'px'; // 여유 공간 추가
         }
 
-        $(document).on('input', '.q-text, .r-content', function() {
-            autoExpand(this);
-        });
+        /* ── 도메인(결과유형) 드롭다운 동기화 ── */
     </script>
 </body>
 </html>

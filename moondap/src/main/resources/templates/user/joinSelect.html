@@ -9,53 +9,19 @@
     
     <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
     <link th:href="@{/assets/css/admin-form.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/selection-card.css}" rel="stylesheet">
 
-    <style>
-        .role-selection-container {
-            padding-top: 80px;
-            padding-bottom: 100px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        /* EgenTeto 스타일 커스텀 보완 */
-        .gender-card {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 2px solid rgba(255, 255, 255, 0.08) !important;
-            backdrop-filter: blur(10px);
-        }
-        .gender-card.male:hover {
-            border-color: #3876f2 !important;
-            background: rgba(56, 118, 242, 0.1) !important;
-        }
-        .gender-card.female:hover {
-            border-color: #524dd3 !important;
-            background: rgba(82, 77, 211, 0.1) !important;
-        }
-        .gender-card h3 {
-            color: white !important;
-            margin-top: 10px;
-        }
-        .gender-card p {
-            color: rgba(255, 255, 255, 0.5) !important;
-        }
-        .gender-card .icon-box i {
-            transition: all 0.3s ease;
-        }
-        .gender-card:hover .icon-box i {
-            transform: scale(1.1);
-        }
-    </style>
 </head>
 
 <body layout:fragment="content">
     <main class="main">
-        <section class="role-selection-container">
+        <section class="selection-container">
             <div class="container" data-aos="fade-up">
                 
                 <div class="section-title text-center mb-5">
                     <h2 class="text-white fw-bold mb-3">회원가입 권한 선택</h2>
                     <p class="text-white-50 fs-5">당신에게 맞는 가입 유형을 선택해주세요.</p>
-                    <div class="mx-auto" style="width: 50px; height: 4px; background: #524dd3; border-radius: 2px;"></div>
+                    <div class="mx-auto" style="width: 50px; height: 4px; background: #7d77ff; border-radius: 2px;"></div>
                 </div>
 
                 <!-- 에러 메시지 (인증 실패 시) -->
@@ -71,8 +37,7 @@
                 <div class="row justify-content-center g-4">
                     <!-- 일반 사용자 카드 -->
                     <div class="col-md-5">
-                        <div class="gender-card male" onclick="selectRole('ROLE_USER')">
-                            <div class="select-badge"><i class="bi bi-check-circle-fill text-primary"></i></div>
+                        <div class="selection-card theme-blue" onclick="selectRole('ROLE_USER')">
                             <div class="icon-box">
                                 <i class="bi bi-people-fill"></i>
                             </div>
@@ -83,10 +48,9 @@
 
                     <!-- 관리자 카드 -->
                     <div class="col-md-5">
-                        <div class="gender-card female" onclick="openAdminModal()">
-                            <div class="select-badge"><i class="bi bi-check-circle-fill" style="color: #524dd3;"></i></div>
+                        <div class="selection-card theme-purple" onclick="openAdminModal()">
                             <div class="icon-box">
-                                <i class="bi bi-shield-lock-fill" style="color: #524dd3;"></i>
+                                <i class="bi bi-shield-lock-fill"></i>
                             </div>
                             <h3>콘텐츠 관리자</h3>
                             <p>공식 테스트를 운영하고 플랫폼의 소중한 콘텐츠들을 전문적으로 관리합니다.</p>
@@ -96,7 +60,7 @@
 
                 <div class="text-center mt-5">
                     <p class="text-white-50">
-                        이미 계정이 있으신가요? <a href="/loginView" class="text-primary text-decoration-none fw-bold"><u>로그인하기</u></a>
+                        이미 계정이 있으신가요? <a href="/loginView" class="text-primary text-decoration-none fw-bold">로그인하기</a>
                     </p>
                 </div>
 
@@ -111,9 +75,9 @@
         <!-- 관리자 인증 모달 -->
         <div class="modal fade" id="adminAuthModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 24px; background: #1a1b2e !important;">
+                <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius: 24px; background: #15162c !important;">
                     <div class="modal-body p-5 text-center">
-                        <div style="width: 70px; height: 70px; background: rgba(82, 77, 211, 0.1); color: #524dd3; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 25px;">
+                        <div style="width: 80px; height: 80px; background: rgba(125, 119, 255, 0.1); color: #7d77ff; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 25px;">
                             <i class="bi bi-shield-lock-fill"></i>
                         </div>
                         <h3 class="fw-bold mb-2">관리자 인증</h3>
@@ -121,15 +85,15 @@
                         
                         <form action="/joinView" method="POST">
                             <input type="hidden" name="role" value="ROLE_ADMIN">
-                            <div class="leadership-slider mb-4">
-                                <input type="text" name="adminKey" class="custom-input text-center" 
-                                       placeholder="인증 코드를 입력하세요" required autofocus>
+                            <div class="mb-4">
+                                <input type="text" name="adminKey" class="custom-input text-center py-3" 
+                                       placeholder="인증 코드를 입력하세요" required autofocus style="font-size: 1.1rem; letter-spacing: 2px;">
                             </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary py-3 fw-bold rounded-pill" style="background: #524dd3; border: none;">
+                            <div class="d-grid gap-3">
+                                <button type="submit" class="btn btn-primary py-3 fw-bold rounded-pill shadow">
                                     인증 및 가입하기
                                 </button>
-                                <button type="button" class="btn btn-link text-white-50 text-decoration-none small mt-2" data-bs-dismiss="modal">
+                                <button type="button" class="btn btn-outline-light rounded-pill py-2" data-bs-dismiss="modal">
                                     취소
                                 </button>
                             </div>
