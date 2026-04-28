@@ -84,7 +84,7 @@ public class StandardMdUserService {
 		
 		// 프로필 이미지 기본값 설정
 		if (user.getProfileImage() == null || user.getProfileImage().isEmpty()) {
-			user.setProfileImage("/profile/default.png");
+			user.setProfileImage("default-profile-img.svg");
 		}
 		
 		// 기본 상태 설정 (활성)

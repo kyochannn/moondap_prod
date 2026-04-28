@@ -100,7 +100,7 @@ public class MdUserController {
 		try {
 			// 프로필 이미지 처리
 			if (profileFile != null && !profileFile.isEmpty()) {
-				String savedFilename = fileService.upload(profileFile);
+				String savedFilename = fileService.uploadProfile(profileFile);
 				user.setProfileImage(savedFilename);
 			}
 

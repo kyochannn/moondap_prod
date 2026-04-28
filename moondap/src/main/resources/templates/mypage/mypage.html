@@ -164,8 +164,7 @@
                 
                 <!-- 상단 타이틀 -->
                 <div class="mb-5">
-                    <h2 class="text-white fw-bold mb-2">내 회원 정보</h2>
-                    <div style="width: 40px; height: 4px; background: #524dd3; border-radius: 2px;"></div>
+                    <h2 class="text-white fw-bold mb-2"><i class="bi bi-person"></i> 내 회원 정보</h2>
                 </div>
 
                 <!-- 플래시 메시지 -->
@@ -183,9 +182,9 @@
                 <!-- 프로필 섹션 -->
                 <div class="profile-section">
                     <div class="profile-avatar overflow-hidden p-0">
-                        <img th:src="${user.profileImage != null and user.profileImage != '' and !user.profileImage.contains('default')} 
-                                     ? (@{'/uploads/' + ${user.profileImage}}) 
-                                     : @{/assets/img/misc/default-avatar.svg}"
+                        <img th:src="${user.profileImage != null and user.profileImage != '' and user.profileImage != 'default-profile-img.svg'} 
+                                     ? (@{'/profile/' + ${user.profileImage}}) 
+                                     : @{/assets/img/default-img/default-profile-img.svg}"
                              alt="프로필"
                              style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
@@ -324,7 +323,7 @@
                                     <div class="card-body p-0">
                                         <div class="list-group list-group-flush" th:if="${not #lists.isEmpty(myTests)}">
                                             <div th:each="test : ${myTests}" class="list-group-item bg-transparent border-secondary border-opacity-10 p-3 d-flex align-items-center gap-3 content-item-row" style="flex-wrap: wrap;">
-                                                <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png' and !#strings.isEmpty(test.thumbnailImage)} ? @{'/uploads/' + ${test.thumbnailImage}} : @{/assets/img/testList/default-img.png}" 
+                                                <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-content-img.png' and !#strings.isEmpty(test.thumbnailImage)} ? @{'/uploads/' + ${test.thumbnailImage}} : @{/assets/img/default-img/default-content-img.png}" 
                                                      class="rounded-3" style="width: 45px; height: 45px; object-fit: cover;">
                                                 <div class="flex-grow-1 content-item-meta" style="min-width: 0;">
                                                     <h6 class="text-white content-item-title mb-1" style="font-size: 0.9rem; overflow-wrap: break-word; word-break: break-word;" th:text="${test.title}">테스트 제목</h6>
@@ -385,7 +384,7 @@
                                     <div class="card-body p-0">
                                         <div class="list-group list-group-flush" th:if="${not #lists.isEmpty(myBalanceGames)}">
                                             <div th:each="bg : ${myBalanceGames}" class="list-group-item bg-transparent border-secondary border-opacity-10 p-3 d-flex align-items-center gap-3 content-item-row" style="flex-wrap: wrap;">
-                                                <img th:src="${bg.option1ImagePath != null and bg.option1ImagePath != 'default-img.png' and !#strings.isEmpty(bg.option1ImagePath)} ? @{'/uploads/' + ${bg.option1ImagePath}} : @{/assets/img/testList/default-img.png}" 
+                                                <img th:src="${bg.option1ImagePath != null and bg.option1ImagePath != 'default-content-img.png' and !#strings.isEmpty(bg.option1ImagePath)} ? @{'/uploads/' + ${bg.option1ImagePath}} : @{/assets/img/default-img/default-content-img.png}" 
                                                      class="rounded-3" style="width: 45px; height: 45px; object-fit: cover; flex-shrink: 0;">
                                                 <div class="flex-grow-1 content-item-meta" style="min-width: 0;">
                                                     <h6 class="text-white content-item-title mb-1" style="font-size: 0.9rem; overflow-wrap: break-word; word-break: break-word;" th:text="${bg.title}">게임 제목</h6>

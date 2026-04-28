@@ -33,19 +33,19 @@
             <div class="container" data-aos="fade-up" data-aos-delay="100">
                 <div class="row gy-5">
                     <!-- 왼쪽 이미지 영역 -->
-                    <div class="col-lg-4 order-2 order-lg-1 d-none d-lg-block">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
                         <div class="game-gallery-details-media">
-                            <div class="main-image">
-                                <img th:src="${test.thumbnailImage != null} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'" 
-                                     alt="테스트 썸네일" class="img-fluid rounded-4 shadow-sm" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover;">
+                            <div class="content-thumbnail-container">
+                                <img th:src="${test.thumbnailImage != null and test.thumbnailImage != '' and test.thumbnailImage != 'default-content-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : @{/assets/img/default-img/default-content-img.png}" 
+                                     alt="테스트 썸네일" class="img-fluid content-thumbnail-img">
                             </div>
                         </div>
                     </div>
 
                     <!-- 오른쪽 콘텐츠 영역 -->
-                    <div class="col-lg-8 order-1 order-lg-2">
+                    <div class="col-lg-8">
                         <div class="game-gallery-details-content">
-                            <h2 class="project-title fw-bold mb-4 text-center text-lg-start" th:text="${test.title}">테스트 제목</h2>
+                            <h4 class="project-title fw-bold mb-4 text-center text-lg-start" th:text="${test.title}">테스트 제목</h4>
                             
                             <div class="project-meta text-center text-lg-start">
                                 <div class="date-client d-flex align-items-center justify-content-center justify-content-lg-start gap-3 flex-wrap">
@@ -68,7 +68,21 @@
                                 </div>
                             </div>
 
-                            <div class="project-overview mt-4 mb-4">
+                            <div class="button-group mb-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                        <i class="bi bi-link-45deg"></i> 링크 공유
+                                    </button>
+                                    
+                                    <a th:href="@{/test/{key}/questions(key=${test.testKey})}"
+                                       class="btn btn-primary flex-grow-1 py-2 rounded-5 shadow-sm fw-bold"
+                                       style="background: #524dd3; border: none;">
+                                        테스트 시작 <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="project-overview mb-0">
                                 <div class="accordion project-accordion" id="testAccordion">
                                     <div class="accordion-item shadow-sm border-0 rounded overflow-hidden">
                                         <h2 class="accordion-header">
@@ -85,17 +99,35 @@
                                 </div>
                             </div>
 
-                            <div class="button-group mt-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-4 py-2 fw-bold shadow-sm">
-                                        <i class="bi bi-link-45deg"></i> 링크 복사
-                                    </button>
-                                    
-                                    <a th:href="@{/test/{key}/questions(key=${test.testKey})}"
-                                       class="btn btn-primary flex-grow-1 py-2 rounded-5 shadow-sm fw-bold"
-                                       style="background: #524dd3; border: none;">
-                                        테스트 시작 <i class="bi bi-arrow-right ms-1"></i>
-                                    </a>
+                            <!-- 결과 유형 미리보기 영역 -->
+                            <div class="project-overview mt-4 mb-4" th:if="${test.results != null and !#lists.isEmpty(test.results)}">
+                                <div class="accordion project-accordion">
+                                    <div class="accordion-item shadow-sm border-0 rounded overflow-hidden">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePreview">
+                                                <i class="bi bi-grid-fill me-2"></i> 결과 유형 미리보기
+                                            </button>
+                                        </h2>
+                                        <div id="collapsePreview" class="accordion-collapse collapse show">
+                                            <div class="accordion-body text-white">
+                                                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                                                    <div class="col" th:each="res : ${test.results}">
+                                                        <div class="card h-100 text-center rounded-4 shadow-sm" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                                                            <div class="p-2">
+                                                                <img th:if="${res.resultImage != null and res.resultImage != ''}" 
+                                                                     th:src="@{'/uploads/' + ${res.resultImage}}" 
+                                                                     class="img-fluid rounded-3 mb-2" alt="결과 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
+                                                                <img th:unless="${res.resultImage != null and res.resultImage != ''}" 
+                                                                     th:src="@{/assets/img/default-img/default-content-img.png}" 
+                                                                     class="img-fluid rounded-3 mb-2" alt="기본 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
+                                                                <h6 class="fw-bold text-white mb-1 mt-1 small" th:text="${res.resultTitle}" style="word-break: keep-all;">유형 이름</h6>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

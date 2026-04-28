@@ -214,24 +214,26 @@
                     <div th:if="${test.isNew}" class="new-badge">NEW</div>
                     <th:block th:if="${test.type == 'BALANCE'}">
                       <div class="split-thumbnail">
-                        <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/testList/img1.png}" 
+                        <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/default-img/default-content-img.png}" 
                              alt="옵션1" class="img-left" loading="lazy">
-                        <img th:src="${test.thumbnail2 != null and test.thumbnail2 != ''} ? (${#strings.startsWith(test.thumbnail2, '/assets/')} ? ${test.thumbnail2} : (@{/uploads/} + ${test.thumbnail2})) : @{/assets/img/testList/img2.png}" 
+                        <img th:src="${test.thumbnail2 != null and test.thumbnail2 != ''} ? (${#strings.startsWith(test.thumbnail2, '/assets/')} ? ${test.thumbnail2} : (@{/uploads/} + ${test.thumbnail2})) : @{/assets/img/default-img/default-content-img.png}" 
                              alt="옵션2" class="img-right" loading="lazy">
                         <div class="vs-badge">VS</div>
                       </div>
                     </th:block>
                     <th:block th:unless="${test.type == 'BALANCE'}">
-                      <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/testList/img1.png}" 
+                      <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/default-img/default-content-img.png}" 
                            alt="테스트 썸네일" class="img-fluid" loading="lazy">
                     </th:block>
                   </div>
                   <div class="game-content">
                     <div class="game-meta">
-                      <span class="game-type">
-                        <span th:if="${test.type == 'BALANCE' and test.isSpicy}" class="badge bg-danger rounded-pill me-1" style="font-size: 0.65rem; vertical-align: middle; padding: 3px 7px;">매운맛</span>
-                        <span th:text="${test.type == 'NORMAL'} ? '테스트' : '밸런스게임'">테스트</span>
-                      </span>
+                      <div class="d-flex align-items-center gap-1">
+                        <span class="game-type">
+                          <span th:text="${test.type == 'BALANCE'} ? '밸런스게임' : '테스트'">테스트</span>
+                        </span>
+                        <span th:if="${test.type == 'BALANCE' and test.isSpicy}" class="game-type" style="color: #dc3545;">매운맛</span>
+                      </div>
                       <div class="game-rating">
                         <i class="bi bi-eye-fill"></i>
                         <span th:text="${#numbers.formatInteger(test.playCount, 0, 'COMMA')}">0</span>

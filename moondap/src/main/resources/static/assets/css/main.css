@@ -3094,7 +3094,7 @@ section,
 }
 
 .game-gallery-details .game-gallery-details-content .project-title {
-  font-size: 2.2rem;
+  font-size: 1.6rem;
   margin-bottom: 1rem;
   font-weight: 700;
   line-height: 1.2;
@@ -3165,6 +3165,7 @@ section,
   background-size: 14px;
   width: 14px;
   height: 14px;
+  filter: brightness(0) invert(1);
 }
 
 .game-gallery-details .game-gallery-details-content .project-overview .project-accordion .accordion-item .accordion-header .accordion-button i {
@@ -3289,8 +3290,10 @@ section,
   }
 
   .game-gallery-details .project-meta .date-client {
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
   }
 
   .game-gallery-details .cta-buttons {
@@ -4406,4 +4409,20 @@ section,
   transform: translateY(-2px);
   box-shadow: 0 15px 25px rgba(82, 77, 211, 0.4);
   color: #fff;
+}
+
+/* 컨텐츠 썸네일 공통 스타일 */
+.content-thumbnail-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.content-thumbnail-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 22px;
 }

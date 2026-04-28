@@ -146,7 +146,20 @@ public class MdTestAdminService {
         }
 
         // 3. 결과 동기화 (기존 이미지 유지 혹은 교체)
+        // [수정] 기존 이미지 목록 백업하여 교체/삭제된 파일 정리를 위해 사용
+        List<MdTestResultDTO> oldResults = mdTestMapper.selectResults(dto.getId());
+        java.util.Set<String> oldImageFiles = new java.util.HashSet<>();
+        if (oldResults != null) {
+            for (MdTestResultDTO r : oldResults) {
+                if (r.getResultImage() != null && !r.getResultImage().isBlank()) {
+                    oldImageFiles.add(r.getResultImage());
+                }
+            }
+        }
+
         mdTestMapper.deleteResultsByTestId(dto.getId());
+        java.util.Set<String> newImageFiles = new java.util.HashSet<>();
+
         if (dto.getResults() != null && !dto.getResults().isEmpty()) {
             int fileIdx = 0;
             for (MdTestResultDTO r : dto.getResults()) {
@@ -160,9 +173,21 @@ public class MdTestAdminService {
                         r.setResultImage(savedFilename);
                     }
                 }
+                
+                if (r.getResultImage() != null && !r.getResultImage().isBlank()) {
+                    newImageFiles.add(r.getResultImage());
+                }
+
                 // (파일이 없다면 JSON에 담겨온 기존 파일명 유지됨)
                 r.setTestId(dto.getId());
                 mdTestMapper.insertResult(r);
+            }
+        }
+
+        // [수정] 더 이상 사용되지 않는 파일 삭제
+        for (String oldImg : oldImageFiles) {
+            if (!newImageFiles.contains(oldImg)) {
+                fileService.deleteFile(oldImg);
             }
         }
     }
@@ -171,14 +196,24 @@ public class MdTestAdminService {
     public void deleteTest(Long id) {
         MdTestDTO existing = mdTestMapper.selectTest(id);
         if (existing != null) {
-            // 1. 물리 파일 삭제
+            // 1. 물리 파일 삭제 (썸네일)
             fileService.deleteFile(existing.getThumbnailImage());
             
-            // 2. 관련 데이터(결과, 질문) 우선 삭제 (FK 제약 조건 대응)
+            // [수정] 2. 물리 파일 삭제 (모든 결과 이미지)
+            List<MdTestResultDTO> results = mdTestMapper.selectResults(id);
+            if (results != null) {
+                for (MdTestResultDTO r : results) {
+                    if (r.getResultImage() != null && !r.getResultImage().isBlank()) {
+                        fileService.deleteFile(r.getResultImage());
+                    }
+                }
+            }
+            
+            // 3. 관련 데이터(결과, 질문) 우선 삭제 (FK 제약 조건 대응)
             mdTestMapper.deleteResultsByTestId(id);
             mdTestMapper.deleteQuestionsByTestId(id);
             
-            // 3. 테스트 본체 삭제
+            // 4. 테스트 본체 삭제
             mdTestMapper.deleteTest(id);
         }
     }

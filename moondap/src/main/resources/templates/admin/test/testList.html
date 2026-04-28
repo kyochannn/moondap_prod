@@ -9,7 +9,7 @@
     <style>
         .table-dark-custom {
             --bs-table-striped-bg: rgba(255,255,255,0.03);
-            min-width: 900px; /* 가로 스크롤 유도 */
+            min-width: 1000px; /* 가로 스크롤 유도 */
             table-layout: fixed; /* 컬럼 너비 고정 */
         }
         .table-dark-custom thead th {
@@ -100,7 +100,7 @@
                                     style="cursor: pointer;">
                                     <td class="text-white small" th:text="${stat.count}"></td>
                                     <td>
-                                        <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'"
+                                        <img th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-content-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/default-img/default-content-img.png'"
                                              class="rounded-2" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
                                     </td>
                                     <td>

@@ -100,9 +100,9 @@
                                          id="profile-drop-zone"
                                          onclick="document.getElementById('profile-file').click()">
                                         
-                                        <img th:src="${user.profileImage != null and user.profileImage != '' and !user.profileImage.contains('default')} 
-                                                     ? (@{'/uploads/' + ${user.profileImage}}) 
-                                                     : @{/assets/img/misc/default-avatar.svg}"
+                                        <img th:src="${user.profileImage != null and user.profileImage != '' and user.profileImage != 'default-profile-img.svg'} 
+                                                     ? (@{'/profile/' + ${user.profileImage}}) 
+                                                     : @{/assets/img/default-img/default-profile-img.svg}"
                                              alt="프로필"
                                              id="profile-preview"
                                              class="preview-img">

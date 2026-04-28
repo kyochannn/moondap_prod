@@ -158,7 +158,7 @@
                                 <tr th:each="u, stat : ${users}">
                                     <td class="text-white-50 small" th:text="${stat.count}"></td>
                                     <td>
-                                        <img th:src="${u.profileImage != null and !#strings.isEmpty(u.profileImage) and !#strings.contains(u.profileImage, 'default')} ? @{'/uploads/' + ${u.profileImage}} : @{/assets/img/misc/default-avatar.svg}"
+                                        <img th:src="${u.profileImage != null and !#strings.isEmpty(u.profileImage) and u.profileImage != 'default-profile-img.svg'} ? @{'/profile/' + ${u.profileImage}} : @{/assets/img/default-img/default-profile-img.svg}"
                                              class="profile-img-sm">
                                     </td>
                                     <td class="text-white fw-bold" th:text="${u.username}"></td>
@@ -218,7 +218,7 @@
                     <div class="modal-body">
                         <div class="text-center mb-4">
                             <div class="position-relative d-inline-block">
-                                <img id="modalProfilePreview" src="/assets/img/misc/default-avatar.svg" 
+                                <img id="modalProfilePreview" src="/assets/img/default-img/default-profile-img.svg" 
                                      class="profile-img-lg" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); cursor: pointer;"
                                      onclick="document.getElementById('modalProfileFile').click()">
                                 <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle d-flex align-items-center justify-content-center" 
@@ -289,12 +289,12 @@
             document.getElementById('status').value = btn.dataset.status || 'ACTIVE';
             
             const profileImg = btn.dataset.profile;
-            const defaultImg = '/assets/img/misc/default-avatar.svg';
+            const defaultImg = '/assets/img/default-img/default-profile-img.svg';
             
-            if (!profileImg || profileImg === 'null' || profileImg === 'undefined' || profileImg === '' || profileImg.includes('default')) {
+            if (!profileImg || profileImg === 'null' || profileImg === 'undefined' || profileImg === '' || profileImg === 'default-profile-img.svg') {
                 document.getElementById('modalProfilePreview').src = defaultImg;
             } else {
-                document.getElementById('modalProfilePreview').src = '/uploads/' + profileImg;
+                document.getElementById('modalProfilePreview').src = '/profile/' + profileImg;
             }
             document.getElementById('modalProfileFile').value = '';
             

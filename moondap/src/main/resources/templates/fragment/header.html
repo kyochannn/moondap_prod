@@ -34,7 +34,7 @@
           <li sec:authorize="isAuthenticated()" class="dropdown">
             <a href="/mypage">
               <span style="display: inline-flex; align-items: center; gap: 6px;">
-                <img th:src="${#authentication.principal.user.profileImage != null and !#authentication.principal.user.profileImage.isEmpty() and !#authentication.principal.user.profileImage.contains('default')} ? @{'/uploads/' + ${#authentication.principal.user.profileImage}} : @{/assets/img/misc/default-avatar.svg}"
+                <img th:src="${#authentication.principal.user.profileImage != null and #authentication.principal.user.profileImage != '' and #authentication.principal.user.profileImage != 'default-profile-img.svg'} ? @{'/profile/' + ${#authentication.principal.user.profileImage}} : @{/assets/img/default-img/default-profile-img.svg}"
                      alt="프로필"
                      style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(82,77,211,0.6); flex-shrink: 0;">
                 <span><span class="text-primary fw-bold" sec:authentication="name">사용자명</span>님</span>

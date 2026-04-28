@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StandardBalanceGameService implements BalanceGameService {
 
-    private static final String DEFAULT_IMAGE = "default-img.png";
+    private static final String DEFAULT_IMAGE = "default-content-img.png";
 
 	@Autowired
 	private BalanceGameMapper balanceGameMapper;

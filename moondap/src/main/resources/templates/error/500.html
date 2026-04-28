@@ -1,61 +1,100 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{/layout/main_layout}"
-      >
-<!-- layout:decorate="~{/레이아웃 경로/레이아웃 파일명}" -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/main_layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세상의 모든 테스트, 문답</title>
+    <title>시스템 오류 | 문답</title>
+    <style>
+        .error-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(82, 77, 211, 0.1) 0%, transparent 70%);
+        }
+
+        .error-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #524dd3, #ff4d94);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 20px;
+            letter-spacing: -5px;
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        .error-message {
+            font-size: 1.5rem;
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .identity-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .identity-text {
+            color: #524dd3;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #524dd3, #7c4dff);
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(82, 77, 211, 0.3);
+        }
+
+        .btn-home:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(82, 77, 211, 0.4);
+            color: white;
+        }
+    </style>
 </head>
-
-<!-- layout:fragment="레이아웃 프레그먼트 이름" -->
 <body layout:fragment="content">
-  <main class="main">
+    <main class="main">
+        <section class="error-section">
+            <div class="container error-content" data-aos="fade-up">
+                <div class="error-code">500</div>
+                <h1 class="error-message mb-4">세상의 모든 테스트, 문답 <img src="/assets/img/logo.webp" alt="문답 로고" style="height: 32px; margin-left: 8px; vertical-align: middle; margin-top: -4px;"></h1>
+                <div class="identity-box">
+                    <span class="identity-text">문답에서 다양한 테스트를 진행해 볼 수 있어요.</span>
+                    <p class="text-white mb-0" style="font-size: 1.1rem; opacity: 0.9;">
+                        하지만 현재 시스템에 잠시 혼란이 생겨 <br>
+                        요청하신 작업을 완료하지 못했어요.
+                    </p>
+                </div>
 
-	    <!-- Error 404 Section -->
-	    <section id="error-404" class="error-404 section">
-	
-	      <div class="container" data-aos="fade-up" data-aos-delay="100">
-	
-	        <div class="row justify-content-center">
-	          <div class="col-lg-8 text-center">
-	
-	            <div class="error-number" data-aos="zoom-in" data-aos-delay="200">
-	              500
-	            </div>
-	
-	            <h1 class="error-title" data-aos="fade-up" data-aos-delay="300">
-	              서비스 이용에 일시적인 오류가 발생했습니다
-	            </h1>
-	
-	            <p class="error-description" data-aos="fade-up" data-aos-delay="400">
-				  서비스 이용에 불편을 드려 대단히 죄송합니다.<br>
-				  현재 일시적인 서버 오류로 페이지를 불러올 수 없어요.<br>
-				  잠시 후 다시 시도해 주세요.
-	            </p>
-	
-	            <div class="error-actions" data-aos="fade-up" data-aos-delay="500">
-	              <a href="/" class="btn-secondary">
-	                <i class="bi bi-house"></i>
-	                메인으로 바로가기
-	              </a>
-	              
-	              <!-- 
-	              <a href="/" class="btn-primary">
-	                <i class="bi bi-house"></i>
-	                메인 페이지
-	              </a>
-	            </div>
-	               -->
-	
-	            </div>
-	          </div>
-	        </div>
-		  </div>
-	    </section><!-- /Error 404 Section -->
-	
-	</main>
+                <a href="/" class="btn btn-home">
+                    <i class="bi bi-house-door me-2"></i> 메인 화면으로
+                </a>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

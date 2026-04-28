@@ -37,7 +37,7 @@ public class MdUserAdminController {
                                        @RequestParam(value = "profileFile", required = false) org.springframework.web.multipart.MultipartFile profileFile) {
         try {
             if (profileFile != null && !profileFile.isEmpty()) {
-                String savedFilename = fileService.upload(profileFile);
+                String savedFilename = fileService.uploadProfile(profileFile);
                 dto.setProfileImage(savedFilename);
             }
             userService.updateUser(dto);

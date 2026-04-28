@@ -57,19 +57,18 @@
 
                 <div class="row gy-5">
                     <!-- 왼쪽 미디어 영역 -->
-                    <div class="col-lg-4 order-2 order-lg-1 d-none d-lg-block">
+                    <div class="col-lg-4 mb-4 mb-lg-0">
                         <div class="game-gallery-details-media">
-                            <div class="main-image">
+                            <div class="content-thumbnail-container">
                                 <div class="game-gallery-details-slider">
-                                    <img src="/assets/img/testList/img3.png" alt="에겐테토 테스트 정보" class="img-fluid" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border-radius: 20px;">
+                                    <img src="/assets/img/egenTeto/egenTetoMain.png" alt="에겐테토 테스트 정보" class="img-fluid content-thumbnail-img">
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
                     <!-- 오른쪽 콘텐츠 영역 -->
-                    <div class="col-lg-8 order-1 order-lg-2">
+                    <div class="col-lg-8">
                         <div class="game-gallery-details-content">
                             <h2 class="project-title fw-bold mb-4 text-center text-lg-start">에겐 vs 테토 테스트</h2>
                             
@@ -90,11 +89,28 @@
                                 </div>
                             </div>
 
+                            <div class="button-group mt-4 mb-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-nowrap text-dark shadow-sm" style="background-color: #FEE500; border: none;">
+                                        <i class="bi bi-chat-fill"></i> 공유
+                                    </button>
+                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-3 py-2 fw-bold text-nowrap shadow-sm">
+                                        <i class="bi bi-link-45deg"></i> 링크 공유
+                                    </button>
+                                    
+                                    <button onclick="location.href='/egenTeto/select'"
+                                        class="btn btn-primary flex-grow-1 py-2 text-nowrap rounded-5 shadow-sm"
+                                        style="background: #524dd3; border: none; font-weight: 600;">
+                                        테스트 시작 <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="project-overview mb-0">
                                 <div class="accordion project-accordion" id="testAccordion">
                                     <div class="accordion-item shadow-sm border-0 rounded overflow-hidden">
                                         <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
                                                 <i class="bi bi-info-circle-fill me-2 mb-0"></i> 테스트 소개
                                             </button>
                                         </h2>
@@ -108,24 +124,61 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                </div>
-                            </div>
-
-                            <div class="button-group mt-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-nowrap text-dark shadow-sm" style="background-color: #FEE500; border: none;">
-                                        <i class="bi bi-chat-fill"></i> 공유
-                                    </button>
-                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-3 py-2 fw-bold text-nowrap shadow-sm">
-                                        <i class="bi bi-link-45deg"></i> 복사
-                                    </button>
                                     
-                                    <button onclick="location.href='/egenTeto/select'"
-                                        class="btn btn-primary flex-grow-1 py-2 text-nowrap rounded-5 shadow-sm"
-                                        style="background: #524dd3; border: none; font-weight: 600;">
-                                        테스트 시작 <i class="bi bi-arrow-right"></i>
-                                    </button>
+                                    <!-- 유형 미리보기 추가 -->
+                                    <div class="accordion-item shadow-sm border-0 rounded overflow-hidden mt-3">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePreview">
+                                                <i class="bi bi-grid-fill me-2"></i> 유형 미리보기
+                                            </button>
+                                        </h2>
+                                        <div id="collapsePreview" class="accordion-collapse collapse show" data-bs-parent="#testAccordion">
+                                            <div class="accordion-body text-white">
+                                                <div class="row row-cols-2 row-cols-md-4 g-3">
+                                                    <!-- 에겐남 -->
+                                                    <div class="col">
+                                                        <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background-color: #ffffff;">
+                                                            <div class="p-2">
+                                                                <img src="/assets/img/egenTeto/egenNamImg.webp" class="img-fluid rounded-3 mb-2" alt="에겐남 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
+                                                                <h6 class="fw-bold text-dark mb-1 mt-1 small">에겐남</h6>
+                                                                <p class="text-muted mb-0" style="font-size: 0.65rem;">#감성 #남친룩 #공감왕</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 에겐녀 -->
+                                                    <div class="col">
+                                                        <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background-color: #ffffff;">
+                                                            <div class="p-2">
+                                                                <img src="/assets/img/egenTeto/egenNuImg.webp" class="img-fluid rounded-3 mb-2" alt="에겐녀 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
+                                                                <h6 class="fw-bold text-dark mb-1 mt-1 small">에겐녀</h6>
+                                                                <p class="text-muted mb-0" style="font-size: 0.65rem;">#감수성 #꾸안꾸 #예술가</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 테토남 -->
+                                                    <div class="col">
+                                                        <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background-color: #ffffff;">
+                                                            <div class="p-2">
+                                                                <img src="/assets/img/egenTeto/tetoNamImg.webp" class="img-fluid rounded-3 mb-2" alt="테토남 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
+                                                                <h6 class="fw-bold text-dark mb-1 mt-1 small">테토남</h6>
+                                                                <p class="text-muted mb-0" style="font-size: 0.65rem;">#이성 #깔끔룩 #논리적</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 테토녀 -->
+                                                    <div class="col">
+                                                        <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background-color: #ffffff;">
+                                                            <div class="p-2">
+                                                                <img src="/assets/img/egenTeto/tetoNuImg.webp" class="img-fluid rounded-3 mb-2" alt="테토녀 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
+                                                                <h6 class="fw-bold text-dark mb-1 mt-1 small">테토녀</h6>
+                                                                <p class="text-muted mb-0" style="font-size: 0.65rem;">#효율 #세련미 #현실적</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

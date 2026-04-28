@@ -98,15 +98,15 @@
                             <div class="stepper-items">
                                 <div class="step-item active" id="step-dot-1">
                                     <div class="step-icon"><i class="bi bi-info-circle"></i></div>
-                                    <div class="step-label">기본 정보</div>
+                                    <div class="step-label">1. 기본 정보</div>
                                 </div>
                                 <div class="step-item" id="step-dot-2">
                                     <div class="step-icon"><i class="bi bi-trophy"></i></div>
-                                    <div class="step-label">결과 구성</div>
+                                    <div class="step-label">2. 결과 구성</div>
                                 </div>
                                 <div class="step-item" id="step-dot-3">
                                     <div class="step-icon"><i class="bi bi-chat-left-dots"></i></div>
-                                    <div class="step-label">질문 구성</div>
+                                    <div class="step-label">3. 질문 구성</div>
                                 </div>
                             </div>
                         </div>
@@ -122,6 +122,14 @@
 
                             <!-- ───────────── 1단계: 기본 정보 ───────────── -->
                             <div id="step-1" class="step-panel">
+                                <div class="leadership-slider">
+                                    <div class="mb-3 ms-2">
+                                        <p class="text-primary small mb-0">
+                                            <i class="bi bi-info-circle-fill"></i> 기본 정보 설정
+                                        </p>
+                                    </div>
+                                    <p class="text-white-50 small ms-2 mb-3">테스트의 제목, 카테고리 등 기본 정보를 입력해주세요.</p>
+                                </div>
                                 <div class="item-card-dark p-3 p-md-4 mb-4">
                                     <input type="hidden" name="testKey" th:value="${test.testKey}">
 
@@ -207,12 +215,12 @@
                                         </p>
                                         <div class="leader-card selection-card p-0"
                                              style="background: transparent; border: none;"
-                                             th:with="hasThumbnail=${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'}">
+                                             th:with="hasThumbnail=${test.thumbnailImage != null and test.thumbnailImage != 'default-content-img.png'}">
                                             <div class="leader-image drop-zone active-upload"
                                                  th:classappend="${hasThumbnail} ? 'has-image' : ''"
                                                  id="thumbnail-drop-zone"
                                                  onclick="document.getElementById('thumbnail-file').click()">
-                                                <img th:src="${hasThumbnail} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/testList/default-img.png'"
+                                                <img th:src="${hasThumbnail} ? @{'/uploads/' + ${test.thumbnailImage}} : '/assets/img/default-img/default-content-img.png'"
                                                      alt="썸네일"
                                                      id="thumbnail-preview"
                                                      class="preview-img"
@@ -236,7 +244,6 @@
                                 </div>
 
                                 <div class="admin-cta-box" data-aos="fade-up">
-                                    <div class="cta-icon"><i class="bi bi-1-circle-fill"></i></div>
                                     <div class="cta-content">
                                         <h4>기본 정보 입력을 마쳤나요?</h4>
                                         <p>다음은 테스트 결과 유형을 구성할 차례입니다.</p>
@@ -265,7 +272,7 @@
                                                     결과 유형 #<span class="r-index" th:text="${iter.count}">1</span>
                                                 </h6>
                                                 <button type="button"
-                                                        class="btn btn-danger action-btn"
+                                                        class="btn btn-danger rounded-pill action-btn"
                                                         onclick="removeResult(this)">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -354,7 +361,6 @@
                                     </div>
 
                                     <div class="admin-cta-box" data-aos="fade-up">
-                                        <div class="cta-icon"><i class="bi bi-2-circle-fill"></i></div>
                                         <div class="cta-content">
                                             <h4>결과 유형을 모두 만드셨나요?</h4>
                                             <p>마지막으로 테스트 질문을 구성합니다.</p>
@@ -372,13 +378,16 @@
                             <!-- ───────────── 3단계: 질문 구성 ───────────── -->
                             <div id="step-3" class="step-panel" style="display: none;">
                                 <div class="leadership-slider">
+                                    <div class="mb-3 ms-2">
                                         <p class="text-primary small mb-0">
                                             <i class="bi bi-list-check"></i> 질문 구성
                                         </p>
                                     </div>
+                                    <p class="text-white-50 small ms-2 mb-3">사용자에게 물어볼 질문들과 결과 매칭을 정의해주세요.</p>
+                                </div>
                                     <div id="questions-container">
                                         <div th:each="q, stat : ${test.questions}"
-                                             class="question-item item-card-dark mb-4 p-3 rounded">
+                                             class="question-item item-card-dark mb-4 p-3 rounded shadow-sm">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <h6 class="text-white mb-0 small fw-bold">
                                                     질문 #<span class="q-index" th:text="${stat.count}">1</span>
@@ -447,14 +456,13 @@
 
 
                                 <div class="admin-cta-box" data-aos="fade-up">
-                                    <div class="cta-icon"><i class="bi bi-3-circle-fill"></i></div>
                                     <div class="cta-content">
                                         <h4 th:text="${test.id != null} ? '테스트 수정을 완료할까요?' : '테스트를 등록할까요?'"></h4>
                                         <p>모든 구성이 완료되었습니다!</p>
                                         <div class="cta-actions">
-                                            <button type="button" class="btn btn-outline px-5" onclick="prevStep(2)">이전으로</button>
+                                            <button type="button" class="btn btn-outline-light rounded-pill px-5" onclick="prevStep(2)">이전으로</button>
                                             <button type="submit"
-                                                    class="btn btn-primary px-5"
+                                                    class="btn btn-primary rounded-pill px-5"
                                                     th:text="${test.id != null} ? '수정 완료' : '등록 완료'"></button>
                                         </div>
                                     </div>
@@ -576,11 +584,13 @@
 
             if (testType === 'SCORE') {
                 $('.score-fields').show();
-                $('.domain-col').hide(); // 점수형일 때 결과 유형 선택 숨김
+                $('.domain-col').hide(); // 점수형: 결과 유형 선택 숨김
+                $('.reverse-col').show(); // 점수형: 역채점 표시
                 reindexResults(); // 유형 변경 시 자동 배분 실행
             } else {
                 $('.score-fields').hide();
-                $('.domain-col').show(); // 유형형일 때 다시 표시
+                $('.domain-col').show(); // 유형형: 결과 유형 선택 표시
+                $('.reverse-col').hide(); // 유형형: 역채점 숨김
             }
         }
 
@@ -609,7 +619,7 @@
                 if (!title)    { alert('테스트 제목을 입력해주세요.');    return; }
                 if (!category) { alert('카테고리를 선택해주세요.'); return; }
                 
-                const hasThumbnail = $('#thumbnail-preview').attr('src') && !$('#thumbnail-preview').attr('src').includes('default-img.png');
+                const hasThumbnail = $('#thumbnail-preview').attr('src') && !$('#thumbnail-preview').attr('src').includes('default-content-img.png');
                 const hasNewThumbnail = $('#thumbnail-file')[0].files.length > 0;
                 if (!hasThumbnail && !hasNewThumbnail) {
                     alert('대표 썸네일 이미지를 등록해주세요.');
@@ -886,6 +896,7 @@
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
+            toggleScoreFields(); // 현재 테스트 유형에 맞춰 UI 토글
             reindexQuestions();
             updateDomainOptions();
         }

@@ -15,42 +15,56 @@ public class FileService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Value("${file.profile-dir}")
+    private String profileDir;
+
     public String upload(MultipartFile file) throws IOException {
+        return uploadToDir(file, uploadDir, "default-content-img.png");
+    }
+
+    public String uploadProfile(MultipartFile file) throws IOException {
+        return uploadToDir(file, profileDir, "default-profile-img.svg");
+    }
+
+    private String uploadToDir(MultipartFile file, String directory, String defaultName) throws IOException {
         if (file == null || file.isEmpty()) {
-            return "default-img.png"; // 파일이 없으면 기본 이미지 반환
+            return defaultName; 
         }
 
-        // 1. 디렉토리가 없으면 생성
-        File dir = new File(uploadDir);
+        File dir = new File(directory);
         if (!dir.exists()) dir.mkdirs();
 
-        // 2. 파일명 중복 방지를 위한 UUID 생성
         String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
         String savedFilename = UUID.randomUUID().toString() + extension;
 
-        // 3. 파일 저장
-        File targetFile = new File(uploadDir + File.separator + savedFilename);
+        File targetFile = new File(directory + File.separator + savedFilename);
         file.transferTo(targetFile);
 
-        return savedFilename; // DB에는 저장된 파일명만 기록
+        return savedFilename;
     }
     
     public void deleteFile(String filename) {
-        // 1. 파일명이 없거나 기본 이미지인 경우 삭제하지 않음
-        if (filename == null || filename.isEmpty() || "default-img.png".equals(filename)) {
+        deleteFromDir(filename, uploadDir, "default-content-img.png");
+    }
+
+    public void deleteProfile(String filename) {
+        deleteFromDir(filename, profileDir, "default-profile-img.svg");
+    }
+
+    private void deleteFromDir(String filename, String directory, String defaultName) {
+        if (filename == null || filename.isEmpty() || defaultName.equals(filename)) {
             return;
         }
 
         try {
-            File file = new File(uploadDir + File.separator + filename);
-            
-            // 2. 파일이 실제로 존재하면 삭제
+            File file = new File(directory + File.separator + filename);
             if (file.exists()) {
                 if (file.delete()) {
-                    System.out.println("파일 삭제 성공: " + filename);
-                } else {
-                    System.err.println("파일 삭제 실패 (권한 문제 등): " + filename);
+                    System.out.println("파일 삭제 성공 (" + directory + "): " + filename);
                 }
             }
         } catch (Exception e) {

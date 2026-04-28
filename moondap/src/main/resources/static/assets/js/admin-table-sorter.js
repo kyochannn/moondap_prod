@@ -21,8 +21,10 @@ function sortTable(n, tableSelector = ".table-dark-custom") {
 
     // 정렬 수행
     rows.sort((a, b) => {
-        let x = a.getElementsByTagName("TD")[n].innerText.toLowerCase().trim();
-        let y = b.getElementsByTagName("TD")[n].innerText.toLowerCase().trim();
+        let tdA = a.getElementsByTagName("TD")[n];
+        let tdB = b.getElementsByTagName("TD")[n];
+        let x = (tdA.getAttribute("data-sort") !== null) ? tdA.getAttribute("data-sort").toLowerCase().trim() : tdA.innerText.toLowerCase().trim();
+        let y = (tdB.getAttribute("data-sort") !== null) ? tdB.getAttribute("data-sort").toLowerCase().trim() : tdB.innerText.toLowerCase().trim();
 
         // 1. 날짜 정렬 처리 (yyyy-MM-dd)
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -32,11 +34,14 @@ function sortTable(n, tableSelector = ".table-dark-custom") {
             return dir === "asc" ? xDate - yDate : yDate - xDate;
         }
 
-        // 2. 숫자 정렬 처리
+        // 2. 숫자 정렬 처리 ("12명", "5개" 등 단위가 포함된 숫자도 처리)
         const isNumeric = (str) => {
             if (typeof str !== 'string') return false;
-            const cleaned = str.replace(/,/g, '');
-            return !isNaN(cleaned) && !isNaN(parseFloat(cleaned));
+            const cleanStr = str.replace(/,/g, '').trim();
+            // 숫자로 시작하는지 확인 (음수 포함)
+            if (!/^-?[0-9]/.test(cleanStr)) return false;
+            const numericPart = cleanStr.replace(/[^0-9.-]/g, '');
+            return !isNaN(parseFloat(numericPart));
         };
         
         if (isNumeric(x) && isNumeric(y)) {

@@ -104,12 +104,12 @@
             </div>
 
             <div class="row gy-4 mb-4" id="normal-cards">
-              <div th:each="test : ${popularNormalTests}" class="col-xl-4 col-lg-6">
+              <div th:each="test, stat : ${popularNormalTests}" class="col-xl-4 col-lg-6" data-aos="fade-up" th:data-aos-delay="${stat.index * 100}">
                 <a th:href="${test.type == 'EGEN'} ? @{/egenTeto/selectEgenTetoGame} : @{/test/{key}(key=${test.key})}" class="text-decoration-none d-block">
                   <div class="game-wrapper">
                     <div class="game-image">
                       <div th:if="${test.isNew}" class="new-badge">NEW</div>
-                      <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/testList/img1.png}"
+                      <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
                            alt="테스트 썸네일" class="img-fluid" loading="lazy">
                     </div>
                     <div class="game-content">
@@ -146,25 +146,27 @@
             </div>
 
             <div class="row gy-4 mb-4" id="balance-cards">
-              <div th:each="test : ${popularBalanceTests}" class="col-xl-4 col-lg-6">
+              <div th:each="test, stat : ${popularBalanceTests}" class="col-xl-4 col-lg-6" data-aos="fade-up" th:data-aos-delay="${stat.index * 100}">
                 <a th:href="${test.type == 'EGEN'} ? @{/egenTeto/selectEgenTetoGame} : @{/balanceGame/selectBalanceGameView(id=${test.id})}" class="text-decoration-none d-block">
                   <div class="game-wrapper">
                     <div class="game-image">
                       <div th:if="${test.isNew}" class="new-badge">NEW</div>
                       <div class="split-thumbnail">
-                        <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/testList/img1.png}"
+                        <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
                              alt="옵션1" class="img-left" loading="lazy">
-                        <img th:src="${test.thumbnail2 != null and test.thumbnail2 != ''} ? (${#strings.startsWith(test.thumbnail2, '/assets/')} ? ${test.thumbnail2} : (@{/uploads/} + ${test.thumbnail2})) : @{/assets/img/testList/img2.png}"
+                        <img th:src="${test.thumbnail2 != null and test.thumbnail2 != ''} ? (${#strings.startsWith(test.thumbnail2, '/assets/')} ? ${test.thumbnail2} : (@{/uploads/} + ${test.thumbnail2})) : @{/assets/img/default-img/default-content-img.png}"
                              alt="옵션2" class="img-right" loading="lazy">
                         <div class="vs-badge">VS</div>
                       </div>
                     </div>
                     <div class="game-content">
                       <div class="game-meta">
-                        <span class="game-type">
-                          <span th:if="${test.type == 'BALANCE' and test.isSpicy}" class="badge bg-danger rounded-pill me-1" style="font-size: 0.65rem; vertical-align: middle; padding: 3px 7px;">매운맛</span>
-                          <span>밸런스게임</span>
-                        </span>
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="game-type">
+                            <span>밸런스게임</span>
+                          </span>
+                          <span th:if="${test.type == 'BALANCE' and test.isSpicy}" class="game-type" style="color: #dc3545;">매운맛</span>
+                        </div>
                         <div class="game-rating">
                           <i class="bi bi-eye-fill"></i>
                           <span th:text="${#numbers.formatInteger(test.playCount, 0, 'COMMA')}">0</span>

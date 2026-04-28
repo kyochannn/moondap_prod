@@ -115,16 +115,20 @@ public class MdMypageController {
             return "redirect:/mypage/verify";
         }
         
+        MdUserDTO currentUser = principalDetails.getUser();
         try {
             userForm.setUsername(principalDetails.getUsername());
             
             if (profileFile != null && !profileFile.isEmpty()) {
-                String savedFilename = fileService.upload(profileFile);
+                // 기존 프로필 이미지 삭제 (기본 이미지 아닌 경우에만)
+                if (currentUser.getProfileImage() != null && !currentUser.getProfileImage().equals("default-profile-img.svg")) {
+                    fileService.deleteProfile(currentUser.getProfileImage());
+                }
+                String savedFilename = fileService.uploadProfile(profileFile);
                 userForm.setProfileImage(savedFilename);
             }
             
             // 비밀번호는 여기서 처리하지 않음 (기존 비밀번호 유지)
-            MdUserDTO currentUser = principalDetails.getUser();
             userForm.setPassword(null); // 서비스에서 null 체크 후 기존 비번 유지하도록 처리됨
             
             mdUserService.updateUser(userForm);

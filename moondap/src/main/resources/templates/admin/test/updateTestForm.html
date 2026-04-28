@@ -73,10 +73,10 @@
                                     <tr>
                                         <td>
                                             <div class="mini-drop-zone mx-auto" 
-                                                 th:classappend="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? 'has-image' : ''"
+                                                 th:classappend="${test.thumbnailImage != null and test.thumbnailImage != 'default-content-img.png'} ? 'has-image' : ''"
                                                  onclick="document.getElementById('thumbnail-file').click()">
                                                 <img th:id="thumbnail-preview" class="preview-img"
-                                                     th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : ''"
+                                                     th:src="${test.thumbnailImage != null and test.thumbnailImage != 'default-content-img.png'} ? @{'/uploads/' + ${test.thumbnailImage}} : ''"
                                                      onerror="this.style.display='none'">
                                                 <div class="upload-placeholder"><i class="bi bi-plus-lg"></i></div>
                                                 <input type="file" name="thumbnailFile" id="thumbnail-file" style="display: none;" 
@@ -397,7 +397,8 @@
         function toggleScoreFields() {
             const testType = $('#testType').val();
             const $scoreCols = $('.score-col');
-            const $domainCols = $('.domain-col'); // 질문 목록의 도메인 컬럼
+            const $domainCols = $('.domain-col');
+            const $reverseCols = $('.reverse-col');
             const $table = $('#results-table');
             
             // SCORE -> TYPE 변경 시 확인창 (초기화 이후에만 작동)
@@ -412,12 +413,14 @@
 
             if (testType === 'SCORE') {
                 $scoreCols.show();
-                $domainCols.hide(); // 점수형일 때 도메인 매칭 숨김
+                $domainCols.hide(); // 점수형: 도메인 매칭 숨김
+                $reverseCols.show(); // 점수형: 역채점 표시
                 $table.css('min-width', '1100px');
                 reindexRows('result');
             } else {
                 $scoreCols.hide();
-                $domainCols.show(); // 유형형일 때 도메인 매칭 표시
+                $domainCols.show(); // 유형형: 도메인 매칭 표시
+                $reverseCols.hide(); // 유형형: 역채점 숨김
                 $table.css('min-width', '900px');
             }
         }
@@ -454,7 +457,7 @@
                         <textarea class="custom-input-inline r-content" rows="2" placeholder="결과 상세 설명"></textarea>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger action-btn" onclick="removeRow(this, "result")">
+                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeRow(this, 'result')">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -487,13 +490,14 @@
                         </div>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger action-btn" onclick="removeRow(this, 'question')">
+                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeRow(this, 'question')">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
                 </tr>
             `;
             $('#questions-table tbody').append(html);
+            toggleScoreFields(); // 현재 테스트 유형에 맞춰 컬럼 토글
             reindexRows('question');
             updateDomainOptions(); // 새 행에 옵션 반영
         }
@@ -548,32 +552,6 @@
                 }
             });
         }
-
-        // 결과 구간 점수 변경 시 연쇄 반응 로직
-        $(document).on('input', '.r-min-score, .r-max-score', function() {
-            const $currentInput = $(this);
-            const $container = $('#results-table tbody');
-            const $items = $container.find('.result-row');
-            const $row = $currentInput.closest('.result-row');
-            const index = $items.index($row);
-            const val = parseInt($currentInput.val());
-
-            if (isNaN(val)) return;
-
-            if ($currentInput.hasClass('r-max-score')) {
-                // 최대값이 변경되면 "다음" 행의 최소값을 +1로 변경
-                if (index >= 0 && index < $items.length - 1) {
-                    const $nextRow = $items.eq(index + 1);
-                    $nextRow.find('.r-min-score').val(val + 1);
-                }
-            } else if ($currentInput.hasClass('r-min-score')) {
-                // 최소값이 변경되면 "이전" 행의 최대값을 -1로 변경
-                if (index > 0) {
-                    const $prevRow = $items.eq(index - 1);
-                    $prevRow.find('.r-max-score').val(val - 1);
-                }
-            }
-        });
 
         /* ── 도메인(결과유형) 동기화 ── */
 

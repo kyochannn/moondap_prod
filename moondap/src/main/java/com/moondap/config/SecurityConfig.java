@@ -38,7 +38,7 @@ public class SecurityConfig {
             .requestMatchers("/balanceGame/**").permitAll()
             .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
 //            .requestMatchers("/my/**").hasAnyRole("ADMIN", "USER")
-            .anyRequest().authenticated()
+            .anyRequest().permitAll()
         );
 
         http.formLogin((auth) -> auth.loginPage("/loginView")
