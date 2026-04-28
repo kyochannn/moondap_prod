@@ -106,6 +106,39 @@
     font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
+/* 다크 커스텀 테이블 (결과 페이지용) */
+/* 다크 커스텀 테이블 (결과 페이지용) */
+.table-dark-custom {
+    --bs-table-bg: transparent !important;
+    --bs-table-hover-bg: rgba(255,255,255,0.05) !important;
+    color: #fff !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table-dark-custom thead th {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 8px !important;
+}
+
+.table-dark-custom td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 12px 8px !important;
+    vertical-align: middle;
+    color: #fff !important; /* 텍스트 흰색 강제 */
+}
+
+.table-dark-custom tr:last-child td {
+    border-bottom: none !important;
+}
+
 @media (max-width: 576px) {
     .result-report-card { border-radius: 20px; }
     .main-result-img { max-height: 350px; }

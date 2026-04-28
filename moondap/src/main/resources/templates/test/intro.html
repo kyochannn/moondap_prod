@@ -74,11 +74,11 @@
                                         <i class="bi bi-link-45deg"></i> 링크 공유
                                     </button>
                                     
-                                    <a th:href="@{/test/{key}/questions(key=${test.testKey})}"
+                                    <button th:onclick="|startTest('@{/test/{key}/questions(key=${test.testKey})}')|"
                                        class="btn btn-primary flex-grow-1 py-2 rounded-5 shadow-sm fw-bold"
                                        style="background: #524dd3; border: none;">
                                         테스트 시작 <i class="bi bi-arrow-right ms-1"></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
 
@@ -156,6 +156,24 @@
                 setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
             });
         }
+
+        function startTest(url) {
+            if (typeof showLoading === 'function') {
+                showLoading(0, '테스트를 준비하고 있습니다', '세상의 모든 테스트, 문답!');
+            }
+            setTimeout(() => {
+                location.href = url;
+            }, 800);
+        }
+
+        // 브라우저 뒤로가기 시 로딩 오버레이 숨기기
+        window.onpageshow = function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                if (typeof hideLoading === 'function') {
+                    hideLoading();
+                }
+            }
+        };
     </script>
 </body>
 </html>

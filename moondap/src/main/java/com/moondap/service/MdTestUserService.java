@@ -3,6 +3,7 @@ package com.moondap.service;
 import com.moondap.dto.MdTestDTO;
 import com.moondap.dto.MdTestQuestionDTO;
 import com.moondap.dto.MdTestResultDTO;
+import com.moondap.dto.MdContentItemDTO;
 import com.moondap.mapper.MdTestMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -136,14 +137,14 @@ public class MdTestUserService {
     /**
      * 메인 페이지용 인기 콘텐츠 리스트를 조회합니다.
      */
-    public List<com.moondap.dto.MdContentItemDTO> getPopularContent(int limit) {
+    public List<MdContentItemDTO> getPopularContent(int limit) {
         return mdTestMapper.selectPopularContent(limit);
     }
 
     /**
      * 전체 리스트 페이지용 콘텐츠 리스트를 조회합니다.
      */
-    public List<com.moondap.dto.MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit) {
+    public List<MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit) {
         return mdTestMapper.selectAllContentList(category, sort, type, offset, limit);
     }
 }

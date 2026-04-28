@@ -3,6 +3,7 @@ package com.moondap.mapper;
 import com.moondap.dto.MdTestDTO;
 import com.moondap.dto.MdTestQuestionDTO;
 import com.moondap.dto.MdTestResultDTO;
+import com.moondap.dto.MdContentItemDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -37,6 +38,6 @@ public interface MdTestMapper {
     void deleteResultsByTestId(@Param("testId") Long testId);
 
     // 통합 조회 (메인/리스트용)
-    List<com.moondap.dto.MdContentItemDTO> selectPopularContent(@Param("limit") int limit);
-    List<com.moondap.dto.MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("offset") int offset, @Param("limit") int limit);
+    List<MdContentItemDTO> selectPopularContent(@Param("limit") int limit);
+    List<MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("offset") int offset, @Param("limit") int limit);
 }

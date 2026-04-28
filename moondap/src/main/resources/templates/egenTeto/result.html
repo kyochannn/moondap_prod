@@ -12,456 +12,482 @@
     <!-- Highcharts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/10.3.3/highcharts.js"></script>
 
+    <style>
+        /* 에겐테토 결과 페이지 전용 스타일 */
+        .text-teto { color: #3876f2 !important; }
+        .text-egen { color: #de66e9 !important; }
+        .text-inactive { color: #6c757d !important; opacity: 0.5; }
+        
+        .bg-teto { background-color: #3876f2 !important; }
+        .bg-egen { background-color: #de66e9 !important; }
+        
+        /* 이미지 스타일 (다른 결과 페이지와 통일) */
+        .main-result-img { 
+            max-width: 450px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 4px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .main-result-img:hover { transform: scale(1.02); }
+
+        /* 그래프 및 지표 스타일 */
+        .chart-wrapper { 
+            background: rgba(255, 255, 255, 0.02); 
+            border-radius: 20px; 
+            padding: 20px 0; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+        }
+        .indicator-icon { width: 35px; }
+        .mini-icon { width: 25px; margin-bottom: 5px; }
+        
+        /* 프로그레스 바 스타일 개선 */
+        .progress { background-color: rgba(255, 255, 255, 0.1) !important; height: 28px !important; border-radius: 50px !important; overflow: hidden; }
+        .progress-bar { transition: width 1s ease-in-out; }
+
+        /* FAQ (상세 분석) 스타일 */
+        .faq-item { 
+            background: rgba(255, 255, 255, 0.03) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.05) !important; 
+            border-radius: 15px !important;
+            margin-bottom: 12px !important;
+            padding: 15px 20px !important;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        .faq-item:hover { background: rgba(255, 255, 255, 0.06) !important; }
+        .faq-item h3 { font-size: 1.05rem !important; font-weight: 600 !important; color: #fff !important; margin: 0 !important; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-content { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding-top 0.4s ease; 
+            color: rgba(255,255,255,0.7); 
+            opacity: 0;
+            padding-top: 0;
+        }
+        .faq-active .faq-content { 
+            max-height: 1000px; /* JS가 없는 경우를 위한 폴백 */
+            padding-top: 15px;
+            opacity: 1;
+        }
+        .faq-active .faq-toggle { transform: rotate(90deg); }
+        .faq-toggle { transition: transform 0.3s ease; opacity: 0.5; }
+
+        .result-title-highlight { font-size: 1.5rem; letter-spacing: -0.5px; }
+        
+        @media (max-width: 576px) {
+            .indicator-icon { width: 30px; }
+            .result-title-highlight { font-size: 1.2rem; }
+        }
+    </style>
 </head>
 
 <body layout:fragment="content">
-    <!-- 복사 알림 토스트 (밸런스 게임 통일) -->
+    <!-- 복사 알림 토스트 -->
     <div id="copyToast"><i class="bi bi-check-circle-fill me-2"></i>링크가 복사되었습니다!</div>
 
     <main class="main">
-
         <!-- Starter Section Section -->
         <section id="starter-section" class="starter-section section p-3">
             <div class="container section-title pb-2" data-aos="fade-up">
-                <h2>나는 에겐? 테토?</h2>
-                <p>검사가 모두 완료되었어요! 유형 리포트를 확인해 보세요.</p>
+                <h2 class="fw-bold text-white">나는 에겐? 테토?</h2>
+                <p class="text-white-50">테스트가 완료되었습니다! 당신의 리포트를 확인해 보세요.</p>
             </div>
         </section>
 
-        <div th:with="u=${userBroker}">
-            <!-- 결과 리포트 메인 카드 -->
-            <section class="section p-0" id="result-card">
-                <div class="container pb-4" data-aos="fade-up">
-                    <div class="px-2 text-center" style="max-width: 900px; width: 100%; margin: 0 auto;">
+        <section class="section p-0">
+            <div class="container pb-5" data-aos="fade-up">
+                <div class="result-report-card mx-auto overflow-hidden shadow-lg">
+                    
+                    <!-- 상단 컬러 바 -->
+                    <div class="report-accent-bar"></div>
+
+                    <div class="p-4 p-md-5 text-center" th:with="u=${userBroker}">
                         
                         <!-- 결과 이미지 및 타이틀 -->
-                        <div class="result-image-wrapper">
-                            <div th:if="${u.teto && u.male}">
-                                <img th:src="@{/assets/img/egenTeto/tetoNamImg.webp}" class="img-fluid mb-3 main-result-img shadow-sm rounded-4">
-                                <h3 class="fw-bold mt-3">상위 <span class="text-teto">[[${u.topPercent}]]%</span> <span class="text-teto">[[${u.testResultType}]]</span></h3>
+                        <div class="mb-5" id="result-header">
+                            <div class="position-relative d-inline-block mb-4">
+                                <div th:if="${u.teto && u.male}">
+                                    <img th:src="@{/assets/img/egenTeto/tetoNamImg.webp}" class="img-fluid main-result-img shadow-lg">
+                                </div>
+                                <div th:if="${!u.teto && u.male}">
+                                    <img th:src="@{/assets/img/egenTeto/egenNamImg.webp}" class="img-fluid main-result-img shadow-lg">
+                                </div>
+                                <div th:if="${u.teto && !u.male}">
+                                    <img th:src="@{/assets/img/egenTeto/tetoNuImg.webp}" class="img-fluid main-result-img shadow-lg">
+                                </div>
+                                <div th:if="${!u.teto && !u.male}">
+                                    <img th:src="@{/assets/img/egenTeto/egenNuImg.webp}" class="img-fluid main-result-img shadow-lg">
+                                </div>
                             </div>
-                            <div th:if="${!u.teto && u.male}">
-                                <img th:src="@{/assets/img/egenTeto/egenNamImg.webp}" class="img-fluid mb-3 main-result-img shadow-sm rounded-4">
-                                <h3 class="fw-bold mt-3">상위 <span class="text-egen">[[${u.topPercent}]]%</span> <span class="text-egen">[[${u.testResultType}]]</span></h3>
-                            </div>
-                            <div th:if="${u.teto && !u.male}">
-                                <img th:src="@{/assets/img/egenTeto/tetoNuImg.webp}" class="img-fluid mb-3 main-result-img shadow-sm rounded-4">
-                                <h3 class="fw-bold mt-3">상위 <span class="text-teto">[[${u.topPercent}]]%</span> <span class="text-teto">[[${u.testResultType}]]</span></h3>
-                            </div>
-                            <div th:if="${!u.teto && !u.male}">
-                                <img th:src="@{/assets/img/egenTeto/egenNuImg.webp}" class="img-fluid mb-3 main-result-img shadow-sm rounded-4">
-                                <h3 class="fw-bold mt-3">상위 <span class="text-egen">[[${u.topPercent}]]%</span> <span class="text-egen">[[${u.testResultType}]]</span></h3>
+
+                            <div class="mb-2">
+                                <span class="text-white-50 small text-uppercase tracking-widest mb-2 d-block">나의 성향 분석 결과</span>
+                                <h3 class="fw-bold text-white result-title-highlight">
+                                    상위 <span th:class="${u.teto} ? 'text-teto' : 'text-egen'">[[${u.topPercent}]]%</span> 
+                                    <span th:class="${u.teto} ? 'text-teto' : 'text-egen'">[[${u.testResultType}]]</span>
+                                </h3>
+                                <p class="text-white-50 small mt-2">※ 에겐/테토 영역별 상세점수를 바탕으로 산출된 결과입니다.</p>
                             </div>
                         </div>
-                        
-                        <p class="text-secondary mt-2">※ 백분위는 에겐/테토 영역별 상세점수 결과를 바탕으로 산출되었습니다.</p>
-                    </div>
-                </div>
 
-                <!-- 정규분포 차트 영역 -->
-                <div class="chart-wrapper mb-4" data-aos="fade-up">
-                    <div id="chartContainer" style="max-width: 500px; width: 95%; height: 200px; margin: 0 auto;"></div>
-                    <!-- T/E 아이콘 표시 -->
-                    <div class="icon-indicator d-flex justify-content-between px-4" style="max-width: 480px; margin: auto;">
-                        <div class="text-center" th:with="totalTeto=${u.styleSelfcarePoint + u.socialSkillPoint + u.innerTendencyPoint + u.ambitionPoint}">
-                            <img th:src="${u.teto ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="indicator-icon">
-                            <div th:class="${totalTeto >= 200 ? 'fw-bold mt-2 text-teto' : 'fw-bold mt-2 text-inactive'}" style="font-size: 0.95rem;">[[${totalTeto}]]점</div>
-                        </div>
-                        <div class="text-center" th:with="totalTeto=${u.styleSelfcarePoint + u.socialSkillPoint + u.innerTendencyPoint + u.ambitionPoint}">
-                            <img th:src="${u.teto ? '/assets/img/egenTeto/EImg-deafult.webp' : '/assets/img/egenTeto/EImg.webp'}" class="indicator-icon">
-                            <div th:class="${totalTeto < 200 ? 'fw-bold mt-2 text-egen' : 'fw-bold mt-2 text-inactive'}" style="font-size: 0.95rem;">[[${400 - totalTeto}]]점</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 영역별 점수 상세 지표 -->
-                <div class="container py-4 light-background rounded-4 mb-5" style="max-width: 800px;">
-                    <h4 class="fw-bold mb-5 text-center">🎯 영역별 성향 지표</h4>
-                    <div class="row gy-5 px-3">
-
-                        <!-- 1. 스타일 -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between mb-1 fw-bold">
-                                <span>😎 외적 스타일 및 자기관리</span>
-                            </div>
-                            <div class="progress-container d-flex align-items-center gap-2">
-                                <div class="text-center">
-                                    <img th:src="${u.styleSelfcarePoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.styleSelfcarePoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.styleSelfcarePoint}]]점</div>
+                        <!-- 정규분포 차트 영역 -->
+                        <div class="chart-wrapper mb-5">
+                            <div id="chartContainer" style="max-width: 500px; width: 95%; height: 200px; margin: 0 auto;"></div>
+                            <!-- T/E 아이콘 표시 -->
+                            <div class="icon-indicator d-flex justify-content-between px-4" style="max-width: 480px; margin: auto;">
+                                <div class="text-center" th:with="totalTeto=${u.styleSelfcarePoint + u.socialSkillPoint + u.innerTendencyPoint + u.ambitionPoint}">
+                                    <img th:src="${u.teto ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="indicator-icon">
+                                    <div th:class="${totalTeto >= 200 ? 'fw-bold mt-2 text-teto' : 'fw-bold mt-2 text-inactive'}" style="font-size: 0.9rem;">[[${totalTeto}]]점</div>
                                 </div>
-                                
-                                <!-- 테토 우세 시 (50점 초과) -->
-                                <div th:if="${u.styleSelfcarePoint > 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" role="progressbar" 
-                                         th:style="'width: ' + ${u.styleSelfcarePoint} + '%;'" 
-                                         th:aria-valuenow="${u.styleSelfcarePoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <!-- 동점 시 (정확히 50점) -->
-                                <div th:if="${u.styleSelfcarePoint == 50}" class="progress flex-grow-1 d-flex" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" style="width: 50%;"></div>
-                                    <div class="progress-bar bg-egen" style="width: 50%;"></div>
-                                </div>
-                                
-                                <!-- 에겐 우세 시 (50점 미만) -->
-                                <div th:if="${u.styleSelfcarePoint < 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-egen ms-auto" role="progressbar" 
-                                         th:style="'width: ' + ${100 - u.styleSelfcarePoint} + '%;'" 
-                                         th:aria-valuenow="${100 - u.styleSelfcarePoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <div class="text-center">
-                                    <img th:src="${u.styleSelfcarePoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.styleSelfcarePoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.styleSelfcarePoint}]]점</div>
+                                <div class="text-center" th:with="totalTeto=${u.styleSelfcarePoint + u.socialSkillPoint + u.innerTendencyPoint + u.ambitionPoint}">
+                                    <img th:src="${u.teto ? '/assets/img/egenTeto/EImg-deafult.webp' : '/assets/img/egenTeto/EImg.webp'}" class="indicator-icon">
+                                    <div th:class="${totalTeto < 200 ? 'fw-bold mt-2 text-egen' : 'fw-bold mt-2 text-inactive'}" style="font-size: 0.9rem;">[[${400 - totalTeto}]]점</div>
                                 </div>
                             </div>
                         </div>
-                        <!-- 2. 사회성 -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between mb-1 fw-bold">
-                                <span>🤝 사회성 및 인간관계</span>
+
+                        <!-- 영역별 점수 상세 지표 -->
+                        <div class="text-start mb-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <div style="width: 4px; height: 20px; background: #524dd3; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">🎯 영역별 성향 지표</h5>
                             </div>
-                            <div class="progress-container d-flex align-items-center gap-2">
-                                <div class="text-center">
-                                    <img th:src="${u.socialSkillPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.socialSkillPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.socialSkillPoint}]]점</div>
+                            
+                            <div class="row gy-4 px-1">
+                                <!-- 1. 스타일 -->
+                                <div class="col-12">
+                                    <div class="small text-white-50 mb-2 fw-bold px-1">😎 외적 스타일 및 자기관리</div>
+                                    <div class="progress-container d-flex align-items-center gap-2">
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.styleSelfcarePoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.styleSelfcarePoint >= 50 ? 'small fw-bold text-teto' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${u.styleSelfcarePoint}]]</div>
+                                        </div>
+                                        <div class="progress flex-grow-1">
+                                            <div th:if="${u.styleSelfcarePoint > 50}" class="progress-bar bg-teto" th:style="'width: ' + ${u.styleSelfcarePoint} + '%;'"></div>
+                                            <div th:if="${u.styleSelfcarePoint == 50}" class="d-flex w-100"><div class="bg-teto w-50"></div><div class="bg-egen w-50"></div></div>
+                                            <div th:if="${u.styleSelfcarePoint < 50}" class="progress-bar bg-egen ms-auto" th:style="'width: ' + ${100 - u.styleSelfcarePoint} + '%;'"></div>
+                                        </div>
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.styleSelfcarePoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.styleSelfcarePoint <= 50 ? 'small fw-bold text-egen' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${100 - u.styleSelfcarePoint}]]</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                
-                                <!-- 테토 우세 시 -->
-                                <div th:if="${u.socialSkillPoint > 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" role="progressbar" 
-                                         th:style="'width: ' + ${u.socialSkillPoint} + '%;'" 
-                                         th:aria-valuenow="${u.socialSkillPoint}" aria-valuemin="0" aria-valuemax="100"></div>
+                                <!-- 2. 사회성 -->
+                                <div class="col-12">
+                                    <div class="small text-white-50 mb-2 fw-bold px-1">🤝 사회성 및 인간관계</div>
+                                    <div class="progress-container d-flex align-items-center gap-2">
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.socialSkillPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.socialSkillPoint >= 50 ? 'small fw-bold text-teto' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${u.socialSkillPoint}]]</div>
+                                        </div>
+                                        <div class="progress flex-grow-1">
+                                            <div th:if="${u.socialSkillPoint > 50}" class="progress-bar bg-teto" th:style="'width: ' + ${u.socialSkillPoint} + '%;'"></div>
+                                            <div th:if="${u.socialSkillPoint == 50}" class="d-flex w-100"><div class="bg-teto w-50"></div><div class="bg-egen w-50"></div></div>
+                                            <div th:if="${u.socialSkillPoint < 50}" class="progress-bar bg-egen ms-auto" th:style="'width: ' + ${100 - u.socialSkillPoint} + '%;'"></div>
+                                        </div>
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.socialSkillPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.socialSkillPoint <= 50 ? 'small fw-bold text-egen' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${100 - u.socialSkillPoint}]]</div>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <!-- 동점 시 -->
-                                <div th:if="${u.socialSkillPoint == 50}" class="progress flex-grow-1 d-flex" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" style="width: 50%;"></div>
-                                    <div class="progress-bar bg-egen" style="width: 50%;"></div>
+                                <!-- 3. 내면 성향 -->
+                                <div class="col-12">
+                                    <div class="small text-white-50 mb-2 fw-bold px-1">🧠 내면 성향 및 감정 처리</div>
+                                    <div class="progress-container d-flex align-items-center gap-2">
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.innerTendencyPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.innerTendencyPoint >= 50 ? 'small fw-bold text-teto' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${u.innerTendencyPoint}]]</div>
+                                        </div>
+                                        <div class="progress flex-grow-1">
+                                            <div th:if="${u.innerTendencyPoint > 50}" class="progress-bar bg-teto" th:style="'width: ' + ${u.innerTendencyPoint} + '%;'"></div>
+                                            <div th:if="${u.innerTendencyPoint == 50}" class="d-flex w-100"><div class="bg-teto w-50"></div><div class="bg-egen w-50"></div></div>
+                                            <div th:if="${u.innerTendencyPoint < 50}" class="progress-bar bg-egen ms-auto" th:style="'width: ' + ${100 - u.innerTendencyPoint} + '%;'"></div>
+                                        </div>
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.innerTendencyPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.innerTendencyPoint <= 50 ? 'small fw-bold text-egen' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${100 - u.innerTendencyPoint}]]</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                
-                                <!-- 에겐 우세 시 -->
-                                <div th:if="${u.socialSkillPoint < 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-egen ms-auto" role="progressbar" 
-                                         th:style="'width: ' + ${100 - u.socialSkillPoint} + '%;'" 
-                                         th:aria-valuenow="${100 - u.socialSkillPoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <div class="text-center">
-                                    <img th:src="${u.socialSkillPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.socialSkillPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.socialSkillPoint}]]점</div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 3. 내면 성향 -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between mb-1 fw-bold">
-                                <span>🧠 내면 성향 및 감정 처리</span>
-                            </div>
-                            <div class="progress-container d-flex align-items-center gap-2">
-                                <div class="text-center">
-                                    <img th:src="${u.innerTendencyPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.innerTendencyPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.innerTendencyPoint}]]점</div>
-                                </div>
-                                
-                                <!-- 테토 우세 시 -->
-                                <div th:if="${u.innerTendencyPoint > 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" role="progressbar" 
-                                         th:style="'width: ' + ${u.innerTendencyPoint} + '%;'" 
-                                         th:aria-valuenow="${u.innerTendencyPoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <!-- 동점 시 -->
-                                <div th:if="${u.innerTendencyPoint == 50}" class="progress flex-grow-1 d-flex" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" style="width: 50%;"></div>
-                                    <div class="progress-bar bg-egen" style="width: 50%;"></div>
-                                </div>
-                                
-                                <!-- 에겐 우세 시 -->
-                                <div th:if="${u.innerTendencyPoint < 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-egen ms-auto" role="progressbar" 
-                                         th:style="'width: ' + ${100 - u.innerTendencyPoint} + '%;'" 
-                                         th:aria-valuenow="${100 - u.innerTendencyPoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <div class="text-center">
-                                    <img th:src="${u.innerTendencyPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.innerTendencyPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.innerTendencyPoint}]]점</div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 4. 야망 -->
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between mb-1 fw-bold">
-                                <span>🔥 야망 및 인생 태도</span>
-                            </div>
-                            <div class="progress-container d-flex align-items-center gap-2">
-                                <div class="text-center">
-                                    <img th:src="${u.ambitionPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.ambitionPoint >= 50 ? 'small fw-bold text-teto' : 'small fw-bold text-inactive'}">[[${u.ambitionPoint}]]점</div>
-                                </div>
-                                
-                                <!-- 테토 우세 시 -->
-                                <div th:if="${u.ambitionPoint > 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" role="progressbar" 
-                                         th:style="'width: ' + ${u.ambitionPoint} + '%;'" 
-                                         th:aria-valuenow="${u.ambitionPoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <!-- 동점 시 -->
-                                <div th:if="${u.ambitionPoint == 50}" class="progress flex-grow-1 d-flex" style="height: 30px;">
-                                    <div class="progress-bar bg-teto" style="width: 50%;"></div>
-                                    <div class="progress-bar bg-egen" style="width: 50%;"></div>
-                                </div>
-                                
-                                <!-- 에겐 우세 시 -->
-                                <div th:if="${u.ambitionPoint < 50}" class="progress flex-grow-1" style="height: 30px;">
-                                    <div class="progress-bar bg-egen ms-auto" role="progressbar" 
-                                         th:style="'width: ' + ${100 - u.ambitionPoint} + '%;'" 
-                                         th:aria-valuenow="${100 - u.ambitionPoint}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                <div class="text-center">
-                                    <img th:src="${u.ambitionPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
-                                    <div th:class="${u.ambitionPoint <= 50 ? 'small fw-bold text-egen' : 'small fw-bold text-inactive'}">[[${100 - u.ambitionPoint}]]점</div>
+                                <!-- 4. 야망 -->
+                                <div class="col-12">
+                                    <div class="small text-white-50 mb-2 fw-bold px-1">🔥 야망 및 인생 태도</div>
+                                    <div class="progress-container d-flex align-items-center gap-2">
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.ambitionPoint >= 50 ? '/assets/img/egenTeto/TImg.webp' : '/assets/img/egenTeto/TImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.ambitionPoint >= 50 ? 'small fw-bold text-teto' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${u.ambitionPoint}]]</div>
+                                        </div>
+                                        <div class="progress flex-grow-1">
+                                            <div th:if="${u.ambitionPoint > 50}" class="progress-bar bg-teto" th:style="'width: ' + ${u.ambitionPoint} + '%;'"></div>
+                                            <div th:if="${u.ambitionPoint == 50}" class="d-flex w-100"><div class="bg-teto w-50"></div><div class="bg-egen w-50"></div></div>
+                                            <div th:if="${u.ambitionPoint < 50}" class="progress-bar bg-egen ms-auto" th:style="'width: ' + ${100 - u.ambitionPoint} + '%;'"></div>
+                                        </div>
+                                        <div class="text-center" style="width: 45px;">
+                                            <img th:src="${u.ambitionPoint <= 50 ? '/assets/img/egenTeto/EImg.webp' : '/assets/img/egenTeto/EImg-deafult.webp'}" class="mini-icon">
+                                            <div th:class="${u.ambitionPoint <= 50 ? 'small fw-bold text-egen' : 'small text-inactive'}" style="font-size: 0.75rem;">[[${100 - u.ambitionPoint}]]</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- 상세 분석 (FAQ 방식) -->
-            <section class="faq section py-0 mb-5">
-                <div class="container" style="max-width: 800px;">
-                    <div class="section-title text-center" data-aos="fade-up">
-                        <h2>🔍 상세 분석 리포트</h2>
-                        <p>당신의 유형을 4가지 관점에서 깊이 있게 분석했습니다.</p>
-                    </div>
-
-                    <div class="faq-container">
-                        <!-- 1. 종합 평가 -->
-                        <div class="faq-item faq-active" data-aos="fade-up">
-                            <h3>📑 종합 평가 리포트</h3>
-                            <div class="faq-content">
-                                <p th:if="${u.teto}">당신은 강한 <strong>테스토스테론</strong> 에너지를 가진 성향입니다. 목표 지향적이며, 경쟁 상황에서 본인의 능력을 발휘하는 데 특화되어 있습니다. 결단력이 빠르고 논리적인 판단을 우선시합니다.</p>
-                                <p th:if="${!u.teto}">당신은 부드러운 <strong>에스트로겐</strong> 에너지를 가진 성향입니다. 타인과의 공감과 조화를 중시하며, 세밀한 부분까지 살필 줄 아는 섬세함을 지녔습니다. 관계 속에서 정서적 안정을 찾는 분입니다.</p>
+                        <!-- 상세 분석 리포트 (FAQ 스타일 통합) -->
+                        <div class="text-start mb-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <div style="width: 4px; height: 20px; background: #a166ff; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">🔍 상세 분석 리포트</h5>
                             </div>
-                            <i class="faq-toggle bi bi-chevron-right"></i>
+
+                            <div class="faq-container">
+                                <div class="faq-item faq-active">
+                                    <h3>📑 종합 평가 리포트 <i class="faq-toggle bi bi-chevron-right"></i></h3>
+                                    <div class="faq-content">
+                                        <p th:if="${u.teto}" class="mb-0">당신은 강한 <strong>테스토스테론</strong> 에너지를 가진 성향입니다. 목표 지향적이며, 경쟁 상황에서 본인의 능력을 발휘하는 데 특화되어 있습니다. 결단력이 빠르고 논리적인 판단을 우선시합니다.</p>
+                                        <p th:if="${!u.teto}" class="mb-0">당신은 부드러운 <strong>에스트로겐</strong> 에너지를 가진 성향입니다. 타인과의 공감과 조화를 중시하며, 세밀한 부분까지 살필 줄 아는 섬세함을 지녔습니다. 관계 속에서 정서적 안정을 찾는 분입니다.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <h3>😎 스타일 및 자기관리 <i class="faq-toggle bi bi-chevron-right"></i></h3>
+                                    <div class="faq-content">
+                                        <p class="small text-white-50 mb-2">유형: [[${u.styleSelfcareResultType}]]</p>
+                                        <p th:if="${u.styleSelfcarePoint >= 50}" class="mb-0">실용성과 효율을 극대화하는 스타일을 추구합니다. 불필요한 장식보다는 기능적인 코디를 선호하며, 자기관리 역시 명확한 목표 지향적으로 실천합니다.</p>
+                                        <p th:if="${u.styleSelfcarePoint < 50}" class="mb-0">본인만의 심미안이 뚜렷하며 자신을 가꾸는 과정 자체에서 행복을 느낍니다. 트렌드에 민감하면서도 디테일한 포인트를 살리는 섬세한 감각을 보유하고 있습니다.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <h3>🤝 사회성 및 인간관계 <i class="faq-toggle bi bi-chevron-right"></i></h3>
+                                    <div class="faq-content">
+                                        <p class="small text-white-50 mb-2">유형: [[${u.socialSkillResultType}]]</p>
+                                        <p th:if="${u.socialSkillPoint >= 50}" class="mb-0">직설적이고 명확한 의사소통을 선호합니다. 갈등 상황에서 감정보다는 해결책을 제시하는 리더십을 발휘하며, 넓고 얕은 관계보다 목적이 분명한 관계에 능숙합니다.</p>
+                                        <p th:if="${u.socialSkillPoint < 50}" class="mb-0">주변 분위기를 빠르게 파악하고 조화를 이끌어내는 능력이 탁월합니다. 타인의 감정에 깊이 공감하며 지지해 주는 '힐러' 역할을 자처하며 따뜻한 유대감을 형성합니다.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <h3>🧠 내면 및 감정 처리 <i class="faq-toggle bi bi-chevron-right"></i></h3>
+                                    <div class="faq-content">
+                                        <p class="small text-white-50 mb-2">유형: [[${u.innerTendencyResultType}]]</p>
+                                        <p th:if="${u.innerTendencyPoint >= 50}" class="mb-0">본인의 감정을 객관적으로 바라보고 다스리는 능력이 뛰어납니다. 외부의 비판이나 스트레스 상황에서도 흔들리지 않는 내면의 중심을 가지고 있으며, 사적인 감정보다는 원칙과 약속을 중시합니다.</p>
+                                        <p th:if="${u.innerTendencyPoint < 50}" class="mb-0">풍부한 감수성과 공감 능력을 바탕으로 세상을 바라봅니다. 작은 자극에도 깊은 영감을 얻으며, 본인만의 내면 세계가 매우 견고합니다. 감정적인 안정을 삶의 가장 중요한 가치로 생각합니다.</p>
+                                    </div>
+                                </div>
+                                <div class="faq-item">
+                                    <h3>🔥 야망 및 인생 태도 <i class="faq-toggle bi bi-chevron-right"></i></h3>
+                                    <div class="faq-content">
+                                        <p class="small text-white-50 mb-2">유형: [[${u.ambitionResultType}]]</p>
+                                        <p th:if="${u.ambitionPoint >= 50}" class="mb-0">성취가 곧 행복인 분입니다. 높은 목표를 설정하고 이를 쟁취하기 위해 스스로를 채찍질하는 데 거리낌이 없습니다. 사회적 지위와 성공을 향한 열망이 매우 강합니다.</p>
+                                        <p th:if="${u.ambitionPoint < 50}" class="mb-0">현재의 행복과 소중한 사람들과의 관계에서 의미를 찾습니다. 물질적 성공보다는 정신적 풍요와 일상의 평화를 소중히 여기며, 본인만의 속도로 삶을 즐기는 여유가 있습니다.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- 2. 외적 스타일 -->
-                        <div class="faq-item" data-aos="fade-up">
-                            <h3>😎 외적 스타일 및 자기관리 > [[${u.styleSelfcareResultType}]]</h3>
-                            <div class="faq-content">
-                                <p th:if="${u.styleSelfcarePoint >= 50}">실용성과 효율을 극대화하는 스타일을 추구합니다. 불필요한 장식보다는 기능적인 코디를 선호하며, 자기관리 역시 명확한 목표 지향적으로 실천합니다.</p>
-                                <p th:if="${u.styleSelfcarePoint < 50}">본인만의 심미안이 뚜렷하며 자신을 가꾸는 과정 자체에서 행복을 느낍니다. 트렌드에 민감하면서도 디테일한 포인트를 살리는 섬세한 감각을 보유하고 있습니다.</p>
+                        <!-- 다른 결과 유형 섹션 -->
+                        <div class="text-start mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div style="width: 4px; height: 20px; background: #ffc107; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">다른 유형도 궁금하신가요?</h5>
                             </div>
-                            <i class="faq-toggle bi bi-chevron-right"></i>
+                            <div class="row row-cols-2 row-cols-md-4 g-3">
+                                <div class="col">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                        <div class="p-2">
+                                            <img th:src="@{/assets/img/egenTeto/tetoNamImg.webp}" class="img-fluid rounded-3 mb-2" alt="테토남" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                                            <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">테토남</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                        <div class="p-2">
+                                            <img th:src="@{/assets/img/egenTeto/egenNamImg.webp}" class="img-fluid rounded-3 mb-2" alt="에겐남" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                                            <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">에겐남</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                        <div class="p-2">
+                                            <img th:src="@{/assets/img/egenTeto/tetoNuImg.webp}" class="img-fluid rounded-3 mb-2" alt="테토녀" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                                            <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">테토녀</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                        <div class="p-2">
+                                            <img th:src="@{/assets/img/egenTeto/egenNuImg.webp}" class="img-fluid rounded-3 mb-2" alt="에겐녀" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                                            <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">에겐녀</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- 3. 사회성 -->
-                        <div class="faq-item" data-aos="fade-up">
-                            <h3>🤝 사회성 및 인간관계 > [[${u.socialSkillResultType}]]</h3>
-                            <div class="faq-content">
-                                <p th:if="${u.socialSkillPoint >= 50}">직설적이고 명확한 의사소통을 선호합니다. 갈등 상황에서 감정보다는 해결책을 제시하는 리더십을 발휘하며, 넓고 얕은 관계보다 목적이 분명한 관계에 능숙합니다.</p>
-                                <p th:if="${u.socialSkillPoint < 50}">주변 분위기를 빠르게 파악하고 조화를 이끌어내는 능력이 탁월합니다. 타인의 감정에 깊이 공감하며 지지해 주는 '힐러' 역할을 자처하며 따뜻한 유대감을 형성합니다.</p>
-                            </div>
-                            <i class="faq-toggle bi bi-chevron-right"></i>
-                        </div>
-
-                        <!-- 4. 내면 성향 -->
-                        <div class="faq-item" data-aos="fade-up">
-                            <h3>🧠 내면 성향 및 감정 처리 > [[${u.innerTendencyResultType}]]</h3>
-                            <div class="faq-content">
-                                <p th:if="${u.innerTendencyPoint >= 50}">본인의 감정을 객관적으로 바라보고 다스리는 능력이 뛰어납니다. 외부의 비판이나 스트레스 상황에서도 흔들리지 않는 내면의 중심을 가지고 있으며, 사적인 감정보다는 원칙과 약속을 중시합니다.</p>
-                                <p th:if="${u.innerTendencyPoint < 50}">풍부한 감수성과 공감 능력을 바탕으로 세상을 바라봅니다. 작은 자극에도 깊은 영감을 얻으며, 본인만의 내면 세계가 매우 견고합니다. 감정적인 안정을 삶의 가장 중요한 가치로 생각합니다.</p>
-                            </div>
-                            <i class="faq-toggle bi bi-chevron-right"></i>
-                        </div>
-
-                        <!-- 5. 야망 -->
-                        <div class="faq-item" data-aos="fade-up">
-                            <h3>🔥 야망 및 인생 태도 > [[${u.ambitionResultType}]]</h3>
-
-                            <div class="faq-content">
-                                <p th:if="${u.ambitionPoint >= 50}">성취가 곧 행복인 분입니다. 높은 목표를 설정하고 이를 쟁취하기 위해 스스로를 채찍질하는 데 거리낌이 없습니다. 사회적 지위와 성공을 향한 열망이 매우 강합니다.</p>
-                                <p th:if="${u.ambitionPoint < 50}">현재의 행복과 소중한 사람들과의 관계에서 의미를 찾습니다. 물질적 성공보다는 정신적 풍요와 일상의 평화를 소중히 여기며, 본인만의 속도로 삶을 즐기는 여유가 있습니다.</p>
-                            </div>
-                            <i class="faq-toggle bi bi-chevron-right"></i>
+                        <!-- 액션 버튼 영역 -->
+                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-3">
+                            <a th:href="@{/egenTeto/select}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm btn-result-action">
+                                <i class="bi bi-arrow-repeat me-1"></i> 다시 하기
+                            </a>
+                            <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-share-fill me-1"></i> 공유하기
+                            </button>
+                            <a href="/" class="btn btn-link text-white-50 text-decoration-none w-100 mt-2 small">
+                                <i class="bi bi-house-door me-1"></i> 메인으로 돌아가기
+                            </a>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- 하단 액션 버튼 -->
-            <div class="container pb-5 text-center" data-aos="fade-up">
-                <div class="d-flex flex-wrap justify-content-center gap-3">
-                    <a th:href="@{/egenTeto/select}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
-                        <i class="bi bi-arrow-repeat"></i> 다시하기
-                    </a>
-                    <!-- <button onclick="saveImage()" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
-                        <i class="bi bi-download"></i> 결과 이미지 저장
-                    </button> -->
-                    <a href="/" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow">
-                        <i class="bi bi-grid-fill"></i> 다른 테스트 보기
-                    </a>
-                    <button onclick="copyLinkAction()" class="btn btn-info rounded-pill px-4 py-2 fw-bold shadow text-white">
-                        <i class="bi bi-link-45deg"></i> 링크 공유
+                <!-- 디버그 정보 (미리보기 모드에서 더 유용함) -->
+                <div class="mt-5 text-center pb-5">
+                    <button class="btn btn-sm btn-outline-secondary opacity-50" type="button" data-bs-toggle="collapse" data-bs-target="#debugInfo">
+                        <i class="bi bi-bug-fill me-1"></i> 점수 계산 상세 내역 (Debug)
                     </button>
-                    <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-4 py-2 fw-bold shadow text-dark" style="background-color: #FEE500; border: none;">
-                        <i class="bi bi-chat-fill"></i> 카톡 공유
-                    </button>
+                    <div th:class="${isPreview} ? 'collapse show mt-3' : 'collapse mt-3'" id="debugInfo">
+                        <div class="card card-body bg-dark text-white border-secondary small text-start mx-auto" style="max-width: 800px; border-radius: 20px; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(10px);">
+                            <h6 class="fw-bold mb-3 text-info d-flex justify-content-between">
+                                <span><i class="bi bi-calculator me-1"></i> 도메인별 점수 상세 내역</span>
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark-custom table-hover mb-0 align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>도메인</th>
+                                            <th class="text-center">유형</th>
+                                            <th class="text-center">점수 (T)</th>
+                                            <th class="text-center">점수 (E)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>스타일 및 자기관리</td>
+                                            <td class="text-center" th:text="${userBroker.styleSelfcareResultType}">유형</td>
+                                            <td class="text-center fw-bold text-teto">[[${userBroker.styleSelfcarePoint}]]</td>
+                                            <td class="text-center fw-bold text-egen">[[${100 - userBroker.styleSelfcarePoint}]]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>사회성 및 인간관계</td>
+                                            <td class="text-center" th:text="${userBroker.socialSkillResultType}">유형</td>
+                                            <td class="text-center fw-bold text-teto">[[${userBroker.socialSkillPoint}]]</td>
+                                            <td class="text-center fw-bold text-egen">[[${100 - userBroker.socialSkillPoint}]]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>내면 및 감정 처리</td>
+                                            <td class="text-center" th:text="${userBroker.innerTendencyResultType}">유형</td>
+                                            <td class="text-center fw-bold text-teto">[[${userBroker.innerTendencyPoint}]]</td>
+                                            <td class="text-center fw-bold text-egen">[[${100 - userBroker.innerTendencyPoint}]]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>야망 및 인생 태도</td>
+                                            <td class="text-center" th:text="${userBroker.ambitionResultType}">유형</td>
+                                            <td class="text-center fw-bold text-teto">[[${userBroker.ambitionPoint}]]</td>
+                                            <td class="text-center fw-bold text-egen">[[${100 - userBroker.ambitionPoint}]]</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
+    </main>
 
-        <!-- 스크립트 로직 -->
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-            const u = /*[[${userBroker}]]*/ null;
-            const fullUrl = /*[[${fullUrl}]]*/ '';
-            const shareUrl = /*[[${shareUrl}]]*/ '';
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const u = /*[[${userBroker}]]*/ null;
+        const shareUrl = /*[[${shareUrl}]]*/ '';
 
-            // 1. 이미지 저장 (html2canvas)
-            async function saveImage() {
-                const target = document.getElementById('result-card');
-                const canvas = await html2canvas(target, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-                const link = document.createElement('a');
-                link.download = `egen-teto-result-${u.userNo}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+        function copyLinkAction() {
+            const url = shareUrl || window.location.href;
+            navigator.clipboard.writeText(url).then(function() {
+                const toast = document.getElementById("copyToast");
+                toast.className = "show";
+                setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!u) return;
+            
+            // 그래프 시각화 로직
+            const topPercent = u.topPercent;
+            const isTeto = u.teto;
+            let offset = (50 - topPercent) * 1.92; 
+            let userScore = isTeto ? -offset : offset;
+            
+            const mean = 0;
+            const stdDev = 37;
+
+            function normalPDF(x, m, s) {
+                return (1 / (s * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - m) / s, 2));
             }
 
-            // 2. 결과 링크 복사 (밸런스 게임 스타일)
-            function copyLinkAction() {
-                const url = shareUrl || window.location.href;
-                
-                navigator.clipboard.writeText(url).then(function() {
-                    const toast = document.getElementById("copyToast");
-                    toast.className = "show";
-                    setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-                }).catch(function(err) {
-                    // 구형 브라우저 대응 (폴백)
-                    const textArea = document.createElement("textarea");
-                    textArea.value = url;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    
-                    const toast = document.getElementById("copyToast");
-                    toast.className = "show";
-                    setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-                });
+            const chartData = [];
+            for (let x = -100; x <= 100; x += 2) {
+                chartData.push([x, normalPDF(x, mean, stdDev)]);
             }
 
-            // 3. 카카오 공유 (임시 알림 처리 - Kakao SDK 연동 필요 시 가이드 제공)
-            function shareKakaoAction() {
-                alert('카카오톡 공유 기능을 연동하시려면 Kakao JavaScript SDK 키가 필요합니다. 현재는 링크 복사로 대체됩니다.');
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    document.querySelector('.copyMessage').style.display = 'block';
-                    setTimeout(() => { document.querySelector('.copyMessage').style.display = 'none'; }, 2000);
-                });
-            }
-
-            // 3. Highcharts - 정규분포 그래프 및 분석 연출
-            document.addEventListener('DOMContentLoaded', function() {
-                // 전역 showLoading 호출 (1.8초 뒤 자동 종료)
-                // showLoading(1.8, '결과 분석중입니다.', '데이터를 바탕으로 당신의 성향을 분석하고 있습니다...');
-
-                if (!u) return;
-                
-                // 유저의 백분위에 따른 시각적 좌표 재계산 (표준 분포상의 위치 매핑)
-                const topPercent = u.topPercent; // 상위 1% ~ 50%
-                const isTeto = u.teto;
-                
-                // 50%일 때 0(중앙), 1%일 때 약 95(개별 극단)가 되도록 매핑
-                // 공식: (50 - 상위%) * 계수
-                let offset = (50 - topPercent) * 1.92; 
-                let displayPosition = isTeto ? -offset : offset; // 테토는 왼쪽(-), 에겐은 오른쪽(+)
-                
-                const userScore = displayPosition;
-                
-                // 그래프 형태 고정용 상수 (중앙 0, 표준편차 30으로 범위 확장 대응)
-                const mean = 0;
-                const stdDev = 37;
-
-                // 정규분포 확률 밀도 함수 (PDF)
-                function normalPDF(x, m, s) {
-                    return (1 / (s * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - m) / s, 2));
-                }
-
-                // 그래프 데이터 생성 (-100 ~ 100 점수 범위)
-                const chartData = [];
-                for (let x = -100; x <= 100; x += 2) {
-                    chartData.push([x, normalPDF(x, mean, stdDev)]);
-                }
-
-                Highcharts.chart('chartContainer', {
-                    chart: { type: 'area', backgroundColor: 'transparent', height: 200 },
-                    title: { text: '' },
-                    xAxis: {
-                        min: -100, max: 100,
-                        labels: { enabled: false }, 
-                        tickWidth: 0, 
-                        lineWidth: 0,
-                        plotLines: [{
-                            color: u.teto ? '#3876f2' : '#de66e9', 
-                            width: 3, 
-                            value: userScore, 
-                            zIndex: 5,
-                            label: { 
-                                text: '', 
-                                align: 'center'
-                            }
-                        }]
-                    },
-                    yAxis: { labels: { enabled: false }, title: { text: '' }, gridLineWidth: 0 },
-                    credits: { enabled: false },
-                    tooltip: { enabled: false },
-
-                    legend: { enabled: false },
-                    plotOptions: {
-                        area: {
-                            fillColor: {
-                                linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
-                                stops: [
-                                    [0, '#3876f2'],  // 왼쪽 테토
-                                    [1, '#de66e9']   // 오른쪽 에겐
-                                ]
-                            },
-                            lineWidth: 1,
-                            lineColor: 'rgba(255, 255, 255, 0.5)',
-                            marker: { enabled: false },
-                            enableMouseTracking: false,
-                            states: {
-                                hover: {
-                                    enabled: false
-                                }
-                            }
-                        }
-                    },
-                    series: [{
-                        name: '성향 분포',
-                        data: chartData
+            Highcharts.chart('chartContainer', {
+                chart: { type: 'area', backgroundColor: 'transparent', height: 200 },
+                title: { text: '' },
+                xAxis: {
+                    min: -100, max: 100,
+                    labels: { enabled: false }, tickWidth: 0, lineWidth: 0,
+                    plotLines: [{
+                        color: u.teto ? '#3876f2' : '#de66e9', 
+                        width: 3, value: userScore, zIndex: 5
                     }]
-                });
+                },
+                yAxis: { labels: { enabled: false }, title: { text: '' }, gridLineWidth: 0 },
+                credits: { enabled: false },
+                tooltip: { enabled: false },
+                legend: { enabled: false },
+                plotOptions: {
+                    area: {
+                        fillColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
+                            stops: [ [0, '#3876f2'], [1, '#de66e9'] ]
+                        },
+                        lineWidth: 1, lineColor: 'rgba(255, 255, 255, 0.5)',
+                        marker: { enabled: false }, enableMouseTracking: false
+                    }
+                },
+                series: [{ name: '성향 분포', data: chartData }]
+            });
 
-                // FAQ 토글 핸들러
-                document.querySelectorAll('.faq-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        item.classList.toggle('faq-active');
-                    });
+            // FAQ 토글 핸들러 (부드러운 애니메이션을 위해 scrollHeight 사용)
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const header = item.querySelector('h3');
+                const content = item.querySelector('.faq-content');
+                
+                // 초기 상태 확인 (faq-active가 있는 경우)
+                if (item.classList.contains('faq-active')) {
+                    content.style.maxHeight = (content.scrollHeight + 15) + "px";
+                }
+
+                header.addEventListener('click', () => {
+                    const isActive = item.classList.contains('faq-active');
+                    
+                    if (isActive) {
+                        content.style.maxHeight = null;
+                        item.classList.remove('faq-active');
+                    } else {
+                        content.style.maxHeight = (content.scrollHeight + 15) + "px";
+                        item.classList.add('faq-active');
+                    }
                 });
             });
-            /*]]>*/
-        </script>
-    </main>
+        });
+        /*]]>*/
+    </script>
 </body>
 
 </html>

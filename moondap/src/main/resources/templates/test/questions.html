@@ -106,7 +106,7 @@
             `;
             
             // UI 상태 업데이트
-            const progress = ((index + 1) / questionsRaw.length) * 100;
+            const progress = (index / questionsRaw.length) * 100;
             progressBar.style.width = `${progress}%`;
             qNumberSpan.innerText = `${index + 1} / ${questionsRaw.length}`;
             prevBtn.style.display = index > 0 ? 'block' : 'none';
@@ -125,6 +125,10 @@
                 icon.classList.remove('bi-circle');
                 icon.classList.add('bi-check-circle-fill');
             }
+
+            // 클릭 시 프로그레스 바 채우기
+            const nextProgress = ((qIdx + 1) / questionsRaw.length) * 100;
+            progressBar.style.width = `${nextProgress}%`;
             
             setTimeout(() => {
                 if (qIdx < questionsRaw.length - 1) {

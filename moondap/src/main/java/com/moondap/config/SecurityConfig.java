@@ -6,11 +6,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import com.moondap.config.auth.CustomAuthFailureHandler;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
-@lombok.RequiredArgsConstructor
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Bean
@@ -19,7 +21,7 @@ public class SecurityConfig {
 	    return new BCryptPasswordEncoder();
 	}
 
-    private final com.moondap.config.auth.CustomAuthFailureHandler customAuthFailureHandler;
+    private final CustomAuthFailureHandler customAuthFailureHandler;
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

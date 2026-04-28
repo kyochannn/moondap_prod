@@ -69,18 +69,25 @@
                             </div>
                         </div>
 
-                        <!-- 처방전 섹션 -->
-                        <div class="text-start mb-4">
+                        <!-- 다른 결과 유형 섹션 -->
+                        <div class="text-start mb-4" th:if="${test.results != null and !#lists.isEmpty(test.results)}">
                             <div class="d-flex align-items-center mb-3">
                                 <div style="width: 4px; height: 20px; background: #ffc107; border-radius: 2px; margin-right: 12px;"></div>
-                                <h5 class="fw-bold text-white mb-0">문답의 마음 처방전</h5>
+                                <h5 class="fw-bold text-white mb-0">다른 유형도 궁금하신가요?</h5>
                             </div>
-                            <div class="prescription-box">
-                                <p class="text-white-50 small mb-0">
-                                    <i class="bi bi-lightbulb-fill text-warning me-2"></i>
-                                    이 결과는 당신의 일면일 뿐입니다. 오늘 하루는 스스로를 더 아껴보는 건 어떨까요? <br class="d-none d-md-block">
-                                    가장 소중한 건 타인의 시선이 아닌 당신의 마음입니다.
-                                </p>
+                            <div class="row row-cols-2 row-cols-md-4 g-3">
+                                <div class="col" th:each="res : ${test.results}">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" 
+                                         style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                        <div class="p-2">
+                                            <img th:src="${res.resultImage != null and res.resultImage != ''} ? @{'/uploads/' + ${res.resultImage}} : @{/assets/img/default-img/default-content-img.png}" 
+                                                 class="img-fluid rounded-3 mb-2" alt="결과 이미지" 
+                                                 style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                                            <h6 class="fw-bold text-white mb-0 small" th:text="${res.resultTitle}" 
+                                                style="word-break: keep-all; font-size: 0.8rem; line-height: 1.2;">유형 이름</h6>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -111,9 +118,9 @@
                                 <span class="text-white-50" style="font-size: 0.7rem;">* R: 역채점 문항</span>
                             </h6>
                             <div class="table-responsive">
-                                <table class="table table-dark table-sm mb-0 align-middle" style="font-size: 0.85rem; --bs-table-bg: transparent;">
+                                <table class="table table-dark-custom table-hover mb-0 align-middle">
                                     <thead>
-                                        <tr class="text-white-50 border-secondary">
+                                        <tr>
                                             <th style="width: 40px;">#</th>
                                             <th>질문 문구</th>
                                             <th class="text-center" style="width: 80px;">선택값</th>
@@ -121,8 +128,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr th:each="item, stat : ${result.breakdown}" class="border-secondary">
-                                            <td th:text="${stat.count}" class="text-white-50">1</td>
+                                        <tr th:each="item, stat : ${result.breakdown}">
+                                            <td th:text="${stat.count}" class="text-white">1</td>
                                             <td>
                                                 <span th:text="${item.questionText}">질문</span>
                                                 <span th:if="${item.isReverse}" class="badge bg-danger ms-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span>

@@ -14,12 +14,21 @@
   <link th:href="@{/assets/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
 
   <link th:href="@{/assets/css/main.css}" rel="stylesheet">
-    
-  <!-- =======================================================
-  * Template Name: Clarity
-  * Template URL: https://bootstrapmade.com/clarity-bootstrap-agency-template/
-  * Updated: Sep 13 2025 with Bootstrap v5.3.8
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+
+  <script>
+    /**
+     * Global Image Error Handler
+     * 페이지 상단에서 즉시 실행되어, 모든 이미지 로딩 실패를 감지하고 기본 이미지로 교체합니다.
+     * (main.js보다 먼저 실행되어야 모든 이미지를 안정적으로 추적할 수 있습니다.)
+     */
+    window.addEventListener('error', function(e) {
+      if (e.target.tagName === 'IMG') {
+        const defaultImg = '/assets/img/default-img/default-content-img.png';
+        // 무한 루프 방지: 현재 소스가 기본 이미지가 아닐 때만 실행
+        if (e.target.src && e.target.src.indexOf(defaultImg) === -1) {
+          e.target.src = defaultImg;
+        }
+      }
+    }, true);
+  </script>
 </th:block>

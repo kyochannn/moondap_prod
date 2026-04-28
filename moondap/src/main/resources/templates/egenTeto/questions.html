@@ -131,7 +131,7 @@
             `;
             
             // UI 상태 업데이트
-            const progress = ((index + 1) / questions.length) * 100;
+            const progress = (index / questions.length) * 100;
             progressBar.style.width = `${progress}%`;
             qNumberSpan.innerText = `${index + 1} / ${questions.length}`;
             prevBtn.style.display = 'block'; // 항상 노출
@@ -150,6 +150,10 @@
                 icon.classList.remove('bi-circle');
                 icon.classList.add('bi-check-circle-fill');
             }
+
+            // 클릭 시 프로그레스 바 채우기
+            const nextProgress = ((qIdx + 1) / questions.length) * 100;
+            progressBar.style.width = `${nextProgress}%`;
             
             // 다음 질문으로 이동 (약간의 선택 지연 효과)
             setTimeout(() => {
