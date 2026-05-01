@@ -240,3 +240,39 @@ function hideLoading() {
     overlay.classList.remove('active');
   }
 }
+
+/**
+ * 전역 클립보드 복사 함수 (Safari 및 레거시 대응)
+ * @param {string} text - 복사할 텍스트
+ * @param {function} successCallback - 성공 시 실행할 함수 (예: 토스트 보여주기)
+ */
+function copyToClipboard(text, successCallback) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      if (successCallback) successCallback();
+    }).catch(err => {
+      fallbackCopyToClipboard(text, successCallback);
+    });
+  } else {
+    fallbackCopyToClipboard(text, successCallback);
+  }
+}
+
+function fallbackCopyToClipboard(text, successCallback) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  // 텍스트 영역을 보이지 않게 처리
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  textArea.style.top = "0";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    const successful = document.execCommand('copy');
+    if (successful && successCallback) successCallback();
+  } catch (err) {
+    console.error('Fallback: Unable to copy', err);
+  }
+  document.body.removeChild(textArea);
+}

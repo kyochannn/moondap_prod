@@ -163,6 +163,10 @@
 			// 세션에 저장되어있는 검색 조건
 			let listCategory = localStorage.getItem('moondap_balancegame_category');
 			let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter');
+			
+			// null 체크 및 기본값 설정
+			if (!listCategory || listCategory === 'null') listCategory = 'all';
+			if (!listSpicyFilter || listSpicyFilter === 'null') listSpicyFilter = '1';
 
 			location.href = '/balanceGame/selectBalanceGameView?spicyFilter=' + listSpicyFilter + '&category=' + listCategory;
 		}

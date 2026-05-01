@@ -63,9 +63,44 @@
                                 <h5 class="fw-bold text-white mb-0">상세 분석 리포트</h5>
                             </div>
                             <div class="analysis-box">
-                                <p class="text-white-50 mb-0 analysis-text" th:text="${result.resultContent}">
+                                <p class="text-white mb-0 analysis-text" th:text="${result.resultContent}">
                                     상세 분석 내용이 출력됩니다.
                                 </p>
+                            </div>
+                        </div>
+
+                        <!-- 점수 계산 상세 내역 (Debug) -->
+                        <div class="text-start mb-5">
+                            <div class="d-flex align-items-center mb-3">
+                                <div style="width: 4px; height: 20px; background: #0dcaf0; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">📊 점수 계산 상세 내역</h5>
+                            </div>
+                            <div class="card card-body bg-dark text-white border-0 small text-start p-0" style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important;">
+                                <div class="table-responsive">
+                                    <table class="table table-dark-custom table-hover mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 35px;">#</th>
+                                                <th>질문 문구</th>
+                                                <th class="text-center" style="width: 50px;">선택</th>
+                                                <th class="text-center" style="width: 50px;">점수</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="item, stat : ${result.breakdown}">
+                                                <td th:text="${stat.count}" class="text-white">1</td>
+                                                <td>
+                                                    <span th:text="${item.questionText}">질문</span>
+                                                    <span th:if="${item.isReverse}" class="badge bg-danger ms-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span>
+                                                </td>
+                                                <td class="text-center" th:text="${item.originalAnswer}">3</td>
+                                                <td class="text-center fw-bold text-warning">
+                                                    <span th:text="${item.finalScore}">3</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 
@@ -106,45 +141,6 @@
                     </div>
                 </div>
 
-                <!-- 디버그 정보 (미리보기 모드에서 더 유용함) -->
-                <div class="mt-5 text-center pb-5">
-                    <button class="btn btn-sm btn-outline-secondary opacity-50" type="button" data-bs-toggle="collapse" data-bs-target="#debugInfo">
-                        <i class="bi bi-bug-fill me-1"></i> 문항별 점수 계산 분석 (Debug)
-                    </button>
-                    <div th:class="${isPreview} ? 'collapse show mt-3' : 'collapse mt-3'" id="debugInfo">
-                        <div class="card card-body bg-dark text-white border-secondary small text-start mx-auto" style="max-width: 800px; border-radius: 20px; background: rgba(0,0,0,0.4) !important; backdrop-filter: blur(10px);">
-                            <h6 class="fw-bold mb-3 text-info d-flex justify-content-between">
-                                <span><i class="bi bi-calculator me-1"></i> 점수 계산 상세 내역</span>
-                                <span class="text-white-50" style="font-size: 0.7rem;">* R: 역채점 문항</span>
-                            </h6>
-                            <div class="table-responsive">
-                                <table class="table table-dark-custom table-hover mb-0 align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px;">#</th>
-                                            <th>질문 문구</th>
-                                            <th class="text-center" style="width: 80px;">선택값</th>
-                                            <th class="text-center" style="width: 80px;">계산점수</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="item, stat : ${result.breakdown}">
-                                            <td th:text="${stat.count}" class="text-white">1</td>
-                                            <td>
-                                                <span th:text="${item.questionText}">질문</span>
-                                                <span th:if="${item.isReverse}" class="badge bg-danger ms-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span>
-                                            </td>
-                                            <td class="text-center" th:text="${item.originalAnswer}">3</td>
-                                            <td class="text-center fw-bold text-warning">
-                                                <span th:text="${item.finalScore}">3</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
     </main>
@@ -172,7 +168,7 @@
 
         function copyLinkAction() {
             const shareUrl = /*[[${shareUrl}]]*/ window.location.href;
-            navigator.clipboard.writeText(shareUrl).then(() => {
+            copyToClipboard(shareUrl, () => {
                 const toast = document.getElementById("copyToast");
                 toast.className = "show";
                 setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);

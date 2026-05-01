@@ -150,7 +150,7 @@
 
         function copyLinkAction() {
             const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
+            copyToClipboard(url, () => {
                 const toast = document.getElementById("copyToast");
                 toast.className = "show";
                 setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
