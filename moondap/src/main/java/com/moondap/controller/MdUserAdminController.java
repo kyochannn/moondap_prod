@@ -53,9 +53,21 @@ public class MdUserAdminController {
     public ResponseEntity<?> deleteUser(@PathVariable("username") String username) {
         try {
             userService.deleteUser(username);
-            return ResponseEntity.ok(Map.of("success", true, "message", "사용자가 삭제되었습니다."));
+            return ResponseEntity.ok(Map.of("success", true, "message", "사용자 처리가 완료되었습니다."));
         } catch (Exception e) {
             log.error("사용자 삭제 오류", e);
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/suspend/{username}")
+    @ResponseBody
+    public ResponseEntity<?> toggleSuspend(@PathVariable("username") String username) {
+        try {
+            userService.toggleSuspend(username);
+            return ResponseEntity.ok(Map.of("success", true, "message", "사용자 상태가 변경되었습니다."));
+        } catch (Exception e) {
+            log.error("사용자 정지 오류", e);
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }

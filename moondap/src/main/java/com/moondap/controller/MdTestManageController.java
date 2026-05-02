@@ -51,17 +51,29 @@ public class MdTestManageController {
     }
 
     // ─── 테스트 생성 ───────────────────────────────────────────
-
-    @GetMapping("/new")
-    public String testNewForm(Model model) {
+    
+    // [신규] 테이블 기반 등록 페이지 (표준) - 모바일 접속 시 자동 리다이렉트
+    @GetMapping("/insertTestView")
+    public String insertTestView(@RequestHeader(value = "User-Agent", required = false) String userAgent, Model model) {
+        if (userAgent != null && (userAgent.contains("Mobi") || userAgent.contains("Android") || userAgent.contains("iPhone"))) {
+            return "redirect:/test/manage/insertTestMobileView";
+        }
         model.addAttribute("test", new MdTestDTO());
         model.addAttribute("categories", categoryService.getActiveCategories());
-        return "admin/test/insertTestForm";
+        return "admin/test/insertTestView";
     }
 
-    @PostMapping("/create")
+    // [기존] 단계별(Wizard) 등록 페이지 (모바일 최적화)
+    @GetMapping("/insertTestMobileView")
+    public String insertTestMobileView(Model model) {
+        model.addAttribute("test", new MdTestDTO());
+        model.addAttribute("categories", categoryService.getActiveCategories());
+        return "admin/test/insertTestMobileView";
+    }
+
+    @PostMapping("/insert")
     @ResponseBody
-    public ResponseEntity<?> testCreate(
+    public ResponseEntity<?> testInsert(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @ModelAttribute MdTestDTO dto,
             @RequestParam(value = "resultsJson", required = false) String resultsJson,

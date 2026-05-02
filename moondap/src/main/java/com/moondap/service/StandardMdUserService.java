@@ -185,8 +185,30 @@ public class StandardMdUserService {
 	public void deleteUser(String username) {
 		MdUserDTO user = mdUserMapper.selectUserName(username);
 		if (user != null) {
+			// 이미 탈퇴(DELETED) 상태라면 진짜로 DB에서 삭제 (Hard Delete)
+			if ("DELETED".equals(user.getStatus())) {
+				mdUserMapper.deleteUserByUsername(username);
+			} else {
+				// 그렇지 않으면 탈퇴 상태로만 변경 (Soft Delete)
 				user.setStatus("DELETED");
 				mdUserMapper.updateUser(user);
+			}
+		}
+	}
+
+	/**
+	 * [Admin] 사용자 정지/해제 토글
+	 */
+	@Transactional
+	public void toggleSuspend(String username) {
+		MdUserDTO user = mdUserMapper.selectUserName(username);
+		if (user != null) {
+			if ("SUSPENDED".equals(user.getStatus())) {
+				user.setStatus("ACTIVE");
+			} else {
+				user.setStatus("SUSPENDED");
+			}
+			mdUserMapper.updateUser(user);
 		}
 	}
 
