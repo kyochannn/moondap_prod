@@ -35,6 +35,12 @@
                             <div>
                                 <p class="text-white-50 small mb-0">테스트 관리</p>
                                 <h5 class="fw-bold text-white mb-0">테스트 정보 수정</h5>
+                                <p class="text-white-50 small mb-0 mt-1" style="font-size: 0.7rem;">
+                                    <i class="bi bi-pc-display me-1"></i> 이 페이지는 PC 환경에 최적화되어 있습니다.
+                                    <a th:href="@{/admin/test/{id}/edit(id=${test.id})}" class="ms-2 text-info text-decoration-none fw-bold">
+                                        <i class="bi bi-phone me-1"></i> 모바일 버전으로 전환
+                                    </a>
+                                </p>
                             </div>
                         </div>
                         <div class="header-action-group d-flex gap-2">
@@ -386,7 +392,7 @@
             });
 
             // [추가] 텍스트 영역 높이 자동 조절
-            $(document).on('input', '.q-text, .r-content', function() {
+            $(document).on('input', '.q-text, .r-content, textarea[name="description"]', function() {
                 autoExpand(this);
             });
         });
@@ -414,15 +420,15 @@
             if (testType === 'SCORE') {
                 $scoreCols.show();
                 $domainCols.hide(); // 점수형: 도메인 매칭 숨김
-                $reverseCols.show(); // 점수형: 역채점 표시
                 $table.css('min-width', '1100px');
                 reindexRows('result');
             } else {
                 $scoreCols.hide();
                 $domainCols.show(); // 유형형: 도메인 매칭 표시
-                $reverseCols.hide(); // 유형형: 역채점 숨김
                 $table.css('min-width', '900px');
             }
+            // 역채점은 모든 유형에서 공통 사용 가능하므로 항상 표시
+            $reverseCols.show();
         }
 
         /* ── 행 추가/삭제 로직 ── */

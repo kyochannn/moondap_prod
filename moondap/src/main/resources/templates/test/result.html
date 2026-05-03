@@ -6,6 +6,32 @@
     <meta charset="UTF-8">
     <title th:text="'테스트 결과 - ' + ${test.title}">테스트 결과</title>
     <link th:href="@{/assets/css/testResult-page.css}" rel="stylesheet">
+    <style>
+        .table-info-highlight {
+            background: rgba(13, 202, 240, 0.1) !important;
+            border-left: 4px solid #0dcaf0 !important;
+        }
+        .pulse-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pulse-badge::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #0dcaf0;
+            border-radius: 50%;
+            animation: rippleEffect 2s infinite;
+            pointer-events: none;
+        }
+        @keyframes rippleEffect {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+    </style>
 </head>
 
 <body layout:fragment="content">
@@ -29,9 +55,11 @@
 
                     <div class="p-4 p-md-5 text-center">
                         <!-- 결과 이미지 -->
-                        <div class="position-relative d-inline-block mb-4">
-                            <img th:src="${result.resultImage != null} ? @{'/uploads/' + ${result.resultImage}} : '/assets/img/default-img/default-content-img.png'" 
-                                 class="img-fluid main-result-img shadow-lg">
+                        <div class="position-relative d-inline-block mb-4" style="width: 100%; max-width: 320px;">
+                            <img th:src="${result.resultImage != null and result.resultImage != ''} ? @{'/uploads/' + ${result.resultImage}} : '/assets/img/default-img/default-content-img.png'" 
+                                 class="img-fluid main-result-img shadow-lg"
+                                 style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border-radius: 25px; border: 2px solid rgba(255,255,255,0.1);"
+                                 onerror="this.onerror=null; this.src='/assets/img/default-img/default-content-img.png';">
                         </div>
 
                         <!-- 결과 타이틀 -->
@@ -44,7 +72,7 @@
                         <div th:if="${test.testType == 'SCORE'}" class="score-visualization mb-5">
                             <div class="d-flex justify-content-between align-items-end mb-2">
                                 <span class="text-white-50 small"><i class="bi bi-graph-up-arrow me-1"></i> 종합 점수</span>
-                                <span class="fw-bold text-primary fs-3"><span th:text="${result.calculatedScore}">0</span>%</span>
+                                <span class="fw-bold text-primary fs-3"><span th:text="${result.calculatedScore}">0</span>점</span>
                             </div>
                             <div class="progress score-progress">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated score-progress-bar" 
@@ -53,7 +81,7 @@
                                      th:attr="data-score=${result.calculatedScore}"
                                      id="scoreProgressBar"></div>
                             </div>
-                            <p class="mt-3 text-white-50 small mb-0">문항 분석을 통한 당신의 객관적인 수치입니다.</p>
+                            <p class="mt-3 text-white-50 small mb-0">문항 분석을 통한 객관적인 수치입니다.</p>
                         </div>
 
                         <!-- 상세 설명 (본문) -->
@@ -69,11 +97,24 @@
                             </div>
                         </div>
 
-                        <!-- 점수 계산 상세 내역 (Debug) -->
+                        <!-- 점수 계산 상세 내역 -->
                         <div class="text-start mb-5">
-                            <div class="d-flex align-items-center mb-3">
-                                <div style="width: 4px; height: 20px; background: #0dcaf0; border-radius: 2px; margin-right: 12px;"></div>
-                                <h5 class="fw-bold text-white mb-0">📊 점수 계산 상세 내역</h5>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div style="width: 4px; height: 20px; background: #0dcaf0; border-radius: 2px; margin-right: 12px;"></div>
+                                    <h5 class="fw-bold text-white mb-0">점수 계산 상세 내역</h5>
+                                </div>
+                                <span class="text-secondary" style="font-size: 0.75rem;">
+                                    <span class="badge bg-danger me-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span> 역채점 문항
+                                </span>
+                            </div>
+
+                            <div class="p-3 mb-3" style="background: rgba(0, 210, 255, 0.05); border-radius: 15px; border: 1px solid rgba(0, 210, 255, 0.1);">
+                                <p class="text-info small mb-0">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    선택하신 답변을 바탕으로 <strong>표준 성향 측정 방식</strong>에 따라 점수를 산출했습니다. 
+                                    역채점 문항(R)은 질문의 성격에 맞춰 점수가 자동으로 변환되었습니다.
+                                </p>
                             </div>
                             <div class="card card-body bg-dark text-white border-0 small text-start p-0" style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important;">
                                 <div class="table-responsive">
@@ -82,7 +123,7 @@
                                             <tr>
                                                 <th style="width: 35px;">#</th>
                                                 <th>질문 문구</th>
-                                                <th class="text-center" style="width: 50px;">선택</th>
+                                                <th class="text-center" style="width: 75px;">선택</th>
                                                 <th class="text-center" style="width: 50px;">점수</th>
                                             </tr>
                                         </thead>
@@ -93,7 +134,7 @@
                                                     <span th:text="${item.questionText}">질문</span>
                                                     <span th:if="${item.isReverse}" class="badge bg-danger ms-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span>
                                                 </td>
-                                                <td class="text-center" th:text="${item.originalAnswer}">3</td>
+                                                <td class="text-center" th:text="${item.originalAnswer == 5 ? '매우 그렇다' : (item.originalAnswer == 4 ? '그렇다' : (item.originalAnswer == 3 ? '보통이다' : (item.originalAnswer == 2 ? '그렇지 않다' : '매우 그렇지 않다')))}">보통이다</td>
                                                 <td class="text-center fw-bold text-warning">
                                                     <span th:text="${item.finalScore}">3</span>
                                                 </td>
@@ -102,6 +143,127 @@
                                     </table>
                                 </div>
                             </div>
+
+                            <!-- 나의 총점 및 유형 기준표 -->
+                                                         <!-- 나의 분석 요약 리포트 (SCORE/TYPE 공용) -->
+                             <div class="mt-4">
+
+                                 <!-- [Case 1] 점수 합산형 (SCORE) 요약 박스 -->
+                                 <div th:if="${test.testType == 'SCORE' and result.calculatedScore != null}" class="mb-3 p-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px;">
+                                     <div class="row align-items-center g-0">
+                                         <div class="col-6 border-end border-secondary border-opacity-25">
+                                             <div class="d-flex flex-column align-items-center justify-content-center">
+                                                 <small class="text-white-50 fw-bold mb-1" style="font-size: 0.75rem;">나의 답변 총점</small>
+                                                 <div class="text-white fw-bold fs-5">
+                                                     <span th:text="${#aggregates.sum(result.breakdown.![finalScore])}">0</span>
+                                                     <span class="text-white-50" style="font-size: 0.85rem;"> / <span th:text="${result.breakdown.size() * 5}">0</span></span>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         <div class="col-6">
+                                             <div class="d-flex flex-column align-items-center justify-content-center">
+                                                 <small class="text-warning fw-bold mb-1" style="font-size: 0.75rem;">100점 만점 환산 점수</small>
+                                                 <div class="d-flex align-items-baseline">
+                                                     <span class="text-warning fw-bold fs-5 me-1" th:text="${result.calculatedScore}">66</span>
+                                                     <span class="text-warning fw-bold" style="font-size: 0.9rem;">점</span>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="mt-3 pt-3 border-top border-secondary border-opacity-10 text-center">
+                                         <p class="text-white-50 mb-0" style="font-size: 0.7rem; word-break: keep-all;">
+                                             * 총 <span class="text-white fw-bold" th:text="${result.breakdown.size()}">0</span>개의 답변 점수를 합산한 뒤, 이를 <span class="text-white fw-bold">100점 만점</span> 기준으로 변환하여 성향을 분석했습니다.
+                                         </p>
+                                     </div>
+                                 </div>
+
+                                 <!-- [Case 2] 성향 유형형 (TYPE) 요약 박스 -->
+                                 <div th:if="${test.testType == 'TYPE'}" class="mb-4 p-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px;">
+                                     <div class="row align-items-center g-0">
+                                         <div class="col-4 border-end border-info border-opacity-25 text-center">
+                                             <small class="text-white-50 fw-bold d-block mb-1" style="font-size: 0.75rem;">총 답변 문항 수</small>
+                                             <div class="text-white fw-bold fs-5">
+                                                 <span th:text="${result.breakdown.size()}">0</span><span style="font-size: 0.8rem; margin-left: 2px;">개</span>
+                                             </div>
+                                         </div>
+                                         <div class="col-8 text-center">
+                                             <small class="text-info fw-bold d-block mb-1" style="font-size: 0.75rem;">나의 주요 성향 지표</small>
+                                             <div class="text-warning fw-bold fs-5" th:text="${result.resultTitle}">성향명</div>
+                                         </div>
+                                     </div>
+                                     <div class="mt-3 pt-3 border-top border-info border-opacity-10 text-center">
+                                         <!-- 유형별 상세 계산 결과 (수식 포함) -->
+                                         <div th:if="${result.domainAnalysisMap != null and !result.domainAnalysisMap.isEmpty()}" class="text-start">
+                                             <small class="text-white-50 fw-bold d-block mb-2 ps-1" style="font-size: 0.65rem;">유형별 분석 지수 (5.0 만점)</small>
+                                             <div class="row g-2">
+                                                 <div class="col-6" th:each="entry : ${result.domainAnalysisMap}">
+                                                     <div class="px-3 py-2 rounded-3 h-100" 
+                                                          style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);">
+                                                         <!-- 1행: 유형명 -->
+                                                         <div class="mb-1">
+                                                             <span class="text-white-50 fw-bold" style="font-size: 0.7rem; white-space: normal; line-height: 1.2;" th:text="${entry.key}">유형명</span>
+                                                         </div>
+                                                         <!-- 2행: % 지수 + 산출 근거 -->
+                                                         <div class="d-flex align-items-center gap-2">
+                                                             <span class="text-info fw-bold" style="font-size: 0.95rem;">
+                                                                 <span th:text="${#numbers.formatInteger(entry.value.average / 5.0 * 100, 0)}">0</span>%
+                                                             </span>
+                                                             <small class="text-white-50 opacity-50" style="font-size: 0.6rem;">
+                                                                 (<span th:text="${entry.value.totalScore}">0</span>점 / <span th:text="${entry.value.questionCount}">0</span>문항)
+                                                             </small>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         <p class="text-white-50 mt-3 mb-0" style="font-size: 0.7rem; word-break: keep-all;">
+                                             * 각 유형별 평균 점수를 분석한 결과, 당신에게 가장 뚜렷하게 나타나는 핵심 유형입니다.
+                                         </p>
+                                     </div>
+                                 </div>
+
+                                 <!-- 결과 유형 안내 테이블 (공용) -->
+                                 <div class="text-start mb-4">
+                                     <div class="d-flex align-items-center mb-3">
+                                         <div style="width: 4px; height: 20px; background: #ffc107; border-radius: 2px; margin-right: 12px;"></div>
+                                         <h5 class="fw-bold text-white mb-0" th:text="${test.testType == 'SCORE' ? '점수대별 결과 유형 안내' : '전체 결과 유형 안내'}">결과 유형 안내</h5>
+                                     </div>
+                                     <div class="card card-body bg-dark text-white border-0 small text-start p-0" 
+                                          style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important; overflow: hidden;">
+                                         <div class="table-responsive">
+                                             <table class="table table-dark-custom table-hover mb-0 align-middle text-center">
+                                                 <thead>
+                                                     <tr>
+                                                         <th style="width: 50px;">상태</th>
+                                                         <th style="width: 120px;" th:text="${test.testType == 'SCORE' ? '점수 구간' : '나의 지수'}">분류</th>
+                                                         <th class="text-start ps-4">분석 결과 유형</th>
+                                                     </tr>
+                                                 </thead>
+                                                 <tbody>
+                                                     <tr th:each="type : ${test.results}" 
+                                                         th:with="isMatched=${test.testType == 'SCORE' ? (result.calculatedScore >= type.minScore and result.calculatedScore <= type.maxScore) : (result.resultTitle == type.resultTitle)},
+                                                                  analysisData=${result.domainAnalysisMap != null ? result.domainAnalysisMap.get(type.resultTitle) : null}"
+                                                         th:classappend="${isMatched} ? 'table-info-highlight' : ''">
+                                                         <td class="py-3">
+                                                             <i th:if="${isMatched}" class="bi bi-check-circle-fill text-info fs-5 pulse-badge"></i>
+                                                             <i th:unless="${isMatched}" class="bi bi-circle text-white opacity-25"></i>
+                                                         </td>
+                                                         <td class="py-3">
+                                                             <!-- 점수형일 때: 점수 구간 / 유형형일 때: 나의 백분율 지수 -->
+                                                             <span class="text-white" th:classappend="${isMatched} ? 'fw-bold text-info' : ''"
+                                                                   th:text="${test.testType == 'SCORE' ? (#numbers.formatInteger(type.minScore, 0) + ' ~ ' + #numbers.formatInteger(type.maxScore, 0) + '점') : (analysisData != null ? #numbers.formatInteger(analysisData.average / 5.0 * 100, 0) + '%' : '-') }">0~10점</span>
+                                                         </td>
+                                                         <td class="text-start ps-4 py-3">
+                                                             <span th:text="${type.resultTitle}" 
+                                                                   th:classappend="${isMatched} ? 'fw-bold text-info' : 'text-white'">유형명</span>
+                                                         </td>
+                                                     </tr>
+                                                 </tbody>
+                                             </table>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
 
                         <!-- 다른 결과 유형 섹션 -->
@@ -115,9 +277,10 @@
                                     <div class="card h-100 text-center rounded-4 shadow-sm border-0" 
                                          style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
                                         <div class="p-2">
-                                            <img th:src="${res.resultImage != null and res.resultImage != ''} ? @{'/uploads/' + ${res.resultImage}} : @{/assets/img/default-img/default-content-img.png}" 
+                                            <img th:src="${res.resultImage != null and res.resultImage != ''} ? @{'/uploads/' + ${res.resultImage}} : '/assets/img/default-img/default-content-img.png'" 
                                                  class="img-fluid rounded-3 mb-2" alt="결과 이미지" 
-                                                 style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                                                 style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);"
+                                                 onerror="this.onerror=null; this.src='/assets/img/default-img/default-content-img.png';">
                                             <h6 class="fw-bold text-white mb-0 small" th:text="${res.resultTitle}" 
                                                 style="word-break: keep-all; font-size: 0.8rem; line-height: 1.2;">유형 이름</h6>
                                         </div>
@@ -134,8 +297,8 @@
                             <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
                                 <i class="bi bi-share-fill me-1"></i> 공유하기
                             </button>
-                            <a href="/" class="btn btn-link text-white-50 text-decoration-none w-100 mt-2 small">
-                                <i class="bi bi-house-door me-1"></i> 메인으로 돌아가기
+                            <a href="/test/list" class="btn btn-link text-white text-decoration-none w-100 mt-2 small opacity-75">
+                                <i class="bi bi-list-ul me-1"></i> 테스트 목록으로 돌아가기
                             </a>
                         </div>
                     </div>

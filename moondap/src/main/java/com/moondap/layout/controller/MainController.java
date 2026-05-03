@@ -12,8 +12,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.service.MdTestUserService;
+import com.moondap.service.MdTestAdminService;
 import com.moondap.dto.MdContentItemDTO;
 import com.moondap.dto.MdTestCategoryDTO;
+import com.moondap.common.CommonUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +28,7 @@ public class MainController {
 	private final EgenTetoService egenTetoService;
 	private final MdTestCategoryService categoryService;
 	private final MdTestUserService mdTestUserService;
+	private final MdTestAdminService mdTestAdminService;
 
 	@GetMapping("/")
 	public String index(@org.springframework.web.bind.annotation.RequestParam(value = "allSort", defaultValue = "popular") String allSort,
@@ -34,13 +37,21 @@ public class MainController {
 	                    HttpServletRequest request,
 	                    Model model) {
 
-		// 밸런스 게임 전체 참여자 수 및 오늘 방문자 수 조회
-		long totalParticipantCount = balanceGameService.getTotalParticipantCount();
-		long todayVisitCount = statService.getTodayVisitCount();
+		// 방문자 수 증가
+		String ip = CommonUtil.getClientIp(request);
+		statService.incrementVisitCount(ip);
 
+		// 각 콘텐츠별 전체 참여자 수 조회
+		long balanceGameTotalCount = balanceGameService.getTotalParticipantCount();
+		long normalTestTotalCount = mdTestAdminService.getTotalPlayCount();
+		
 		// 에겐 테토 참여자 수 조회
 		java.util.Map<String, Object> egenStats = egenTetoService.getScoreStatistics();
 		long egenTetoTotalCount = ((Number) egenStats.getOrDefault("totalCount", 0L)).longValue();
+
+		// 전체 통합 참여자 수 계산
+		long totalParticipantCount = balanceGameTotalCount + normalTestTotalCount + egenTetoTotalCount;
+		long todayVisitCount = statService.getTodayVisitCount();
 
 		// 전체 통합 상위 6개 조회
 		java.util.List<MdContentItemDTO> popularAllTests = mdTestUserService.getAllContentList("all", allSort, "all", 0, 6);

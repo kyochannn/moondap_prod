@@ -41,10 +41,12 @@ public class MdTestAdminController {
 
     // ─── 테스트 생성 ───────────────────────────────────────────
 
-    // [신규] 테이블 기반 등록 페이지 (표준) - 모바일 접속 시 자동 리다이렉트
+    // [신규] 테이블 기반 등록 페이지 (표준) - 모바일 접속 시 자동 리다이렉트 (force=pc 시 제외)
     @GetMapping("/insertTestView")
-    public String insertTestView(@RequestHeader(value = "User-Agent", required = false) String userAgent, Model model) {
-        if (userAgent != null && (userAgent.contains("Mobi") || userAgent.contains("Android") || userAgent.contains("iPhone"))) {
+    public String insertTestView(@RequestHeader(value = "User-Agent", required = false) String userAgent, 
+                                @RequestParam(value = "force", required = false) String force,
+                                Model model) {
+        if (!"pc".equals(force) && userAgent != null && (userAgent.contains("Mobi") || userAgent.contains("Android") || userAgent.contains("iPhone"))) {
             return "redirect:/admin/test/insertTestMobileView";
         }
         model.addAttribute("test", new MdTestDTO());
@@ -92,12 +94,21 @@ public class MdTestAdminController {
     // ─── 테스트 수정 ───────────────────────────────────────────
 
     @GetMapping("/{id}/edit")
-    public String testEditForm(@PathVariable("id") Long id, Model model) {
+    public String testEditForm(@PathVariable("id") Long id, 
+                              @RequestHeader(value = "User-Agent", required = false) String userAgent,
+                              @RequestParam(value = "force", required = false) String force,
+                              Model model) {
         MdTestDTO test = mdTestAdminService.getTest(id);
         if (test == null) return "redirect:/admin/test/list";
+        
+        if (!"pc".equals(force) && userAgent != null && (userAgent.contains("Mobi") || userAgent.contains("Android") || userAgent.contains("iPhone"))) {
+            model.addAttribute("test", test);
+            model.addAttribute("categories", categoryService.getActiveCategories());
+            return "admin/test/insertTestMobileView";
+        }
+        
         model.addAttribute("test", test);
         model.addAttribute("categories", categoryService.getActiveCategories());
-        
         return "admin/test/updateTestForm";
     }
 

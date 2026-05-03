@@ -68,6 +68,7 @@ public class MdTestUserService {
             // 브레이크다운 기록
             MdTestResultDTO.ScoreBreakdown b = new MdTestResultDTO.ScoreBreakdown();
             b.setQuestionText(q.getQuestionText());
+            b.setDomain(q.getDomain()); // 도메인 정보 기록 추가
             b.setOriginalAnswer(originalAnswer);
             b.setFinalScore(score);
             b.setReverse(reverse);
@@ -82,7 +83,6 @@ public class MdTestUserService {
         // 2. 테스트 유형에 따른 결과 매칭
         if ("SCORE".equals(test.getTestType())) {
             // [점수 합산형] 총점을 백분율(0-100%)로 환산하여 minScore ~ maxScore 범위에 있는 결과 반환
-            // 공식: (실제 총점 / (질문 수 * 5점)) * 100 -> 반올림 처리
             int maxPossibleScore = questions.size() * 5;
             double rawPercentage = ((double) totalScore / maxPossibleScore) * 100;
             int percentage = (int) Math.round(rawPercentage);
@@ -102,15 +102,25 @@ public class MdTestUserService {
             }
             return matchedResult;
         } else {
-            // [유형형] 도메인별 평균 점수가 가장 높은 결과 매칭 (기존 로직)
+            // [유형형] 도메인별 평균 점수가 가장 높은 결과 매칭
+            Map<String, MdTestResultDTO.DomainAnalysis> analysisMap = new HashMap<>();
             String bestDomain = null;
             double maxAvg = -1.0;
 
-            for (String domain : domainScores.keySet()) {
-                double avg = domainScores.get(domain) / domainCounts.get(domain);
+            for (String domainKey : domainScores.keySet()) {
+                double total = domainScores.get(domainKey);
+                int count = domainCounts.get(domainKey);
+                double avg = total / count;
+
+                MdTestResultDTO.DomainAnalysis analysis = new MdTestResultDTO.DomainAnalysis();
+                analysis.setTotalScore((int) total);
+                analysis.setQuestionCount(count);
+                analysis.setAverage(avg);
+                analysisMap.put(domainKey, analysis);
+
                 if (avg > maxAvg) {
                     maxAvg = avg;
-                    bestDomain = domain;
+                    bestDomain = domainKey;
                 }
             }
 
@@ -119,9 +129,10 @@ public class MdTestUserService {
                     .filter(r -> r.getResultTitle().equals(targetDomain))
                     .findFirst()
                     .orElse(results.isEmpty() ? null : results.get(0));
-            
+
             if (matchedResult != null) {
                 matchedResult.setBreakdown(breakdown);
+                matchedResult.setDomainAnalysisMap(analysisMap); // 상세 분석 데이터 저장
             }
             return matchedResult;
         }

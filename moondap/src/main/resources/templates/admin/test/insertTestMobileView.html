@@ -89,6 +89,10 @@
                                 <h5 class="text-white mb-0 fw-bold">
                                     <span th:text="${test.id != null} ? '테스트 정보 수정' : '새 테스트 등록'"></span>
                                 </h5>
+                                <a th:href="${test.id != null} ? @{/admin/test/{id}/edit(id=${test.id}, force='pc')} : @{/admin/test/insertTestView(force='pc')}" 
+                                   class="btn btn-outline-info btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                                    <i class="bi bi-pc-display me-1"></i> PC 버전으로 편집
+                                </a>
                             </div>
                         </div>
 

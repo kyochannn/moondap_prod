@@ -128,7 +128,19 @@ public class MdTestUserController {
                              @RequestParam(value = "answers", required = false) String answersJson,
                              @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
                              HttpServletRequest request,
+                             jakarta.servlet.http.HttpSession session,
                              Model model) throws Exception {
+        
+        // [광고 검증] POST 요청(테스트 완료) 시 세션 체크
+        if ("POST".equalsIgnoreCase(request.getMethod()) && !preview) {
+            Boolean adVerified = (Boolean) session.getAttribute("AD_VERIFIED");
+            if (adVerified == null || !adVerified) {
+                log.warn("광고 단계를 거치지 않은 비정상적 접근 차단: {}", testKey);
+                return "redirect:/test/" + testKey;
+            }
+            // 검증 완료 후 세션에서 제거 (일회성)
+            session.removeAttribute("AD_VERIFIED");
+        }
         
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
         if (test == null) return "redirect:/";
@@ -201,6 +213,16 @@ public class MdTestUserController {
         model.addAttribute("shareUrl", shareUrl);
 
         return "test/result";
+    }
+
+    /**
+     * 광고 노출 단계를 거쳤음을 세션에 기록
+     */
+    @PostMapping("/verify-ad")
+    @ResponseBody
+    public void verifyAd(jakarta.servlet.http.HttpSession session) {
+        log.info("광고 단계 확인 완료 (세션 기록)");
+        session.setAttribute("AD_VERIFIED", true);
     }
 
     private boolean isAdminOrAuthor(String createdBy) {

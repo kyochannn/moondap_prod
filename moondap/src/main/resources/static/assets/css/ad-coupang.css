@@ -1,0 +1,223 @@
+/* 공통 광고 대기 화면(Ad Interstitial) 스타일 - 프리미엄 글래스모피즘 적용 */
+
+.ad-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 20px;
+}
+
+.ad-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* loading-box와 동일한 글래스모피즘 디자인 적용 */
+.ad-modal-content {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    width: 100%;
+    max-width: 500px;
+    padding: 40px 30px;
+    border-radius: 30px;
+    text-align: center;
+    color: white; /* 텍스트 흰색으로 통일 */
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.analysis-loader {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 25px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.analysis-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+    width: 0%;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+}
+
+.ad-container {
+    border-radius: 20px;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+#finalSubmitBtn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    padding: 15px 30px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    z-index: 1;
+}
+
+#finalSubmitBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--progress, 0%);
+    height: 100%;
+    background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+    z-index: -1;
+    transition: width 0.4s ease;
+}
+
+#finalSubmitBtn:not(:disabled) {
+    border: none !important;
+    box-shadow: 0 10px 20px rgba(58, 123, 213, 0.3);
+}
+
+.ad-modal-content h4 {
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: white;
+}
+
+.ad-modal-content p.text-secondary, 
+.ad-modal-content p.text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 버튼 및 안내 문구 레이아웃 조정 */
+#finalSubmitBtn {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.coupang-disclaimer {
+    font-size: 11px;
+    margin-top: 15px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 광고 영역 하이라이트 효과 (클릭 유도 극대화) */
+.highlight-ad {
+    border: 2px solid rgba(0, 210, 255, 0.6) !important;
+    animation: borderGlow 2s infinite;
+    position: relative;
+}
+
+@keyframes borderGlow {
+    0%, 100% { border-color: rgba(0, 210, 255, 0.4); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+    50% { border-color: rgba(0, 210, 255, 1); box-shadow: 0 0 25px rgba(0, 210, 255, 0.5); }
+}
+
+.emphasize-text {
+    animation: textPulse 1.5s infinite;
+    display: inline-block;
+}
+
+@keyframes textPulse {
+    0% { transform: scale(1); color: #fff; }
+    50% { transform: scale(1.08); color: #ffca28; }
+    100% { transform: scale(1); color: #fff; }
+}
+
+.skip-badge {
+    background: linear-gradient(135deg, #ffca28 0%, #ff8f00 100%);
+    color: #000;
+    font-weight: 800;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 50px;
+    margin-bottom: 8px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(255, 202, 40, 0.3);
+}
+
+.ad-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 잠금 해제 시 버튼 효과 (Shine & Scale) */
+#finalSubmitBtn.unlocked {
+    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 210, 255, 0.5);
+    border: none !important;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#finalSubmitBtn.unlocked::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: lightShine 1s ease-in-out forwards;
+}
+
+@keyframes lightShine {
+    0% { left: -150%; }
+    100% { left: 150%; }
+}
+
+/* 모바일 최적화 */
+@media (max-width: 576px) {
+    .ad-modal-content {
+        padding: 25px 20px;
+        width: 95%;
+    }
+    .ad-container {
+        min-height: 160px;
+        margin-bottom: 15px;
+    }
+    .ad-container i {
+        font-size: 2rem !important;
+    }
+    .ad-modal-content h4 {
+        font-size: 1.2rem;
+    }
+    #finalSubmitBtn {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+    }
+}

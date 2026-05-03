@@ -207,17 +207,6 @@
                     </div>
                     <div class="row g-4">
                         <!-- <div class="col-md-4">
-                            <div class="menu-card" style="cursor: default; border-color: rgba(82, 77, 211, 0.3);">
-                                <div class="menu-icon" style="background: rgba(82, 77, 211, 0.1); color: #a5a0ff;">
-                                    <i class="bi bi-people"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-white-50" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 5px;">오늘 방문자 수</h4>
-                                    <h2 class="text-white fw-bold m-0" th:text="${#numbers.formatInteger(todayVisitCount, 0, 'COMMA')} + '명'">0명</h2>
-                                </div>
-                            </div>
-                        </div> -->
-                        <div class="col-md-6">
                             <div class="menu-card" style="cursor: default; border-color: rgba(25, 135, 84, 0.3);">
                                 <div class="menu-icon" style="background: rgba(25, 135, 84, 0.1); color: #75f0a0;">
                                     <i class="bi bi-check2-circle"></i>
@@ -227,6 +216,17 @@
                                     <h2 class="text-white fw-bold m-0" th:text="${#numbers.formatInteger(todayParticipationCount, 0, 'COMMA')} + '회'">0회</h2>
                                 </div>
                             </div>
+                        </div> -->
+                        <div class="col-md-6">
+                            <div class="menu-card" style="cursor: default; border-color: rgba(13, 202, 240, 0.3);">
+                                <div class="menu-icon" style="background: rgba(82, 77, 211, 0.1); color: #a5a0ff;">
+                                    <i class="bi bi-people"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white-50" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 5px;">오늘 방문자 수</h4>
+                                    <h2 class="text-white fw-bold m-0" th:text="${#numbers.formatInteger(todayVisitCount, 0, 'COMMA')} + '명'">0명</h2>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="menu-card" style="cursor: default; border-color: rgba(13, 202, 240, 0.3);">
@@ -234,7 +234,7 @@
                                     <i class="bi bi-controller"></i>
                                 </div>
                                 <div>
-                                    <h4 class="text-white-50" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 5px;">전체 콘텐츠 참여 수</h4>
+                                    <h4 class="text-white-50" style="font-size: 0.85rem; font-weight: 500; margin-bottom: 5px;">누적 콘텐츠 참여 수</h4>
                                     <h2 class="text-white fw-bold m-0" th:text="${#numbers.formatInteger(totalParticipantCount, 0, 'COMMA')} + '회'">0회</h2>
                                 </div>
                             </div>

@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <title th:text="${test.title} + ' - 질문 진행 중'">테스트 진행 중</title>
     <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/ad-coupang.css}" rel="stylesheet">
 </head>
 
 <body layout:fragment="content">
@@ -53,8 +54,42 @@
         <form id="submitForm" th:action="@{/test/{key}/result(key=${test.testKey}, preview=${isPreview})}" method="post">
             <input type="hidden" id="answersInput" name="answers">
         </form>
+
+        <!-- 광고 대기 모달 -->
+        <div id="adModal" class="ad-modal-overlay">
+            <div class="ad-modal-content">
+                <div class="mb-3">
+                    <span class="badge rounded-pill bg-primary px-3 py-2 mb-3">당신의 결과는?</span>
+                    <h4 class="fw-bold">결과 분석이 완료되었습니다!</h4>
+                    <p id="adStatusText" class="text-secondary small mb-4">당신의 답변 데이터를 분석하고 있습니다...</p>
+                </div>
+
+                <div class="ad-container mb-4 highlight-ad">
+                    <!-- 실제 쿠팡 광고 영역 -->
+                    <a th:href="'https://link.coupang.com/a/eByaQE'" target="_blank" class="text-decoration-none w-100">
+                        <div class="text-center p-3">
+                            <div style="width: 100%; height: 180px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                <i class="bi bi-fast-forward-fill mb-2 emphasize-text" style="font-size: 2.8rem; color: #ffca28;"></i>
+                                <span class="fw-bold emphasize-text" style="font-size: 1.15rem;">결과 즉시 확인하기</span>
+                                <p class="text-info small mt-2 mb-0 fw-bold">15초 대기 없이 즉시 이동합니다</p>
+                            </div>
+                            <p class="text-muted mt-3 mb-0" style="font-size: 11px;">쿠팡 오늘의 추천 상품 확인하기</p>
+                        </div>
+                    </a>
+                </div>
+
+                <button id="finalSubmitBtn" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold" disabled>
+                    무료 분석 로딩 중 (15초)
+                </button>
+                
+                <p class="coupang-disclaimer">
+                    이 포스팅은 쿠팡 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받습니다.
+                </p>
+            </div>
+        </div>
     </main>
 
+    <script src="/assets/js/ad-coupang.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         window.onload = function() {
@@ -141,17 +176,15 @@
         };
 
         function finishTest() {
-            // 로딩 오버레이 (main_layout에 정의된 함수 사용 시도)
-            if (typeof showLoading === 'function') {
-                showLoading(0, '결과 분석 중...', '데이터를 바탕으로 성향을 분석하고 있습니다.');
-            }
-            
-            // 답변 데이터를 JSON으로 변환하여 input에 저장
+            // 답변 데이터를 JSON으로 변환하여 저장
             document.getElementById("answersInput").value = JSON.stringify(userAnswers);
             
-            setTimeout(() => {
-                document.getElementById("submitForm").submit();
-            }, 1000);
+            // 공통 광고 핸들러 호출
+            AdHandler.init({
+                formId: 'submitForm',
+                countdown: 15,
+                verifyUrl: '/test/verify-ad'
+            });
         }
 
         prevBtn.onclick = () => {
