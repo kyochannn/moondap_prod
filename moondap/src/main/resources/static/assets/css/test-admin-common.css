@@ -62,9 +62,9 @@ textarea.custom-input-inline {
 
 .custom-input-inline:focus {
     background: rgba(255, 255, 255, 0.08);
-    border-color: #524dd3;
+    border-color: #6366f1;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(82, 77, 211, 0.25);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
 }
 
 /* 4. 이미지 업로드/미리보기 영역 */
@@ -86,7 +86,8 @@ textarea.custom-input-inline {
 
 /* 5. 버튼 스타일 */
 .action-btn { padding: 4px 10px; font-size: 0.8rem; border-radius: 8px; }
-.btn-add { background: #524dd3; border: none; font-size: 0.85rem; padding: 6px 16px; }
+.btn-add { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border: none; font-size: 0.85rem; padding: 6px 16px; color: white; transition: all 0.3s ease; }
+.btn-add:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); opacity: 0.9; }
 
 /* 6. 배지 스타일 (통합 관리) */
 .admin-badge {
@@ -110,8 +111,8 @@ textarea.custom-input-inline {
 /* 7. 리스트용 배지 스타일 (상세 페이지 등) */
 .order-badge {
     width: 28px; height: 28px;
-    background: rgba(82,77,211,0.3);
-    border: 1px solid rgba(82,77,211,0.5);
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.4);
     border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 0.75rem; font-weight: 700; color: #a5a0ff;
@@ -128,8 +129,8 @@ textarea.custom-input-inline {
 }
 
 .badge-type-score {
-    background: rgba(82,77,211,0.2) !important; color: #a5a0ff !important;
-    border: 1px solid rgba(82,77,211,0.3) !important;
+    background: rgba(134,94,244,0.2) !important; color: #a5a0ff !important;
+    border: 1px solid rgba(134,94,244,0.3) !important;
 }
 
 .badge-type-type {
@@ -195,12 +196,12 @@ textarea.custom-input, textarea.custom-input-inline {
 }
 .table-dark-custom thead th.sortable.sort-asc::after {
     content: ' ↑';
-    color: #524dd3;
+    color: #6366f1;
     font-weight: bold;
 }
 .table-dark-custom thead th.sortable.sort-desc::after {
     content: ' ↓';
-    color: #524dd3;
+    color: #6366f1;
     font-weight: bold;
 }
 
@@ -217,7 +218,7 @@ textarea.custom-input, textarea.custom-input-inline {
 }
 
 .modal-header {
-    background: linear-gradient(to bottom, rgba(82, 77, 211, 0.15), transparent) !important;
+    background: linear-gradient(to bottom, rgba(134, 94, 244, 0.15), transparent) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     padding: 24px 30px !important;
 }
@@ -261,8 +262,8 @@ textarea.custom-input, textarea.custom-input-inline {
 .modal-body .form-control:focus, 
 .modal-body .form-select:focus {
     background: rgba(255, 255, 255, 0.06) !important;
-    border-color: #524dd3 !important;
-    box-shadow: 0 0 0 4px rgba(82, 77, 211, 0.15) !important;
+    border-color: #865EF4 !important;
+    box-shadow: 0 0 0 4px rgba(134, 94, 244, 0.15) !important;
 }
 
 .modal-body label {

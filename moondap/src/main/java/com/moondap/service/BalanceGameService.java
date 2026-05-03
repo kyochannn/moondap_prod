@@ -26,6 +26,8 @@ public interface BalanceGameService {
 	
 	public String deleteBalanceGameComment(String id) throws Exception;
 
+	public String deleteSingleComment(int no) throws Exception;
+
 	public List<BalanceGameCommentDTO> updateBalanceGameCommentLikeCount(Map<String, String> request) throws Exception;
 	
 	public String insertBalanceGame(Map<String, String> params, MultipartFile option1Image, MultipartFile option2Image) throws Exception;

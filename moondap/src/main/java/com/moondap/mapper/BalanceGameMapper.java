@@ -41,6 +41,9 @@ public interface BalanceGameMapper {
 	
 	// 밸런스 게임 관련 댓글 삭제
 	public int deleteBalanceGameComment(String id) throws Exception;
+
+	// 밸런스 게임 단일 댓글 삭제
+	public int deleteSingleComment(@Param("no") int no) throws Exception;
 	
 	// 밸런스 게임 댓글 조회
 	public List<BalanceGameCommentDTO> selectBalanceGameComment(String id) throws Exception;

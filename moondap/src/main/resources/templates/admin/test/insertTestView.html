@@ -41,11 +41,11 @@
                             </div>
                         </div>
                         <div class="header-action-group d-flex gap-2">
-                            <a href="/test/manage/list" class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                            <a href="/test/manage/list" class="btn btn-outline-light rounded-pill px-4">
                                 <i class="bi bi-arrow-left me-1"></i> 목록으로
                             </a>
                             <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                <i class="bi bi-check-lg me-1"></i> 등록 완료
+                                <i class="bi bi-check-lg me-1"></i> 테스트 등록 완료
                             </button>
                         </div>
                     </div>
@@ -342,17 +342,14 @@
                 <tr class="result-row" style="animation: fadeIn 0.4s ease-out;">
                     <td class="text-white small index"></td>
                     <td>
-                        <div class="mini-drop-zone mx-auto active-upload" style="cursor: pointer;">
+                        <div class="mini-drop-zone mx-auto" style="cursor: pointer;">
                             <input type="file" class="r-file" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3;"
                                    onchange="previewResultImage(this, 'res-preview-${uid}')">
                             <img id="res-preview-${uid}" class="preview-img" onerror="handleImageError(this)">
-                            <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
-                                <div class="icon-circle mb-1" style="width: 30px; height: 30px;">
-                                    <i class="bi bi-plus-circle-fill text-white" style="font-size: 0.9rem;"></i>
-                                </div>
-                            </div>
+                            <div class="upload-placeholder"><i class="bi bi-plus-lg"></i></div>
                             <input type="hidden" class="r-image-name" value="">
                         </div>
+                    </td>
                     <td>
                         <input type="text" class="custom-input-inline r-title" placeholder="유형명" oninput="updateDomainOptions()">
                     </td>

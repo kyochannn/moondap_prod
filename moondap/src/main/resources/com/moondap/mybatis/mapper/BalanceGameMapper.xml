@@ -146,6 +146,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE question_id = #{id}
     </delete>
 
+    <!-- 밸런스 게임 단일 댓글 삭제 -->
+    <delete id="deleteSingleComment">
+        DELETE FROM moondap.balance_comments
+        WHERE no = #{no}
+    </delete>
+
 	<!-- 밸런스 게임 좋아요 -->
     <update id="updateBalanceGameCommentLikeCount">
         UPDATE moondap.balance_comments

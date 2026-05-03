@@ -26,6 +26,7 @@ import com.moondap.config.auth.PrincipalDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.moondap.service.StatService;
 import com.moondap.service.MdTestCategoryService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +52,9 @@ public class BalanceGameController {
 
 	@Autowired
 	private MdTestCategoryService categoryService;
+
+	@Autowired
+	private StatService statService;
 
 	/**
 	 * 밸런스 게임 리스트 화면
@@ -205,6 +209,9 @@ public class BalanceGameController {
 
 		try {
 			BalanceGameDTO balanceGame = balanceGameService.vote(request);
+			
+			// 오늘 콘텐츠 참여 수 증가
+			statService.incrementParticipationCount();
 
 			return balanceGame;
 		} catch (Exception e) {
@@ -250,6 +257,11 @@ public class BalanceGameController {
 	public List<BalanceGameCommentDTO> insertBalanceGameComment(@RequestBody Map<String, String> request) {
 		log.info("insertBalanceGameMessage ::::::::: ");
 
+		if (IsLoggedIn()) {
+			request.put("userId", getCurrentUserId());
+			request.put("nickname", getCurrentUserId());
+		}
+
 		try {
 			List<BalanceGameCommentDTO> balanceGameCommenList = balanceGameService.insertBalanceGameComment(request);
 
@@ -273,6 +285,35 @@ public class BalanceGameController {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	@PostMapping("/deleteBalanceGameComment")
+	@ResponseBody
+	public Map<String, Object> deleteBalanceGameComment(@RequestBody Map<String, Object> request) {
+		log.info("deleteBalanceGameComment ::::::::: ");
+		Map<String, Object> rtnMap = new HashMap<>();
+		
+		// [보안] 관리자 권한 확인
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		boolean isAdmin = authentication.getAuthorities().stream()
+				.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+				
+		if (!isAdmin) {
+			rtnMap.put("flag", "fail");
+			rtnMap.put("message", "관리자만 삭제 가능합니다.");
+			return rtnMap;
+		}
+
+		try {
+			int no = Integer.parseInt(request.get("no").toString());
+			String result = balanceGameService.deleteSingleComment(no);
+			rtnMap.put("flag", result.toLowerCase());
+			return rtnMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			rtnMap.put("flag", "fail");
+			return rtnMap;
 		}
 	}
 

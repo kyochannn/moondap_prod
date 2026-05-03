@@ -143,9 +143,9 @@
 
 .custom-input:focus {
     background: rgba(255,255,255,0.08);
-    border-color: #524dd3;
+    border-color: #6366f1;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(82,77,211,0.2);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .custom-input::placeholder {
@@ -199,7 +199,7 @@
     margin: 0 auto 25px;
     position: relative;
     z-index: 2;
-    box-shadow: 0 8px 16px rgba(82, 77, 211, 0.15);
+    box-shadow: 0 8px 16px rgba(134, 94, 244, 0.15);
 }
 
 .admin-cta-box .cta-icon i {
@@ -288,7 +288,7 @@
 }
 
 .question-index-label {
-    background: rgba(82, 77, 211, 0.1);
+    background: rgba(99, 102, 241, 0.1);
     padding: 2px 10px;
     border-radius: 8px;
     font-size: 0.8rem;
@@ -314,8 +314,8 @@
 
 /* Label Pill Style */
 .label-pill {
-    background: rgba(82, 77, 211, 0.1);
-    color: #8c88ff;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5a0ff;
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.75rem;
@@ -346,15 +346,15 @@
 }
 
 .btn-primary.rounded-pill {
-    background: linear-gradient(135deg, #7d77ff 0%, #524dd3 100%) !important;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
     border: none !important;
     color: #fff !important;
-    box-shadow: 0 4px 15px rgba(82, 77, 211, 0.3);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary.rounded-pill:hover {
-    background: linear-gradient(135deg, #8c88ff 0%, #5d58e6 100%) !important;
-    box-shadow: 0 8px 25px rgba(82, 77, 211, 0.4);
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%) !important;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
     color: #fff !important;
 }
 
@@ -419,10 +419,10 @@
     font-weight: 500;
 }
 .step-item.active .step-icon {
-    border-color: #7d77ff;
-    color: #7d77ff;
-    background: rgba(125, 119, 255, 0.1);
-    box-shadow: 0 0 15px rgba(125, 119, 255, 0.3);
+    border-color: #6366f1;
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
 }
 .step-item.active .step-label {
     color: white;

@@ -10,7 +10,7 @@
 
 .report-accent-bar {
     height: 10px;
-    background: linear-gradient(90deg, #524dd3, #a166ff);
+    background: linear-gradient(90deg, #865EF4, #a166ff);
 }
 
 /* 결과 이미지 스타일 개선 */
@@ -31,8 +31,8 @@
 
 /* 점수 시각화 섹션 */
 .score-visualization {
-    background: rgba(82, 77, 211, 0.05);
-    border: 1px solid rgba(82, 77, 211, 0.2);
+    background: rgba(134, 94, 244, 0.05);
+    border: 1px solid rgba(134, 94, 244, 0.2);
     padding: 1.5rem;
     border-radius: 1rem;
 }
@@ -46,7 +46,7 @@
 }
 
 .score-progress-bar {
-    background: linear-gradient(90deg, #524dd3, #a166ff) !important;
+    background: linear-gradient(90deg, #865EF4, #a166ff) !important;
     border-radius: 10px;
     transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);
 }
@@ -74,7 +74,7 @@
 
 /* 액션 버튼 커스텀 */
 .btn-result-action {
-    background: #524dd3 !important;
+    background: #865EF4 !important;
     border: none !important;
     transition: all 0.3s ease;
 }
@@ -82,7 +82,7 @@
 .btn-result-action:hover {
     background: #413bbd !important;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(82, 77, 211, 0.4);
+    box-shadow: 0 5px 15px rgba(134, 94, 244, 0.4);
 }
 
 /* 유틸리티 및 기존 스타일 유지/보완 */

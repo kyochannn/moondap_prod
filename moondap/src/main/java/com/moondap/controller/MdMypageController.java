@@ -5,6 +5,8 @@ import com.moondap.dto.MdUserDTO;
 import com.moondap.service.BalanceGameService;
 import com.moondap.service.MdTestAdminService;
 import com.moondap.service.StandardMdUserService;
+import com.moondap.service.StatService;
+import com.moondap.service.EgenTetoService;
 import com.moondap.common.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,8 @@ public class MdMypageController {
     private final FileService fileService;
     private final BalanceGameService balanceGameService;
     private final MdTestAdminService mdTestAdminService;
+    private final StatService statService;
+    private final EgenTetoService egenTetoService;
 
     @GetMapping("/mypage")
     public String mypage(@AuthenticationPrincipal PrincipalDetails principalDetails, Model model, HttpSession session) {
@@ -46,6 +50,22 @@ public class MdMypageController {
         // 내 콘텐츠 조회
         model.addAttribute("myBalanceGames", balanceGameService.selectBalanceGameListByUser(username));
         model.addAttribute("myTests", mdTestAdminService.getTestListByUser(username));
+        
+        // 관리자인 경우 전체 서비스 통계 조회
+        if ("ROLE_ADMIN".equals(principalDetails.getUser().getRole())) {
+            long todayVisitCount = statService.getTodayVisitCount();
+            long todayParticipationCount = statService.getTodayParticipationCount();
+            
+            // 전체 참여자 수 (밸런스 게임 + 에겐 테토 + 일반 테스트)
+            long balanceGameTotalCount = balanceGameService.getTotalParticipantCount();
+            long normalTestTotalCount = mdTestAdminService.getTotalPlayCount();
+            java.util.Map<String, Object> egenStats = egenTetoService.getScoreStatistics();
+            long egenTetoTotalCount = ((Number) egenStats.getOrDefault("totalCount", 0L)).longValue();
+            
+            model.addAttribute("todayVisitCount", todayVisitCount);
+            model.addAttribute("todayParticipationCount", todayParticipationCount);
+            model.addAttribute("totalParticipantCount", balanceGameTotalCount + normalTestTotalCount + egenTetoTotalCount);
+        }
         
         model.addAttribute("user", principalDetails.getUser());
         return "mypage/mypage";

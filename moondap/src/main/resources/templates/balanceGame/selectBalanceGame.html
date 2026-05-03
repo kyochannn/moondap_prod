@@ -44,11 +44,14 @@
 		@-webkit-keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 		@keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
     </style> 
-    <script> 
+    <script th:inline="javascript"> 
         // 서버에서 넘겨준 현재 게임 ID
-        const gameId = '[[${balanceGame.id}]]';
-        const spicyFilter = '[[${balanceGame.isSpicy}]]' === true ? 1 : 0;
-        const category = '[[${balanceGame.category}]]';
+        const gameId = /*[[${balanceGame.id}]]*/ 'default';
+        const spicyFilter = /*[[${balanceGame.isSpicy ? 1 : 0}]]*/ 0;
+        const category = /*[[${balanceGame.category}]]*/ 'all';
+        const isAnonymous = /*[[${isAnonymous}]]*/ false;
+        const currentUserId = /*[[${currentUserId}]]*/ '';
+        const isAdmin = /*[[${#authorization.expression('hasAuthority("ROLE_ADMIN")')}]]*/ false;
         
     	// 재투표 제한 시간 설정 : 약 20초
     	const VOTE_LIMIT_MIN = 1/4 * 60000 ;
@@ -171,7 +174,7 @@
 		        type: 'POST',
 		        contentType: 'application/json',
 		        data: JSON.stringify({ 
-		            id: '[[${balanceGame.id}]]', 
+		            id: /*[[${balanceGame.id}]]*/ 'default', 
 		            side: side 
 		        }),
 		        success: function(data) {
@@ -292,7 +295,7 @@
 		        type: 'POST',
 		        contentType: 'application/json',
 		        data: JSON.stringify({ 
-		            id: '[[${balanceGame.id}]]'
+		            id: /*[[${balanceGame.id}]]*/ 'default'
 		        }),
 		        success: function(commentList) {
 		        	renderCommentList(commentList);
@@ -304,6 +307,31 @@
 		            alert("댓글 조회 중 오류가 발생했습니다.");
 		        }
 		    });
+    	}
+    	
+    	// 댓글 삭제 (관리자용)
+    	function deleteComment(commentNo) {
+    	    if (!confirm("이 댓글을 삭제하시겠습니까?")) return;
+    	    
+    	    $.ajax({
+    	        url: '/balanceGame/deleteBalanceGameComment',
+    	        type: 'POST',
+    	        contentType: 'application/json',
+    	        data: JSON.stringify({ 
+    	            no: commentNo
+    	        }),
+    	        success: function(res) {
+    	            if (res.flag === 'success') {
+    	                // 리스트 새로고침
+    	                selectBalanceGameComment();
+    	            } else {
+    	                alert(res.message || "삭제 실패했습니다.");
+    	            }
+    	        },
+    	        error: function() {
+    	            alert("삭제 처리 중 오류가 발생했습니다.");
+    	        }
+    	    });
     	}
     	
     	// 댓글 달기
@@ -334,7 +362,7 @@
 				        type: 'POST',
 				        contentType: 'application/json',
 				        data: JSON.stringify({ 
-				            id: '[[${balanceGame.id}]]', 
+				            id: /*[[${balanceGame.id}]]*/ 'default', 
 				            nickname: nickname,
 				            side: voteSide,
 				            content: content
@@ -380,6 +408,10 @@
 		
     	// nickname 체크 함수
 		function isNicknameSet() {
+		    if (!isAnonymous) {
+		        nickname = currentUserId;
+		        return true;
+		    }
 		    nickname = localStorage.getItem('moondap_comment_nickname');
 		    return (nickname !== null && nickname.trim() !== "");
 		}
@@ -467,6 +499,11 @@
 		        const heartClass = isLiked ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary';
 		        const countColor = isLiked ? '#ef4444' : '#6c757d';
 		        
+		        // 로그인한 사용자의 경우 체크 표시 추가
+		        const checkmark = comment.userId ? '<i class="bi bi-patch-check-fill user-verified-check" title="인증된 사용자"></i>' : '';
+		        
+		        const deleteBtn = isAdmin ? `<i class="bi bi-x-circle-fill admin-delete-btn" onclick="deleteComment(${comment.no})" title="댓글 삭제"></i>` : '';
+		        
 		        let commentHtml = '';
 		        if (comment.selectedSide === 'left') {
 		            commentHtml = `
@@ -474,18 +511,16 @@
 		                    <div class="d-flex flex-row align-items-center">
 		                        <div class="d-flex flex-column flex-grow-1">
 		                            <div class="d-flex align-items-center mb-1 ms-1">
-		                                <span style="color: #3876f2; font-weight: bold; font-size: 0.8rem;">${safeNickname}</span>
+		                                <span style="color: #3876f2; font-weight: bold; font-size: 0.8rem;">${safeNickname}${checkmark}</span>
 		                            </div>
 		                            <div class="d-flex align-items-center">
-			                            <div class="px-3 py-2" 
-			                                style="background: #1e213a; border: 1px solid #3876f2; border-radius: 2px 15px 15px 15px; 
-			                                       max-width: 85%; word-break: break-all; overflow-wrap: break-word;">
+			                            <div class="comment-bubble-left">
 			                                <p class="mb-0" style="color: #e9ecef; font-size: 0.95rem; white-space: pre-wrap;">${safeContent}</p>
 			                            </div>
-		                                <div class="d-flex align-items-center ms-2 gap-1 like-wrapper" style="cursor: pointer; min-width: 20px;" 
-		                                     onclick="toggleLike(this, ${comment.no})">
-		                                    <i class="bi ${heartClass} fs-6 like-icon"></i>
-		                                    <span class="like-count" style="font-size: 0.75rem; color: ${countColor};">${comment.likeCount || 0}</span>
+		                                <div class="d-flex align-items-center ms-2 gap-1 like-wrapper" style="cursor: pointer; min-width: 20px; line-height: 1;">
+		                                    <i class="bi ${heartClass} fs-6 like-icon" onclick="toggleLike(this, ${comment.no})"></i>
+		                                    <span class="like-count" style="font-size: 0.75rem; color: ${countColor};" onclick="toggleLike(this, ${comment.no})">${comment.likeCount || 0}</span>
+		                                    ${deleteBtn}
 		                                </div>
 		                            </div>
 		                            <small class="mt-1 ms-1" style="color: #6c757d; font-size: 0.7rem;">${timeSince(comment.createdAt)}</small>
@@ -498,17 +533,15 @@
 		            		<div class="d-flex flex-column" style="max-width: 100%;">
 		            			<div class="d-flex flex-column flex-grow-1">
 		                            <div class="d-flex align-items-center justify-content-end mb-1 me-1">
-		                                <span style="color: #de66e9; font-weight: bold; font-size: 0.8rem;">${safeNickname}</span>
+		                                <span style="color: #de66e9; font-weight: bold; font-size: 0.8rem;">${safeNickname}${checkmark}</span>
 		                            </div>
 		                            <div class="d-flex align-items-center justify-content-end">
-		                                <div class="d-flex align-items-center me-2 gap-1 like-wrapper" style="cursor: pointer; min-width: 20px; line-height:1;"
-		                                     onclick="toggleLike(this, ${comment.no})">
-		                                    <i class="bi ${heartClass} fs-6 like-icon"></i>
-		                                    <span class="like-count" style="font-size: 0.75rem; color: ${countColor};">${comment.likeCount || 0}</span>
+		                                <div class="d-flex align-items-center me-2 gap-1 like-wrapper" style="cursor: pointer; min-width: 20px; line-height:1;">
+		                                    ${deleteBtn}
+		                                    <i class="bi ${heartClass} fs-6 like-icon" onclick="toggleLike(this, ${comment.no})"></i>
+		                                    <span class="like-count" style="font-size: 0.75rem; color: ${countColor};" onclick="toggleLike(this, ${comment.no})">${comment.likeCount || 0}</span>
 		                                </div>
-		                                <div class="px-3 py-2" 
-		                                    style="background: #251b3a; border: 1px solid #de66e9; border-radius: 15px 2px 15px 15px; 
-		                                           max-width: 85%; word-break: break-all; overflow-wrap: break-word; text-align: left;">
+		                                <div class="comment-bubble-right">
 		                                   <p class="mb-0" style="color: #e9ecef; font-size: 0.95rem; white-space: pre-wrap;">${safeContent}</p>
 		                               </div>
 		                            </div>
@@ -645,7 +678,7 @@
 		        type: 'POST',
 		        contentType: 'application/json',
 		        data: JSON.stringify({ 
-		            id: '[[${balanceGame.id}]]',
+		            id: /*[[${balanceGame.id}]]*/ 'default',
 		            direction: direction,
 		            spicyFilter: listSpicyFilter,
 		            category: listCategory
@@ -691,20 +724,20 @@
 		  Kakao.Link.sendDefault({
 		    objectType: 'feed',
 		    content: {
-		      title: '[[${balanceGame.title}]]',
+		      title: /*[[${balanceGame.title}]]*/ 'title',
 		      description: userName + '님은 ' + '(__들어갈 값__)' + '를 선택했어요!',
 		      imageUrl: '##',
 		      link: {
-		        mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + '[[${balanceGame.id}]]',
-		        webUrl: 'https://moondap.com/balanceGame/select?userNo=' + '[[${balanceGame.id}]]'
+		        mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default',
+		        webUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default'
 		      }
 		    },
 		    buttons: [
 		      {
 		        title: '결과 보러가기',
 		        link: {
-		          mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + '[[${balanceGame.id}]]',
-		          webUrl: 'https://moondap.com/balanceGame/select?userNo=' + '[[${balanceGame.id}]]'
+		          mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default',
+		          webUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default'
 		        }
 		      }
 		    ]
@@ -865,8 +898,7 @@
 				
 			<!-- 댓글 창 -->
 			<section class="chat-input-container pt-0 pb-3">
-				<div class="chat-input-wrapper p-2"
-					style="background: #131428; border: 1px solid #333447; border-radius: 30px;">
+				<div class="chat-input-wrapper p-2">
 					<div class="d-flex align-items-center">
 	
 						<button type="button" class="btn p-1 ms-2"
@@ -881,10 +913,8 @@
 	
 						<button type="button"
 							onclick="insertBalanceGameComment()"
-							class="btn d-flex align-items-center justify-content-center p-0"
-							style="width: 40px; height: 40px; min-width: 40px; background-color: #524FD0; color: white; border-radius: 50% !important;">
-							<i class="bi bi-send-fill"
-								style="font-size: 1rem; transform: translateX(-1px);"></i>
+							class="comment-send-btn">
+							<i class="bi bi-send-fill"></i>
 						</button>
 					</div>
 				</div>
@@ -900,14 +930,12 @@
 		aria-labelledby="nicknameModalLabel" aria-hidden="true"
 		data-bs-backdrop="static" data-bs-keyboard="false">
 		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content"
-				style="background-color: #05071e; color: white; border-radius: 20px;">
+			<div class="modal-content moondap-modal-content">
 				<div class="modal-header border-0">
 					<h5 class="modal-title w-100 text-center" id="nicknameModalLabel">댓글 닉네임을 설정합니다.</h5>
 				</div>
 				<div class="modal-body py-0">
-					<div class="chat-input-wrapper p-2"
-						style="background: #131428; border: 1px solid #333447; border-radius: 30px;">
+					<div class="chat-input-wrapper p-2">
 						<div class="d-flex align-items-center">
 							<button type="button" class="btn p-1 ms-2"
 								style="color: #6c757d; border: none;">
@@ -925,7 +953,7 @@
 				        style="background-color: transparent; border: 1px solid #4a4d6d; color: #a1a1a1; font-size: 0.9rem;"
 				        onclick="cancelNickname()">취소</button>
 				    <button type="button" class="btn px-4 bord-radius-20"
-				        style="background-color: #524FD0; color: #ffffff; border: 1px solid #524FD0; font-size: 0.9rem; font-weight: 600;"
+				        style="background-color: var(--accent-color); border-color: var(--accent-color); color: var(--contrast-color); font-size: 0.9rem; font-weight: 600;"
 				        onclick="saveNickname()">등록</button>
 				</div>
 			</div>

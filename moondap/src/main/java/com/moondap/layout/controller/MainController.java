@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.moondap.service.BalanceGameService;
 import com.moondap.service.EgenTetoService;
 import com.moondap.service.StatService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.service.MdTestUserService;
 import com.moondap.dto.MdContentItemDTO;
@@ -25,12 +28,11 @@ public class MainController {
 	private final MdTestUserService mdTestUserService;
 
 	@GetMapping("/")
-	public String index(@org.springframework.web.bind.annotation.RequestParam(value = "normalSort", defaultValue = "popular") String normalSort,
+	public String index(@org.springframework.web.bind.annotation.RequestParam(value = "allSort", defaultValue = "popular") String allSort,
+	                    @org.springframework.web.bind.annotation.RequestParam(value = "normalSort", defaultValue = "popular") String normalSort,
 	                    @org.springframework.web.bind.annotation.RequestParam(value = "balanceSort", defaultValue = "popular") String balanceSort,
-	                    jakarta.servlet.http.HttpServletRequest request,
+	                    HttpServletRequest request,
 	                    Model model) {
-		// 방문자 수 1 증가
-		statService.incrementVisitCount();
 
 		// 밸런스 게임 전체 참여자 수 및 오늘 방문자 수 조회
 		long totalParticipantCount = balanceGameService.getTotalParticipantCount();
@@ -39,6 +41,9 @@ public class MainController {
 		// 에겐 테토 참여자 수 조회
 		java.util.Map<String, Object> egenStats = egenTetoService.getScoreStatistics();
 		long egenTetoTotalCount = ((Number) egenStats.getOrDefault("totalCount", 0L)).longValue();
+
+		// 전체 통합 상위 6개 조회
+		java.util.List<MdContentItemDTO> popularAllTests = mdTestUserService.getAllContentList("all", allSort, "all", 0, 6);
 
 		// 심리테스트 상위 6개 조회 (독립 정렬)
 		java.util.List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", normalSort, "NORMAL", 0, 6);
@@ -52,9 +57,11 @@ public class MainController {
 		model.addAttribute("totalParticipantCount", totalParticipantCount);
 		model.addAttribute("todayVisitCount", todayVisitCount);
 		model.addAttribute("egenTetoTotalCount", egenTetoTotalCount);
+		model.addAttribute("popularAllTests", popularAllTests);
 		model.addAttribute("popularNormalTests", popularNormalTests);
 		model.addAttribute("popularBalanceTests", popularBalanceTests);
 		model.addAttribute("categories", categories);
+		model.addAttribute("currentAllSort", allSort);
 		model.addAttribute("currentNormalSort", normalSort);
 		model.addAttribute("currentBalanceSort", balanceSort);
 

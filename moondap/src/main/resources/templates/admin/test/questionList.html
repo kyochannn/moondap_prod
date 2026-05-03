@@ -44,15 +44,15 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="/test/manage/list" class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                        <a href="/test/manage/list" class="btn btn-outline-light rounded-pill px-4">
                             <i class="bi bi-arrow-left me-1"></i> 이전
                         </a>
                         <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}" target="_blank"
-                           class="btn btn-outline-info rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                           class="btn btn-outline-info rounded-pill px-4">
                             <i class="bi bi-eye me-1"></i> 테스트 미리보기
                         </a>
                         <a th:href="@{/test/manage/{id}/edit(id=${test.id})}"
-                           class="btn btn-primary rounded-pill px-4" style="background:#524dd3; border:none; font-size: 0.85rem; padding: 6px 16px;">
+                           class="btn btn-primary rounded-pill px-4">
                             <i class="bi bi-pencil-square me-1"></i> 테스트 수정
                         </a>
                     </div>

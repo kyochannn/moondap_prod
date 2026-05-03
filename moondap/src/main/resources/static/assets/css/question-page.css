@@ -92,18 +92,18 @@
 /* 실제 마우스 호버가 가능한 기기에서만 호버 효과 적용 (모바일 잔상 방지) */
 @media (hover: hover) {
     .option-btn:hover {
-        background-color: rgba(82, 77, 211, 0.05);
-        border-color: #524dd3;
+        background-color: rgba(134, 94, 244, 0.05);
+        border-color: #865EF4;
         transform: translateY(-2px);
     }
 }
 
 .option-btn.selected {
-    background-color: #524dd3 !important;
-    border-color: #524dd3 !important;
+    background-color: #865EF4 !important;
+    border-color: #865EF4 !important;
     color: white !important;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(82, 77, 211, 0.3);
+    box-shadow: 0 4px 12px rgba(134, 94, 244, 0.3);
 }
 
 .option-btn.selected i {

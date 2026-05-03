@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moondap.dto.EgenTetoDTO;
 import com.moondap.service.EgenTetoService;
+import com.moondap.service.StatService;
 
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,9 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 public class EgenTetoController {
 
     private final EgenTetoService egenTetoService;
+    private final StatService statService;
 
-    public EgenTetoController(EgenTetoService egenTetoService) {
+    public EgenTetoController(EgenTetoService egenTetoService, StatService statService) {
         this.egenTetoService = egenTetoService;
+        this.statService = statService;
     }
 
     /**
@@ -94,6 +97,10 @@ public class EgenTetoController {
         
         try {
             EgenTetoDTO result = egenTetoService.calculateResult(gender, answersJson);
+            
+            // 오늘 콘텐츠 참여 수 증가
+            statService.incrementParticipationCount();
+            
             request.getSession().setAttribute("userBroker", result);
             return "redirect:/egenTeto/result";
         } catch (IllegalArgumentException e) {

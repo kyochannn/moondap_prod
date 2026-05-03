@@ -257,4 +257,8 @@ public class MdTestAdminService {
     public void deleteQuestion(Long id) {
         mdTestMapper.softDeleteQuestion(id);
     }
+
+    public long getTotalPlayCount() {
+        return mdTestMapper.selectTotalPlayCount();
+    }
 }

@@ -5,6 +5,7 @@ import com.moondap.dto.MdTestCategoryDTO;
 import com.moondap.dto.MdTestDTO;
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.service.MdTestUserService;
+import com.moondap.service.StatService;
 import com.moondap.config.auth.PrincipalDetails;
 import com.moondap.dto.MdTestResultDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -28,6 +29,7 @@ public class MdTestUserController {
 
     private final MdTestUserService mdTestUserService;
     private final MdTestCategoryService mdTestCategoryService;
+    private final StatService statService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -141,6 +143,8 @@ public class MdTestUserController {
                 
                 if (!preview) {
                     mdTestUserService.incrementPlayCount(test.getId());
+                    // 오늘 콘텐츠 참여 수 증가
+                    statService.incrementParticipationCount();
                 }
                 
                 // resultCode 세팅 (공유 URL용)

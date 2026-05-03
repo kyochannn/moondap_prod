@@ -361,4 +361,9 @@
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
+    <!-- 전체 참여자 수 합계 (일반 테스트) -->
+    <select id="selectTotalPlayCount" resultType="long">
+        SELECT COALESCE(SUM(play_count), 0)
+        FROM md_tests
+    </select>
 </mapper>

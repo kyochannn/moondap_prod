@@ -27,7 +27,7 @@
   /* Default color used for the majority of the text content across the entire website */
   --heading-color: #ffffff;
   /* Color for headings, subheadings and title throughout the website */
-  --accent-color: #524dd3;
+  --accent-color: #865EF4;
   /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
   --surface-color: #131428;
   /* The surface color is used as a background of boxed elements within sections, such as cards, icon boxes, or other elements that require a visual separation from the global background. */
@@ -192,18 +192,23 @@ h6 {
 .header .btn-getstarted,
 .header .btn-getstarted:focus {
   color: var(--contrast-color);
-  background: var(--accent-color);
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   font-size: 14px;
-  padding: 8px 20px;
+  padding: 8px 25px;
   margin: 0 0 0 30px;
   border-radius: 50px;
   transition: 0.3s;
+  border: none;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  font-weight: 600;
 }
 
 .header .btn-getstarted:hover,
 .header .btn-getstarted:focus:hover {
   color: var(--contrast-color);
-  background: color-mix(in srgb, var(--accent-color), transparent 15%);
+  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
 }
 
 @media (max-width: 1200px) {
@@ -1579,6 +1584,46 @@ section,
   100% { transform: scale(0.8); opacity: 0.5; }
 }
 
+/* Content Type Tabs Style */
+.type-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+.type-tab {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  padding: 5px 10px;
+  position: relative;
+  transition: all 0.3s;
+  cursor: pointer;
+  white-space: nowrap;
+  background: none;
+  border: none;
+}
+
+.type-tab:hover, .type-tab.active {
+  color: #fff;
+}
+
+.type-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--accent-color);
+  border-radius: 3px 3px 0 0;
+}
+
 /* Global Sort Options Style */
 .sort-options {
   display: flex;
@@ -1598,7 +1643,7 @@ section,
 }
 
 .sort-link:hover, .sort-link.active {
-  color: #524dd3;
+  color: var(--accent-color);
   font-weight: 700;
 }
 
@@ -1609,7 +1654,100 @@ section,
   left: 0;
   width: 100%;
   height: 2px;
-  background: #524dd3;
+  background: var(--accent-color);
+}
+
+.game-gallery {
+  padding-top: 60px;
+  padding-bottom: 0px;
+}
+
+/* List Page Filter & Category Styles */
+.filter-toggle-area {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.filter-toggle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 10px 25px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.filter-toggle-btn:hover {
+  background: color-mix(in srgb, var(--accent-color), transparent 80%);
+  border-color: var(--accent-color);
+}
+
+.filter-toggle-btn i {
+  transition: transform 0.3s ease;
+}
+
+.filter-toggle-btn.active .bi-chevron-down {
+  transform: rotate(180deg);
+}
+
+.collapsible-filters {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 0;
+}
+
+.collapsible-filters.show {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.category-chip {
+  padding: 8px 20px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.category-chip:hover, .category-chip.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+  transform: translateY(-2px);
+}
+
+.empty-state {
+  padding: 100px 0;
+  text-align: center;
+  color: #666;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: block;
+  opacity: 0.5;
 }
 
 .game-gallery .game-wrapper .game-image .game-hover {
@@ -1775,10 +1913,13 @@ section,
 }
 
 .game-gallery .game-cta .cta-buttons .btn.btn-primary {
-  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #4338ca 20%));
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
   color: var(--contrast-color);
-  border: none;
-  box-shadow: 0 4px 15px color-mix(in srgb, var(--accent-color), transparent 70%);
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .game-gallery .game-cta .cta-buttons .btn.btn-primary:hover {
@@ -1970,9 +2111,13 @@ section,
 }
 
 .why-us .feature-content .cta-wrapper .btn.btn-primary {
-  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #8b5cf6 30%));
-  color: var(--contrast-color);
+  background-color: var(--accent-color);
   border-color: var(--accent-color);
+  color: var(--contrast-color);
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .why-us .feature-content .cta-wrapper .btn.btn-primary:hover {
@@ -4161,13 +4306,14 @@ section,
   gap: 12px;
   padding: 16px 32px;
   background-color: var(--accent-color);
+  border-color: var(--accent-color);
   color: var(--contrast-color);
-  border-radius: 8px;
+  border-radius: 50px;
   text-decoration: none;
-  font-weight: 400;
+  font-weight: 600;
   font-size: 16px;
   transition: all 0.3s ease;
-  border: 2px solid var(--accent-color);
+  border: 1px solid var(--accent-color);
 }
 
 .error-404 .error-actions .btn-primary:hover {
@@ -4382,7 +4528,7 @@ section,
 # Moondap Custom CTA Section
 --------------------------------------------------------------*/
 .cta-card {
-  background: linear-gradient(135deg, rgba(82, 77, 211, 0.15) 0%, rgba(255, 255, 255, 0.03) 100%);
+  background: linear-gradient(135deg, rgba(134, 94, 244, 0.15) 0%, rgba(255, 255, 255, 0.03) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 30px;
   backdrop-filter: blur(10px);
@@ -4393,22 +4539,24 @@ section,
 }
 
 .cta-card:hover {
-  border-color: rgba(82, 77, 211, 0.3);
+  border-color: rgba(134, 94, 244, 0.3);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .btn-cta-primary {
-  background: #524dd3;
-  border: none;
-  box-shadow: 0 10px 20px rgba(82, 77, 211, 0.3);
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--accent-color), transparent 70%);
   transition: all 0.3s ease;
 }
 
 .btn-cta-primary:hover {
-  background: #413bbd;
+  background-color: color-mix(in srgb, var(--accent-color), black 15%);
+  border-color: color-mix(in srgb, var(--accent-color), black 15%);
   transform: translateY(-2px);
-  box-shadow: 0 15px 25px rgba(82, 77, 211, 0.4);
-  color: #fff;
+  box-shadow: 0 15px 25px color-mix(in srgb, var(--accent-color), transparent 60%);
+  color: var(--contrast-color);
 }
 
 /* 컨텐츠 썸네일 공통 스타일 */
@@ -4425,4 +4573,88 @@ section,
     aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: 22px;
+}
+
+/*--------------------------------------------------------------
+# Balance Game Page Styles
+--------------------------------------------------------------*/
+.chat-input-wrapper {
+  background: #131428;
+  border: 1px solid #333447;
+  border-radius: 30px;
+}
+
+.comment-send-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.comment-send-btn:hover {
+  background-color: color-mix(in srgb, var(--accent-color), black 15%);
+  border-color: color-mix(in srgb, var(--accent-color), black 15%);
+  color: var(--contrast-color);
+}
+
+.comment-bubble-left {
+  background: #1e213a;
+  border: 1px solid #3876f2;
+  border-radius: 2px 15px 15px 15px;
+  max-width: 85%;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  padding: 0.5rem 1rem;
+}
+
+.comment-bubble-right {
+  background: #251b3a;
+  border: 1px solid #de66e9;
+  border-radius: 15px 2px 15px 15px;
+  max-width: 85%;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+
+.moondap-modal-content {
+  background-color: #05071e;
+  color: white;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comment-view-hide-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1a1;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.comment-view-hide-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.user-verified-check {
+  color: #4dabf7;
+  font-size: 0.7rem;
+  margin-left: 0.25rem;
+}
+
+.admin-delete-btn {
+  color: var(--bs-danger);
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
 }

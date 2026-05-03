@@ -210,6 +210,18 @@ public class StandardBalanceGameService implements BalanceGameService {
     	} 
     	return id;
     }
+
+    // 밸런스 게임 단일 댓글 삭제 (관리자용)
+    @Override
+    @Transactional
+    public String deleteSingleComment(int no) throws Exception {
+        log.info("========== 밸런스 게임 단일 댓글 삭제: {} ==========", no);
+        int updatedRows = balanceGameMapper.deleteSingleComment(no);
+        if (updatedRows == 1) {
+            return "SUCCESS";
+        }
+        return "FAIL";
+    }
     
     // 밸런스 게임 좋아요 등록
     @Override

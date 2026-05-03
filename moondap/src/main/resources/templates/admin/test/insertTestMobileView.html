@@ -225,13 +225,7 @@
                                                      id="thumbnail-preview"
                                                      class="preview-img"
                                                      onerror="handleImageError(this)">
-                                                <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
-                                                    <div class="icon-circle mb-2">
-                                                        <i class="bi bi-plus-circle-fill text-white fs-3"></i>
-                                                    </div>
-                                                    <p class="guide-text mb-0">이미지 업로드</p>
-                                                    <p class="guide-sub-text">(드래그 또는 클릭)</p>
-                                                </div>
+                                                <div class="upload-placeholder"><i class="bi bi-plus-lg text-white" style="font-size: 3rem;"></i></div>
                                                 <input type="file"
                                                        name="thumbnailFile"
                                                        id="thumbnail-file"
@@ -292,12 +286,7 @@
                                                              class="preview-img"
                                                              th:src="${r.resultImage != null and r.resultImage != ''} ? @{'/uploads/' + ${r.resultImage}} : ''"
                                                              onerror="handleImageError(this)">
-                                                        <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
-                                                            <div class="icon-circle mb-1" style="width: 30px; height: 30px;">
-                                                                <i class="bi bi-plus-circle-fill text-white" style="font-size: 1rem;"></i>
-                                                            </div>
-                                                            <p class="guide-text mb-0" style="font-size: 0.7rem;">이미지 업로드</p>
-                                                        </div>
+                                                        <div class="upload-placeholder"><i class="bi bi-plus-lg text-white" style="font-size: 1.5rem;"></i></div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-9">
@@ -719,12 +708,7 @@
                                        onchange="previewResultImage(this, 'res-preview-${uid}')">
                                 <img id="res-preview-${uid}" class="preview-img"
                                      onerror="handleImageError(this)">
-                                <div class="upload-guide-layer d-flex flex-column align-items-center justify-content-center text-center">
-                                    <div class="icon-circle mb-1" style="width: 30px; height: 30px;">
-                                        <i class="bi bi-plus-circle-fill text-white" style="font-size: 1rem;"></i>
-                                    </div>
-                                    <p class="guide-text mb-0" style="font-size: 0.7rem;">이미지 업로드</p>
-                                </div>
+                                <div class="upload-placeholder"><i class="bi bi-plus-lg text-white" style="font-size: 1.5rem;"></i></div>
                             </div>
                         </div>
                         <div class="col-md-9">
