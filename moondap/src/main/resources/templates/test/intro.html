@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${test.title} + ' - 문답'">테스트 상세 정보</title>
+    <link rel="stylesheet" th:href="@{/assets/css/testResult-page.css}">
     <style>
         #copyToast {
             visibility: hidden; min-width: 200px; background-color: #ffffff; color: #000;
@@ -16,6 +17,7 @@
         #copyToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+        .test-intro-text { white-space: pre-wrap; }
     </style>
 </head>
 
@@ -70,7 +72,10 @@
 
                             <div class="button-group mb-4">
                                 <div class="d-flex align-items-center gap-2">
-                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                    <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-nowrap text-dark shadow-sm" style="background-color: #FEE500; border: none;">
+                                        <i class="bi bi-chat-fill"></i> 공유
+                                    </button>
+                                    <button onclick="copyLinkAction()" class="btn btn-outline-info rounded-pill px-3 py-2 fw-bold shadow-sm">
                                         <i class="bi bi-link-45deg"></i> 링크 공유
                                     </button>
                                     
@@ -82,59 +87,69 @@
                                 </div>
                             </div>
 
-                            <div class="project-overview mb-0">
-                                <div class="accordion project-accordion" id="testAccordion">
-                                    <div class="accordion-item shadow-sm border-0 rounded overflow-hidden">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                                                <i class="bi bi-info-circle-fill me-2"></i> 테스트 소개
-                                            </button>
-                                        </h2>
-                                        <div id="collapseOne" class="accordion-collapse collapse show">
-                                            <div class="accordion-body text-white" th:text="${test.description}">
-                                                소개 내용이 들어갑니다.
-                                            </div>
-                                        </div>
+                            <!-- 테스트 소개 섹션 (Premium Analysis Box Style) -->
+                            <div class="mb-0">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div style="width: 4px; height: 20px; background: #865EF4; border-radius: 2px; margin-right: 12px;"></div>
+                                    <h5 class="fw-bold text-white mb-0">테스트 소개</h5>
+                                </div>
+                                <div class="analysis-box">
+                                    <div class="analysis-text text-white" th:text="${test.description}">
+                                        소개 내용이 들어갑니다.
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 결과 유형 미리보기 영역 -->
-                            <div class="project-overview mt-4 mb-4" th:if="${test.results != null and !#lists.isEmpty(test.results)}">
-                                <div class="accordion project-accordion">
-                                    <div class="accordion-item shadow-sm border-0 rounded overflow-hidden">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePreview">
-                                                <i class="bi bi-grid-fill me-2"></i> 결과 유형 미리보기
-                                            </button>
-                                        </h2>
-                                        <div id="collapsePreview" class="accordion-collapse collapse show">
-                                            <div class="accordion-body text-white">
-                                                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-                                                    <div class="col" th:each="res : ${test.results}">
-                                                        <div class="card h-100 text-center rounded-4 shadow-sm" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
-                                                            <div class="p-2">
-                                                                <img th:if="${res.resultImage != null and res.resultImage != ''}" 
-                                                                     th:src="@{'/uploads/' + ${res.resultImage}}" 
-                                                                     class="img-fluid rounded-3 mb-2" alt="결과 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
-                                                                <img th:unless="${res.resultImage != null and res.resultImage != ''}" 
-                                                                     th:src="@{/assets/img/default-img/default-content-img.png}" 
-                                                                     class="img-fluid rounded-3 mb-2" alt="기본 이미지" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%;">
-                                                                <h6 class="fw-bold text-white mb-1 mt-1 small" th:text="${res.resultTitle}" style="word-break: keep-all;">유형 이름</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                            <!-- 결과 유형 미리보기 영역 (Premium Card Style) -->
+                            <div class="text-start mt-4 mb-4" th:if="${test.results != null and !#lists.isEmpty(test.results)}">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div style="width: 4px; height: 20px; background: #ffc107; border-radius: 2px; margin-right: 12px;"></div>
+                                    <h5 class="fw-bold text-white mb-0">전체 결과 유형 미리보기</h5>
+                                </div>
+                                <div class="row row-cols-2 row-cols-md-4 g-3">
+                                    <div class="col" th:each="res : ${test.results}">
+                                        <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card"     
+                                            style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);" 
+                                            th:data-title="${res.resultTitle}"
+                                            th:data-image="${res.resultImage}"
+                                            th:data-content="${res.resultContent}"
+                                            onclick="handleOtherResultClick(this)">
+                                            <div class="p-2">
+                                                <img th:src="${res.resultImage != null and res.resultImage != ''} ? @{'/uploads/' + ${res.resultImage}} : '/assets/img/default-img/default-content-img.png'" 
+                                                     class="img-fluid rounded-3 mb-2" alt="결과 이미지" 
+                                                     style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);"
+                                                     onerror="this.onerror=null; this.src='/assets/img/default-img/default-content-img.png';">
+                                                <h6 class="fw-bold text-white mb-0 small" th:text="${res.resultTitle}" 
+                                                    style="word-break: keep-all; font-size: 0.8rem; line-height: 1.2;">유형 이름</h6>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <p class="text-white-50 mt-3 small text-center opacity-75">
+                                    <i class="bi bi-info-circle me-1"></i> 각 유형을 클릭하면 상세 미리보기를 확인하실 수 있습니다.
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- 결과 상세 보기 모달 -->
+        <div id="otherResultModal" class="other-result-modal" onclick="closeOtherResult(event)">
+            <div class="other-result-modal-content" onclick="event.stopPropagation()">
+                <h4 id="modalTitle" class="modal-result-title">유형 제목</h4>
+                <img id="modalImage" src="" class="modal-result-img" onerror="this.src='/assets/img/default-img/default-content-img.png';">
+                <div id="modalDescription" class="modal-result-description">
+                    분석 내용이 여기에 표시됩니다.
+                </div>
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button class="btn modal-close-btn rounded-pill px-5 py-2 fw-bold" onclick="closeOtherResult()">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script th:inline="javascript">
@@ -149,8 +164,7 @@
         };
 
         function copyLinkAction() {
-            const url = window.location.href;
-            copyToClipboard(url, () => {
+            copyLinkCommon(null, () => {
                 const toast = document.getElementById("copyToast");
                 toast.className = "show";
                 setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
@@ -159,11 +173,62 @@
 
         function startTest(url) {
             if (typeof showLoading === 'function') {
-                showLoading(0, '테스트를 준비하고 있습니다', '세상의 모든 테스트, 문답!');
+                showLoading(0, '테스트를 준비하고 있습니다', '테스트로 만나는 또 다른 나, 문답!');
             }
             setTimeout(() => {
                 location.href = url;
             }, 800);
+        }
+
+        // 카카오 공유 기능 연동
+        function shareKakaoAction() {
+            const testTitle = /*[[${test.title}]]*/ '';
+            const testDesc = /*[[${test.description}]]*/ '';
+            const testKey = /*[[${test.testKey}]]*/ '';
+            const thumbImg = /*[[${test.thumbnailImage}]]*/ '';
+            
+            const shareUrl = window.location.origin + "/test/" + testKey;
+            const imageUrl = thumbImg && thumbImg !== 'default-content-img.png' 
+                             ? window.location.origin + "/uploads/" + thumbImg 
+                             : window.location.origin + "/assets/img/default-img/default-content-img.png";
+
+            shareKakaoCommon({
+                title: testTitle,
+                description: testDesc,
+                imageUrl: imageUrl,
+                shareUrl: shareUrl,
+                buttonTitle: '테스트 하러가기'
+            });
+        }
+
+        // 결과 상세 보기 모달 관련 함수
+        function handleOtherResultClick(element) {
+            const title = element.getAttribute('data-title');
+            const image = element.getAttribute('data-image');
+            const content = element.getAttribute('data-content');
+            openOtherResult(title, image, content);
+        }
+
+        function openOtherResult(title, image, content) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalImage').src = image ? '/uploads/' + image : '/assets/img/default-img/default-content-img.png';
+            document.getElementById('modalDescription').innerText = content;
+            
+            const modal = document.getElementById('otherResultModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOtherResult() {
+            const modal = document.getElementById('otherResultModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
         }
 
         // 브라우저 뒤로가기 시 로딩 오버레이 숨기기

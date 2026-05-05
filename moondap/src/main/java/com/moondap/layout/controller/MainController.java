@@ -92,5 +92,19 @@ public class MainController {
 	public String terms() {
 		return "legal/terms";
 	}
+
+	@GetMapping("/partnership")
+	public String partnership(Model model) {
+		// 전체 참여자 수 집계
+		long balanceGameTotalCount = balanceGameService.getTotalParticipantCount();
+		long normalTestTotalCount = mdTestAdminService.getTotalPlayCount();
+		java.util.Map<String, Object> egenStats = egenTetoService.getScoreStatistics();
+		long egenTetoTotalCount = ((Number) egenStats.getOrDefault("totalCount", 0L)).longValue();
+		
+		long totalParticipantCount = balanceGameTotalCount + normalTestTotalCount + egenTetoTotalCount;
+		
+		model.addAttribute("totalParticipantCount", totalParticipantCount);
+		return "partnership";
+	}
 	
 }

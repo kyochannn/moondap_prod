@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main_layout}">
+<head>
+    <title>광고 및 제휴 문의 | 문답(MOONDAP)</title>
+    <style>
+        .partnership-hero {
+            padding: 100px 0 60px;
+            background: linear-gradient(135deg, #05071e 0%, #131428 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .partnership-hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(134,94,244,0.1) 0%, transparent 70%);
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 25px;
+            padding: 40px;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(134, 94, 244, 0.3);
+        }
+        .ad-model-card {
+            border-radius: 30px;
+            overflow: hidden;
+            background: #1a1b3a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #865EF4;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .contact-section {
+            background: rgba(134, 94, 244, 0.05);
+            border-radius: 40px;
+            padding: 80px 40px;
+        }
+    </style>
+</head>
+<body class="dark-background">
+    <main layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="partnership-hero text-center">
+            <div class="container" data-aos="fade-up">
+                <span class="badge rounded-pill bg-warning text-dark px-3 py-2 mb-3 fw-bold">FOR ADVERTISERS</span>
+                <h1 class="display-4 fw-bold text-white mb-4">브랜드를 '경험'으로 만드는<br><span style="color: #865EF4;">문답(MOONDAP)</span> 파트너십</h1>
+                <p class="lead text-white-50 mb-5">MZ세대가 열광하는 체험형 콘텐츠를 통해<br>자연스러운 브랜드 확산과 확실한 마케팅 성과를 경험하세요.</p>
+                <a href="#contact" class="btn btn-primary rounded-pill px-5 py-3 fw-bold fs-5 shadow-lg">제휴 문의하기</a>
+            </div>
+        </section>
+
+        <!-- Why Moondap? -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="fw-bold text-white">왜 문답인가요?</h2>
+                    <h5 class="text-white fw-bold mb-2">지금까지 <span class="text-warning"><span id="total-count" th:attr="data-target=${totalParticipantCount}" th:text="${#numbers.formatInteger(totalParticipantCount, 3, 'COMMA')}">266,710</span>명</span>이 문답의 콘텐츠를 함께했습니다.</h5>
+                    <p class="text-white-50 mt-0">광고주들이 문답을 선택하는 이유, 데이터로 증명합니다.</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-lightning-charge-fill text-warning fs-1 mb-3 d-block"></i>
+                            <h3 class="fw-bold text-white mb-3">90% +</h3>
+                            <p class="text-white-50">테스트 시작 후 완료까지의 압도적인 몰입도와 참여율</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-share-fill text-info fs-1 mb-3 d-block"></i>
+                            <h3 class="fw-bold text-white mb-3">Social Viral</h3>
+                            <p class="text-white-50">인스타그램 스토리, 카카오톡을 통한 자발적인 결과 공유와 확산</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="stat-card text-center">
+                            <i class="bi bi-person-check-fill style-color-primary fs-1 mb-3 d-block" style="color: #865EF4;"></i>
+                            <h3 class="fw-bold text-white mb-3">MZ Targeting</h3>
+                            <p class="text-white-50">트렌드에 발 빠른 1030 세대에게 가장 효과적인 도달 방식</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ad Models -->
+        <section class="py-5 bg-black bg-opacity-25">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="fw-bold text-white">파트너십 모델</h2>
+                    <p class="text-white-50">브랜드의 목적에 맞는 최적의 광고 형태를 제안합니다.</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="ad-model-card">
+                            <div class="p-4">
+                                <h4 class="fw-bold text-white mb-3">브랜디드 테스트</h4>
+                                <p class="text-white-50 small mb-0">브랜드의 가치관과 상품을 녹여낸 독창적인 심리테스트를 제작하여 유저들에게 '체험형 광고'를 제공합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="ad-model-card">
+                            <div class="p-4">
+                                <h4 class="fw-bold text-white mb-3">네이티브 PPL</h4>
+                                <p class="text-white-50 small mb-0">기존 인기 테스트의 결과 페이지나 공유 이미지에 브랜드 로고 및 상품 추천 섹션을 자연스럽게 노출합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="ad-model-card">
+                            <div class="p-4">
+                                <h4 class="fw-bold text-white mb-3">퍼포먼스 제휴 (CPA)</h4>
+                                <p class="text-white-50 small mb-0">테스트 결과와 연계된 맞춤형 상품 구매, 앱 설치, 서비스 가입 등 실질적인 전환 성과를 창출합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 class="fw-bold text-white">협업 프로세스</h2>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-4" data-aos="fade-right">
+                        <div class="step-number">01</div>
+                        <h5 class="text-white fw-bold">문의 및 상담</h5>
+                        <p class="text-white-50 small">브랜드의 목적과 예산에 맞는 방향성을 제안합니다.</p>
+                    </div>
+                    <div class="col-md-3 mb-4" data-aos="fade-right" data-aos-delay="100">
+                        <div class="step-number">02</div>
+                        <h5 class="text-white fw-bold">기획 및 설계</h5>
+                        <p class="text-white-50 small">문답의 전문 팀이 바이럴 포인트가 담긴 콘텐츠를 설계합니다.</p>
+                    </div>
+                    <div class="col-md-3 mb-4" data-aos="fade-right" data-aos-delay="200">
+                        <div class="step-number">03</div>
+                        <h5 class="text-white fw-bold">제작 및 런칭</h5>
+                        <p class="text-white-50 small">최적화된 UI/UX로 테스트를 개발하고 플랫폼에 노출합니다.</p>
+                    </div>
+                    <div class="col-md-3 mb-4" data-aos="fade-right" data-aos-delay="300">
+                        <div class="step-number">04</div>
+                        <h5 class="text-white fw-bold">성과 리포트</h5>
+                        <p class="text-white-50 small">참여 수, 공유 수 등 상세 데이터를 분석하여 보고합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-5 mb-5">
+            <div class="container">
+                <div class="cta-card text-center" data-aos="fade-up">
+                    <h2 class="fw-bold text-white mb-4">지금 바로 문답과 함께하세요</h2>
+                    <p class="text-white-50 mb-5 fs-5">비즈니스 성공을 위한 가장 즐거운 파트너십, 기다리고 있겠습니다.</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="javascript:void(0);" onclick="openContactModal()" class="btn btn-primary rounded-pill px-5 py-2 fw-bold btn-cta-primary">
+                            <i class="bi bi-envelope-fill me-2"></i>이메일 문의하기
+                        </a>
+                        <a href="javascript:void(0);" onclick="openInstagramModal()" class="btn btn-outline-light rounded-pill px-4 py-2">
+                            <i class="bi bi-instagram me-2"></i>인스타그램 DM
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Email Contact Form Modal -->
+        <div class="modal fade" id="contactFormModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 30px; background: rgba(26, 27, 58, 0.7) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white; padding: 25px;">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">제휴 및 광고 문의 양식</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-3">
+                        <p class="text-white-50 small mb-3">아래 양식을 복사하여 <strong class="text-warning">webmaster@moondap.com</strong>으로 보내주세요.</p>
+                        <div id="emailTemplate" class="p-4 rounded-4 mb-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); font-family: monospace; font-size: 14px; line-height: 1.8; color: #eee;">
+                            [필수정보]<br>
+                            - 성함:<br>
+                            - 회사:<br>
+                            - 직함:<br>
+                            - 전화번호:<br>
+                            - 이메일:<br><br>
+                            [제휴 문의 및 광고]<br>
+                            - 홍보 대상 프로덕트:<br>
+                            - 문의 내용:
+                        </div>
+                        <div class="d-grid">
+                            <button onclick="copyTemplate()" class="btn fw-bold py-3 rounded-pill" style="background: #865EF4; color: white; border: none;">
+                                <i class="bi bi-clipboard-check me-2"></i> 양식 복사하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instagram Contact Modal -->
+        <div class="modal fade" id="instagramModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 30px; background: rgba(26, 27, 58, 0.7) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white; padding: 25px;">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold">인스타그램 DM 문의</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-3 text-center">
+                        <div class="mb-4">
+                            <i class="bi bi-instagram display-4" style="color: #865EF4;"></i>
+                        </div>
+                        <p class="mb-3">문답 공식 인스타그램 계정으로 메시지를 보내주세요.</p>
+                        
+                        <div class="p-3 rounded-4 mb-4 text-start" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); font-family: monospace; font-size: 13px; line-height: 1.6; color: #ccc;">
+                            [필수정보]<br>
+                            - 성함:<br>
+                            - 회사:<br>
+                            - 직함:<br>
+                            - 전화번호:<br>
+                            - 이메일:<br><br>
+                            [제휴 문의 및 광고]<br>
+                            - 홍보 대상 프로덕트:<br>
+                            - 문의 내용:
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="https://www.instagram.com/moondap_com/" target="_blank" class="btn fw-bold py-3 rounded-pill shadow-sm" style="background: #865EF4; color: white; border: none;">
+                                <i class="bi bi-chat-heart-fill me-2"></i> DM 보내기 (@moondap_com)
+                            </a>
+                            <button onclick="copyTemplate()" class="btn btn-outline-light fw-bold py-3 rounded-pill border-opacity-25">
+                                <i class="bi bi-clipboard-check me-2"></i> 양식 복사하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function animateCount() {
+                const counter = document.getElementById('total-count');
+                if(!counter) return;
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const start = 0;
+                let started = false;
+
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && !started) {
+                        started = true;
+                        const startTime = performance.now();
+
+                        function updateCount(currentTime) {
+                            const elapsedTime = currentTime - startTime;
+                            const progress = Math.min(elapsedTime / duration, 1);
+                            const easeOutProgress = 1 - Math.pow(1 - progress, 3);
+                            const currentCount = Math.floor(easeOutProgress * (target - start) + start);
+                            counter.innerText = currentCount.toLocaleString();
+                            if (progress < 1) requestAnimationFrame(updateCount);
+                        }
+                        requestAnimationFrame(updateCount);
+                    }
+                }, { threshold: 0.5 });
+
+                observer.observe(counter);
+            }
+
+            function openContactModal() {
+                const contactModal = new bootstrap.Modal(document.getElementById('contactFormModal'));
+                contactModal.show();
+            }
+
+            function openInstagramModal() {
+                const instagramModal = new bootstrap.Modal(document.getElementById('instagramModal'));
+                instagramModal.show();
+            }
+
+            function copyTemplate() {
+                const templateText = "[필수정보]\n- 성함:\n- 회사:\n- 직함:\n- 전화번호:\n- 이메일:\n\n[제휴 문의 및 광고]\n- 홍보 대상 프로덕트:\n- 문의 내용:";
+                copyToClipboard(templateText, () => {
+                    alert("양식이 복사되었습니다. 메일 작성 시 붙여넣기 해주세요!");
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', animateCount);
+        </script>
+    </main>
+</body>
+</html>

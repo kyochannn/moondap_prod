@@ -212,13 +212,19 @@ public class MdTestUserController {
         }
         model.addAttribute("shareUrl", shareUrl);
 
+        // 추천 콘텐츠 데이터 추가 (인기 테스트 3개, 인기 밸런스 게임 3개)
+        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3);
+        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 3);
+        model.addAttribute("popularNormalTests", popularNormalTests);
+        model.addAttribute("popularBalanceTests", popularBalanceTests);
+
         return "test/result";
     }
 
     /**
      * 광고 노출 단계를 거쳤음을 세션에 기록
      */
-    @PostMapping("/verify-ad")
+    @PostMapping("/verify-analysis")
     @ResponseBody
     public void verifyAd(jakarta.servlet.http.HttpSession session) {
         log.info("광고 단계 확인 완료 (세션 기록)");

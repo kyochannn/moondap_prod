@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="'테스트 결과 - ' + ${test.title}">테스트 결과</title>
-    <link th:href="@{/assets/css/testResult-page.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/testResult-page.css(v=1.1)}" rel="stylesheet">
     <style>
         .table-info-highlight {
             background: rgba(13, 202, 240, 0.1) !important;
@@ -109,14 +109,14 @@
                                 </span>
                             </div>
 
-                            <div class="p-3 mb-3" style="background: rgba(0, 210, 255, 0.05); border-radius: 15px; border: 1px solid rgba(0, 210, 255, 0.1);">
+                            <div th:if="${result.breakdown != null}" class="p-3 mb-3" style="background: rgba(0, 210, 255, 0.05); border-radius: 15px; border: 1px solid rgba(0, 210, 255, 0.1);">
                                 <p class="text-info small mb-0">
                                     <i class="bi bi-info-circle me-1"></i>
                                     선택하신 답변을 바탕으로 <strong>표준 성향 측정 방식</strong>에 따라 점수를 산출했습니다. 
                                     역채점 문항(R)은 질문의 성격에 맞춰 점수가 자동으로 변환되었습니다.
                                 </p>
                             </div>
-                            <div class="card card-body bg-dark text-white border-0 small text-start p-0" style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important;">
+                            <div th:if="${result.breakdown != null}" class="card card-body bg-dark text-white border-0 small text-start p-0" style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important;">
                                 <div class="table-responsive">
                                     <table class="table table-dark-custom table-hover mb-0 align-middle">
                                         <thead>
@@ -155,8 +155,8 @@
                                              <div class="d-flex flex-column align-items-center justify-content-center">
                                                  <small class="text-white-50 fw-bold mb-1" style="font-size: 0.75rem;">나의 답변 총점</small>
                                                  <div class="text-white fw-bold fs-5">
-                                                     <span th:text="${#aggregates.sum(result.breakdown.![finalScore])}">0</span>
-                                                     <span class="text-white-50" style="font-size: 0.85rem;"> / <span th:text="${result.breakdown.size() * 5}">0</span></span>
+                                                     <span th:text="${result.breakdown != null ? #aggregates.sum(result.breakdown.![finalScore]) : 0}">0</span>
+                                                     <span class="text-white-50" style="font-size: 0.85rem;"> / <span th:text="${result.breakdown != null ? result.breakdown.size() * 5 : 0}">0</span></span>
                                                  </div>
                                              </div>
                                          </div>
@@ -170,7 +170,7 @@
                                              </div>
                                          </div>
                                      </div>
-                                     <div class="mt-3 pt-3 border-top border-secondary border-opacity-10 text-center">
+                                     <div th:if="${result.breakdown != null}" class="mt-3 pt-3 border-top border-secondary border-opacity-10 text-center">
                                          <p class="text-white-50 mb-0" style="font-size: 0.7rem; word-break: keep-all;">
                                              * 총 <span class="text-white fw-bold" th:text="${result.breakdown.size()}">0</span>개의 답변 점수를 합산한 뒤, 이를 <span class="text-white fw-bold">100점 만점</span> 기준으로 변환하여 성향을 분석했습니다.
                                          </p>
@@ -180,7 +180,7 @@
                                  <!-- [Case 2] 성향 유형형 (TYPE) 요약 박스 -->
                                  <div th:if="${test.testType == 'TYPE'}" class="mb-4 p-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px;">
                                      <div class="row align-items-center g-0">
-                                         <div class="col-4 border-end border-info border-opacity-25 text-center">
+                                         <div th:if="${result.breakdown != null}" class="col-4 border-end border-info border-opacity-25 text-center">
                                              <small class="text-white-50 fw-bold d-block mb-1" style="font-size: 0.75rem;">총 답변 문항 수</small>
                                              <div class="text-white fw-bold fs-5">
                                                  <span th:text="${result.breakdown.size()}">0</span><span style="font-size: 0.8rem; margin-left: 2px;">개</span>
@@ -241,7 +241,7 @@
                                                  </thead>
                                                  <tbody>
                                                      <tr th:each="type : ${test.results}" 
-                                                         th:with="isMatched=${test.testType == 'SCORE' ? (result.calculatedScore >= type.minScore and result.calculatedScore <= type.maxScore) : (result.resultTitle == type.resultTitle)},
+                                                         th:with="isMatched=${result.calculatedScore != null ? (test.testType == 'SCORE' ? (result.calculatedScore >= type.minScore and result.calculatedScore <= type.maxScore) : (result.resultTitle == type.resultTitle)) : (result.resultTitle == type.resultTitle)},
                                                                   analysisData=${result.domainAnalysisMap != null ? result.domainAnalysisMap.get(type.resultTitle) : null}"
                                                          th:classappend="${isMatched} ? 'table-info-highlight' : ''">
                                                          <td class="py-3">
@@ -274,8 +274,12 @@
                             </div>
                             <div class="row row-cols-2 row-cols-md-4 g-3">
                                 <div class="col" th:each="res : ${test.results}">
-                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" 
-                                         style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card"     
+                                        style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);" 
+                                        th:data-title="${res.resultTitle}"
+                                         th:data-image="${res.resultImage}"
+                                         th:data-content="${res.resultContent}"
+                                         onclick="handleOtherResultClick(this)">
                                         <div class="p-2">
                                             <img th:src="${res.resultImage != null and res.resultImage != ''} ? @{'/uploads/' + ${res.resultImage}} : '/assets/img/default-img/default-content-img.png'" 
                                                  class="img-fluid rounded-3 mb-2" alt="결과 이미지" 
@@ -290,15 +294,100 @@
                         </div>
 
                         <!-- 액션 버튼 -->
-                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-3">
+                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-2">
                             <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm btn-result-action">
                                 <i class="bi bi-arrow-repeat me-1"></i> 다시 하기
                             </a>
-                            <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
-                                <i class="bi bi-share-fill me-1"></i> 공유하기
+                            <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark shadow-sm" style="background-color: #FEE500; border: none;">
+                                <i class="bi bi-chat-fill"></i> 카톡 공유
                             </button>
-                            <a href="/test/list" class="btn btn-link text-white text-decoration-none w-100 mt-2 small opacity-75">
-                                <i class="bi bi-list-ul me-1"></i> 테스트 목록으로 돌아가기
+                            <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-link-45deg me-1"></i> 링크 복사
+                            </button>
+                            <button onclick="downloadResultImage()" class="btn btn-warning rounded-pill px-4 py-2 fw-bold shadow-sm text-dark">
+                                <i class="bi bi-download me-1"></i> 결과 저장
+                            </button>
+                            <div class="w-100 mt-4">
+                                <a href="/test/list" class="btn btn-primary rounded-pill px-4 py-2 fw-bold w-100 shadow-sm">
+                                    <i class="bi bi-grid-3x3-gap me-2"></i> 더 많은 테스트 보러가기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 추천 테스트 섹션 (DB 연동 및 가로 배치) -->
+                <div class="mt-0 game-gallery" data-aos="fade-up">
+                    
+                    <!-- 인기 테스트 가로 배치 (3개) -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-journal-check me-2 style-color-primary"></i>인기 테스트</h5>
+                        <div class="row gy-4">
+                            <div th:each="t : ${popularNormalTests}" class="col-md-4 col-sm-6">
+                                <a th:href="@{/test/{key}(key=${t.key})}" class="text-decoration-none d-block">
+                                    <div class="game-wrapper">
+                                        <div class="game-image">
+                                            <div th:if="${t.isNew}" class="new-badge">NEW</div>
+                                            <img th:src="${t.thumbnail != null and t.thumbnail != ''} ? (${#strings.startsWith(t.thumbnail, '/assets/')} ? ${t.thumbnail} : (@{/uploads/} + ${t.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
+                                                 alt="테스트 썸네일" class="img-fluid" loading="lazy">
+                                        </div>  
+                                        <div class="game-content">
+                                            <div class="game-meta">
+                                                <span class="game-type" th:text="${t.categoryName}">테스트</span>
+                                                <div class="game-rating">
+                                                    <i class="bi bi-controller"></i>
+                                                    <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
+                                                </div>
+                                            </div>
+                                            <h3 th:text="${t.title}">테스트 제목</h3>
+                                            <p th:text="${t.description}">설명</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <a href="/test/list?type=NORMAL" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 인기 밸런스 게임 가로 배치 (3개) -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임</h5>
+                        <div class="row gy-4">
+                            <div th:each="t : ${popularBalanceTests}" class="col-md-4 col-sm-6">
+                                <a th:href="@{/balanceGame/selectBalanceGameView(id=${t.id})}" class="text-decoration-none d-block">
+                                    <div class="game-wrapper">
+                                        <div class="game-image">
+                                            <div th:if="${t.isNew}" class="new-badge">NEW</div>
+                                            <div class="split-thumbnail">
+                                                <img th:src="${t.thumbnail != null and t.thumbnail != ''} ? (${#strings.startsWith(t.thumbnail, '/assets/')} ? ${t.thumbnail} : (@{/uploads/} + ${t.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
+                                                     alt="옵션1" class="img-left" loading="lazy">
+                                                <img th:src="${t.thumbnail2 != null and t.thumbnail2 != ''} ? (${#strings.startsWith(t.thumbnail2, '/assets/')} ? ${t.thumbnail2} : (@{/uploads/} + ${t.thumbnail2})) : @{/assets/img/default-img/default-content-img.png}"
+                                                     alt="옵션2" class="img-right" loading="lazy">
+                                                <div class="vs-badge">VS</div>
+                                            </div>
+                                        </div>
+                                        <div class="game-content">
+                                            <div class="game-meta">
+                                                <span class="game-type" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">밸런스</span>
+                                                <div class="game-rating">
+                                                    <i class="bi bi-controller"></i>
+                                                    <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
+                                                </div>
+                                            </div>
+                                            <h3 th:text="${t.title}">밸런스 게임 제목</h3>
+                                            <p th:text="${t.description}">설명</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <a href="/test/list?type=BALANCE" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                밸런스 게임 전체보기 <i class="bi bi-arrow-right ms-1"></i>
                             </a>
                         </div>
                     </div>
@@ -306,6 +395,67 @@
 
             </div>
         </section>
+
+        <!-- 다른 결과 상세 보기 모달 -->
+        <div id="otherResultModal" class="other-result-modal" onclick="closeOtherResult(event)">
+            <div class="other-result-modal-content" onclick="event.stopPropagation()">
+                <h4 id="modalTitle" class="modal-result-title">유형 제목</h4>
+                <img id="modalImage" src="" class="modal-result-img" onerror="this.src='/assets/img/default-img/default-content-img.png';">
+                <div id="modalDescription" class="modal-result-description">
+                    분석 내용이 여기에 표시됩니다.
+                </div>
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button class="btn modal-close-btn rounded-pill px-4 px-md-5 py-2 fw-bold" onclick="closeOtherResult()">
+                        닫기
+                    </button>
+                    <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary rounded-pill px-4 px-md-5 py-2 fw-bold shadow-sm">
+                        다시 하기
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📸 [Capture Area] 가변 높이 결과 카드 (모든 컨텐츠 포함) -->
+        <div id="resultCaptureArea" style="position: fixed; top: -10000px; left: -10000px; width: 850px; background: linear-gradient(135deg, #05071e 0%, #131428 100%); padding: 60px; color: white; font-family: 'Roboto', sans-serif;">
+            <!-- 배경 데코레이션 -->
+            <div style="position: absolute; top: 5%; right: -5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(134,94,244,0.15) 0%, transparent 70%);"></div>
+            <div style="position: absolute; bottom: 5%; left: -5%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, transparent 70%);"></div>
+
+            <div style="position: relative; width: 100%; border: 2px solid rgba(255,255,255,0.1); border-radius: 40px; padding: 50px; background: rgba(255,255,255,0.02); backdrop-filter: blur(20px);">
+                <!-- Header -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                        <img src="/assets/img/logo.webp" style="height: 40px; margin-right: 12px;">
+                        <span style="font-size: 32px; font-weight: 700; letter-spacing: 1.5px;">문답</span>
+                    </div>
+                    <div style="font-size: 30px; color: #865EF4; font-weight: 600; margin-bottom: 15px;" th:text="${test.title}">테스트 제목</div>
+                    <div style="height: 3px; width: 80px; background: #865EF4; margin: 0 auto;"></div>
+                </div>
+
+                <!-- Main Content -->
+                <div style="text-align: center;">
+                    <div style="font-size: 20px; color: rgba(255,255,255,0.6); margin-bottom: 20px;">나의 결과 유형은?</div>
+                    
+                    <div style="margin-bottom: 40px;">
+                        <img th:src="${result.resultImage != null ? '/uploads/' + result.resultImage : '/assets/img/default-img/default-content-img.png'}" 
+                             style="width: 500px; height: 500px; object-fit: cover; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 3px solid rgba(255,255,255,0.1);">
+                    </div>
+
+                    <div style="font-size: 35px; font-weight: 900; color: #ffffff; text-shadow: 0 8px 16px rgba(0,0,0,0.3); margin-bottom: 40px; word-break: keep-all; line-height: 1.2;" th:text="${result.resultTitle}">유형 이름</div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: left; margin-bottom: 40px;">
+                        <div style="font-size: 24px; line-height: 1.8; color: rgba(255,255,255,0.9); white-space: pre-wrap; word-break: keep-all;" 
+                           th:text="${result.resultContent}">결과 전체 내용</div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 20px; color: rgba(255,255,255,0.4); margin-bottom: 10px;">지금 바로 문답에서 테스트를 확인하세요!</div>
+                    <div style="font-size: 28px; font-weight: 700; color: #865EF4;">moondap.com</div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script th:inline="javascript">
@@ -330,12 +480,111 @@
         };
 
         function copyLinkAction() {
-            const shareUrl = /*[[${shareUrl}]]*/ window.location.href;
-            copyToClipboard(shareUrl, () => {
+            const baseUrl = window.location.origin;
+            const testKey = /*[[${test.testKey}]]*/ '';
+            const introUrl = baseUrl + "/test/" + testKey;
+            
+            copyLinkCommon(introUrl, () => {
                 const toast = document.getElementById("copyToast");
                 toast.className = "show";
                 setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
             });
+        }
+
+        // 카카오톡 결과 공유 기능
+        function shareKakaoAction() {
+            const testTitle = /*[[${test.title}]]*/ '문답 테스트';
+            const resultTitle = /*[[${result.resultTitle}]]*/ '';
+            const testKey = /*[[${test.testKey}]]*/ '';
+            const resultImg = /*[[${result.resultImage}]]*/ '';
+            
+            const shareUrl = window.location.origin + "/test/" + testKey; 
+            const imageUrl = resultImg 
+                             ? window.location.origin + "/uploads/" + resultImg 
+                             : window.location.origin + "/assets/img/default-img/default-content-img.png";
+
+            shareKakaoCommon({
+                title: `나의 결과는 [${resultTitle}]!`,
+                description: `${testTitle} - 당신의 결과도 문답에서 확인해 보세요!`,
+                imageUrl: imageUrl,
+                shareUrl: shareUrl,
+                buttonTitle: '나도 테스트 하기'
+            });
+        }
+
+        async function downloadResultImage() {
+            const captureArea = document.getElementById('resultCaptureArea');
+            if (!captureArea) return;
+
+            showLoading(0, "이미지를 생성 중입니다", "잠시만 기다려주세요...");
+
+            try {
+                // 이미지가 모두 로드될 때까지 대기
+                const images = captureArea.getElementsByTagName('img');
+                const imagePromises = Array.from(images).map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                    });
+                });
+                await Promise.all(imagePromises);
+
+                // html2canvas 옵션 설정
+                const canvas = await html2canvas(captureArea, {
+                    scale: 2, // 고해상도 (2배)
+                    useCORS: true, // 크로스 도메인 이미지 허용
+                    backgroundColor: '#05071e',
+                    logging: false
+                });
+
+                // 이미지 다운로드
+                const link = document.createElement('a');
+                const testTitle = /*[[${test.title}]]*/ 'moondap';
+                link.download = `문답_${testTitle}_결과.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+            } catch (error) {
+                console.error("이미지 생성 오류:", error);
+                alert("이미지 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 다른 유형 상세 보기 관련 함수
+        function handleOtherResultClick(element) {
+            const title = element.getAttribute('data-title');
+            const image = element.getAttribute('data-image');
+            const content = element.getAttribute('data-content');
+            
+            openOtherResult(title, image, content);
+        }
+
+        function openOtherResult(title, image, content) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalImage').src = image ? '/uploads/' + image : '/assets/img/default-img/default-content-img.png';
+            document.getElementById('modalDescription').innerText = content;
+            
+            const modal = document.getElementById('otherResultModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+            
+            // 바디 스크롤 방지
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOtherResult(event) {
+            // 배경 클릭이나 닫기 버튼 클릭 시에만 닫힘
+            const modal = document.getElementById('otherResultModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
         }
     </script>
 </body>

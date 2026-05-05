@@ -61,6 +61,7 @@ dependencies {
 
 // WAR 빌드 시 DevTools 제외 설정
 tasks.named('bootWar') {
+    archiveFileName = 'ROOT.war'
     // production 빌드 시 devtools 제외를 명시적으로 보장
     exclude '**/spring-boot-devtools-*.jar'
 }

@@ -247,6 +247,7 @@ function hideLoading() {
  * @param {function} successCallback - 성공 시 실행할 함수 (예: 토스트 보여주기)
  */
 function copyToClipboard(text, successCallback) {
+  // 1. 최신 Clipboard API 시도 (HTTPS 환경)
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(text).then(() => {
       if (successCallback) successCallback();
@@ -254,6 +255,7 @@ function copyToClipboard(text, successCallback) {
       fallbackCopyToClipboard(text, successCallback);
     });
   } else {
+    // 2. 레거시/인앱 브라우저 대응 Fallback
     fallbackCopyToClipboard(text, successCallback);
   }
 }
@@ -261,18 +263,50 @@ function copyToClipboard(text, successCallback) {
 function fallbackCopyToClipboard(text, successCallback) {
   const textArea = document.createElement("textarea");
   textArea.value = text;
-  // 텍스트 영역을 보이지 않게 처리
+  
+  // 인앱 브라우저에서 포커스 문제를 방지하기 위한 스타일 설정
   textArea.style.position = "fixed";
-  textArea.style.left = "-9999px";
+  textArea.style.left = "0";
   textArea.style.top = "0";
+  textArea.style.opacity = "0";
+  textArea.style.width = "2em";
+  textArea.style.height = "2em";
+  textArea.style.padding = "0";
+  textArea.style.border = "none";
+  textArea.style.outline = "none";
+  textArea.style.boxShadow = "none";
+  textArea.style.background = "transparent";
+  
+  // iOS에서 키보드 올라오는 현상 방지
+  textArea.setAttribute('readonly', '');
+  
   document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
+  
+  // 선택 및 복사 과정
+  const isiOS = navigator.userAgent.match(/ipad|iphone/i);
+  if (isiOS) {
+    const range = document.createRange();
+    range.selectNodeContents(textArea);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    textArea.setSelectionRange(0, 999999);
+  } else {
+    textArea.select();
+  }
+
   try {
     const successful = document.execCommand('copy');
-    if (successful && successCallback) successCallback();
+    if (successful) {
+      if (successCallback) successCallback();
+    } else {
+      throw new Error('Copy command failed');
+    }
   } catch (err) {
     console.error('Fallback: Unable to copy', err);
+    // 최후의 수단: 안내 메시지
+    alert("현재 브라우저에서 복사 기능을 지원하지 않습니다. 주소창의 링크를 직접 복사해주세요.");
   }
+  
   document.body.removeChild(textArea);
 }

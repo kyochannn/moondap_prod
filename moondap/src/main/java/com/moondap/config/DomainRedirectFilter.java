@@ -3,6 +3,8 @@ package com.moondap.config;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -11,11 +13,14 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * kckoo.co.kr 도메인으로 유입되는 요청을 moondap.com으로 리다이렉트하는 필터
+ * 1. HTTP -> HTTPS 전역 리다이렉트 (X-Forwarded-Proto 기반)
+ * 2. kckoo.co.kr 도메인 -> moondap.com 영구 리다이렉트
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE) // 모든 보안 필터보다 먼저 실행되어야 함
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class DomainRedirectFilter implements Filter {
+
+    private static final Logger log = LoggerFactory.getLogger(DomainRedirectFilter.class);
 
     @Value("${spring.profiles.active:dev}")
     private String activeProfile;
@@ -27,14 +32,21 @@ public class DomainRedirectFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
-        String serverName = req.getServerName();
+        if (!"prod".equals(activeProfile)) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-        // 운영 환경(prod)에서 kckoo.co.kr 도메인으로 접근한 경우 리다이렉트
-        if ("prod".equals(activeProfile) && (serverName.endsWith("kckoo.co.kr"))) {
-            String requestURI = req.getRequestURI();
-            String queryString = req.getQueryString();
-            
-            // 새 주소 구성 (https 적용 권장)
+        String serverName = req.getServerName();
+        String proto = req.getHeader("X-Forwarded-Proto");
+        String requestURI = req.getRequestURI();
+        String queryString = req.getQueryString();
+
+        boolean isKckoo = serverName.endsWith("kckoo.co.kr");
+        boolean isHttp = "http".equalsIgnoreCase(proto);
+
+        // HTTP 접속이거나 kckoo 도메인인 경우 HTTPS moondap.com으로 리다이렉트
+        if (isHttp || isKckoo) {
             StringBuilder redirectUrl = new StringBuilder("https://moondap.com");
             redirectUrl.append(requestURI);
             
@@ -42,7 +54,9 @@ public class DomainRedirectFilter implements Filter {
                 redirectUrl.append("?").append(queryString);
             }
 
-            res.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY); // 301 Redirect
+            log.info("Redirecting to HTTPS: {} -> {}", serverName, redirectUrl);
+            
+            res.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
             res.setHeader("Location", redirectUrl.toString());
             res.setHeader("Connection", "close");
             return;

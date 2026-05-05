@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <title>에겐/테토 테스트 결과</title>
     <!-- 결과 페이지 전용 CSS -->
-    <link th:href="@{/assets/css/testResult-page.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/testResult-page.css(v=1.1)}" rel="stylesheet">
     <!-- html2canvas 라이브러리 (이미지 저장용) -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- Highcharts -->
@@ -344,7 +344,12 @@
                             </div>
                             <div class="row row-cols-2 row-cols-md-4 g-3">
                                 <div class="col">
-                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card" 
+                                         style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);"
+                                         data-title="테토남" 
+                                         data-image="egenTeto/tetoNamImg.webp" 
+                                         data-content="강한 테스토스테론 에너지를 가진 남성 성향입니다. 목표 지향적이며 경쟁 상황에서 능력을 발휘하는 리더십이 돋보입니다. 결단력이 빠르고 논리적인 판단을 우선시하며, 사회적 성취를 중요하게 생각하는 타입입니다."
+                                         onclick="handleOtherResultClick(this)">
                                         <div class="p-2">
                                             <img th:src="@{/assets/img/egenTeto/tetoNamImg.webp}" class="img-fluid rounded-3 mb-2" alt="테토남" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
                                             <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">테토남</h6>
@@ -352,7 +357,12 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card" 
+                                         style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);"
+                                         data-title="에겐남" 
+                                         data-image="egenTeto/egenNamImg.webp" 
+                                         data-content="부드러운 에스트로겐 에너지를 가진 남성 성향입니다. 타인과의 공감과 조화를 중시하며 세밀한 부분까지 살필 줄 아는 섬세함을 지녔습니다. 관계 속에서 정서적 안정을 찾으며 주변 분위기를 부드럽게 만드는 능력이 탁월합니다."
+                                         onclick="handleOtherResultClick(this)">
                                         <div class="p-2">
                                             <img th:src="@{/assets/img/egenTeto/egenNamImg.webp}" class="img-fluid rounded-3 mb-2" alt="에겐남" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
                                             <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">에겐남</h6>
@@ -360,7 +370,12 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card" 
+                                         style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);"
+                                         data-title="테토녀" 
+                                         data-image="egenTeto/tetoNuImg.webp" 
+                                         data-content="강한 테스토스테론 에너지를 가진 여성 성향입니다. 주도적이고 결단력이 빠르며, 본인의 목표를 위해 효율적으로 움직이는 당당한 매력이 있습니다. 독립심이 강하고 본인만의 주관이 뚜렷하여 사회적으로 높은 성취를 이뤄내는 경우가 많습니다."
+                                         onclick="handleOtherResultClick(this)">
                                         <div class="p-2">
                                             <img th:src="@{/assets/img/egenTeto/tetoNuImg.webp}" class="img-fluid rounded-3 mb-2" alt="테토녀" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
                                             <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">테토녀</h6>
@@ -368,7 +383,12 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                                    <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card" 
+                                         style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);"
+                                         data-title="에겐녀" 
+                                         data-image="egenTeto/egenNuImg.webp" 
+                                         data-content="부드러운 에스트로겐 에너지를 가진 여성 성향입니다. 풍부한 감수성과 포용력을 바탕으로 주변을 따뜻하게 아우르는 능력을 지녔습니다. 타인의 필요를 잘 읽어내고 정서적인 지지를 보내는 데 능숙하며, 조화로운 일상에서 행복을 찾습니다."
+                                         onclick="handleOtherResultClick(this)">
                                         <div class="p-2">
                                             <img th:src="@{/assets/img/egenTeto/egenNuImg.webp}" class="img-fluid rounded-3 mb-2" alt="에겐녀" style="aspect-ratio: 1 / 1; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
                                             <h6 class="fw-bold text-white mb-0 small" style="font-size: 0.8rem;">에겐녀</h6>
@@ -379,15 +399,97 @@
                         </div>
 
                         <!-- 액션 버튼 영역 -->
-                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-3">
+                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-2">
                             <a th:href="@{/egenTeto/select}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm btn-result-action">
                                 <i class="bi bi-arrow-repeat me-1"></i> 다시 하기
                             </a>
-                            <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
-                                <i class="bi bi-share-fill me-1"></i> 공유하기
+                            <button onclick="shareKakaoAction()" class="btn btn-warning rounded-pill px-3 py-2 fw-bold text-dark shadow-sm" style="background-color: #FEE500; border: none;">
+                                <i class="bi bi-chat-fill"></i> 카톡 공유
                             </button>
-                            <a href="/test/list" class="btn btn-link text-white text-decoration-none w-100 mt-2 small opacity-75">
-                                <i class="bi bi-list-ul me-1"></i> 테스트 목록으로 돌아가기
+                            <button onclick="copyLinkAction()" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-link-45deg me-1"></i> 링크 복사
+                            </button>
+                            <div class="w-100 mt-4">
+                                <a href="/test/list" class="btn btn-primary rounded-pill px-4 py-2 fw-bold w-100 shadow-sm">
+                                    <i class="bi bi-grid-3x3-gap me-2"></i> 더 많은 테스트 보러가기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 추천 테스트 섹션 (실제 DB 연동 및 가로 배치) -->
+                <div class="mt-0 game-gallery" data-aos="fade-up">
+                    
+                    <!-- 인기 테스트 가로 배치 (3개) -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-journal-check me-2 style-color-primary"></i>인기 테스트</h5>
+                        <div class="row gy-4">
+                            <div th:each="test : ${popularNormalTests}" class="col-md-4 col-sm-6">
+                                <a th:href="@{/test/{key}(key=${test.key})}" class="text-decoration-none d-block">
+                                    <div class="game-wrapper">
+                                        <div class="game-image">
+                                            <div th:if="${test.isNew}" class="new-badge">NEW</div>
+                                            <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
+                                                 alt="테스트 썸네일" class="img-fluid" loading="lazy">
+                                        </div>  
+                                        <div class="game-content">
+                                            <div class="game-meta">
+                                                <span class="game-type" th:text="${test.categoryName}">테스트</span>
+                                                <div class="game-rating">
+                                                    <i class="bi bi-controller"></i>
+                                                    <span th:text="${#numbers.formatInteger(test.playCount, 0, 'COMMA')}">0</span>
+                                                </div>
+                                            </div>
+                                            <h3 th:text="${test.title}">테스트 제목</h3>
+                                            <p th:text="${test.description}">설명</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <a href="/test/list?type=NORMAL" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 인기 밸런스 게임 가로 배치 (3개) -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임</h5>
+                        <div class="row gy-4">
+                            <div th:each="test : ${popularBalanceTests}" class="col-md-4 col-sm-6">
+                                <a th:href="@{/balanceGame/selectBalanceGameView(id=${test.id})}" class="text-decoration-none d-block">
+                                    <div class="game-wrapper">
+                                        <div class="game-image">
+                                            <div th:if="${test.isNew}" class="new-badge">NEW</div>
+                                            <div class="split-thumbnail">
+                                                <img th:src="${test.thumbnail != null and test.thumbnail != ''} ? (${#strings.startsWith(test.thumbnail, '/assets/')} ? ${test.thumbnail} : (@{/uploads/} + ${test.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
+                                                     alt="옵션1" class="img-left" loading="lazy">
+                                                <img th:src="${test.thumbnail2 != null and test.thumbnail2 != ''} ? (${#strings.startsWith(test.thumbnail2, '/assets/')} ? ${test.thumbnail2} : (@{/uploads/} + ${test.thumbnail2})) : @{/assets/img/default-img/default-content-img.png}"
+                                                     alt="옵션2" class="img-right" loading="lazy">
+                                                <div class="vs-badge">VS</div>
+                                            </div>
+                                        </div>
+                                        <div class="game-content">
+                                            <div class="game-meta">
+                                                <span class="game-type" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">밸런스</span>
+                                                <div class="game-rating">
+                                                    <i class="bi bi-controller"></i>
+                                                    <span th:text="${#numbers.formatInteger(test.playCount, 0, 'COMMA')}">0</span>
+                                                </div>
+                                            </div>
+                                            <h3 th:text="${test.title}">밸런스 게임 제목</h3>
+                                            <p th:text="${test.description}">설명</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <a href="/test/list?type=BALANCE" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                                밸런스 게임 전체보기 <i class="bi bi-arrow-right ms-1"></i>
                             </a>
                         </div>
                     </div>
@@ -395,6 +497,25 @@
 
             </div>
         </section>
+
+        <!-- 다른 결과 상세 보기 모달 -->
+        <div id="otherResultModal" class="other-result-modal" onclick="closeOtherResult(event)">
+            <div class="other-result-modal-content" onclick="event.stopPropagation()">
+                <h4 id="modalTitle" class="modal-result-title">유형 제목</h4>
+                <img id="modalImage" src="" class="modal-result-img" onerror="this.src='/assets/img/default-img/default-content-img.png';">
+                <div id="modalDescription" class="modal-result-description">
+                    분석 내용이 여기에 표시됩니다.
+                </div>
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button class="btn modal-close-btn rounded-pill px-4 px-md-5 py-2 fw-bold" onclick="closeOtherResult()">
+                        닫기
+                    </button>
+                    <a th:href="@{/egenTeto/select}" class="btn btn-primary rounded-pill px-4 px-md-5 py-2 fw-bold shadow-sm">
+                        다시 하기
+                    </a>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script th:inline="javascript">
@@ -403,11 +524,58 @@
         const shareUrl = /*[[${shareUrl}]]*/ '';
 
         function copyLinkAction() {
-            const url = shareUrl || window.location.href;
-            copyToClipboard(url, function() {
+            const baseUrl = window.location.origin;
+            const introUrl = baseUrl + "/egenTeto/selectEgenTetoGame";
+            
+            copyToClipboard(introUrl, function() {
                 const toast = document.getElementById("copyToast");
                 toast.className = "show";
                 setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            });
+        }
+
+        // 카카오톡 결과 공유 기능
+        function shareKakaoAction() {
+            if (!window.Kakao || !u) return;
+
+            if (!Kakao.isInitialized()) {
+                Kakao.init('b1e87a2f9dbdbece155c0cdb52a64d52');
+            }
+
+            const resultType = u.testResultType;
+            const topPercent = u.topPercent;
+            const isMale = u.male;
+            const isTeto = u.teto;
+
+            let resultImgName = "";
+            if (isTeto && isMale) resultImgName = "tetoNamImg.webp";
+            else if (!isTeto && isMale) resultImgName = "egenNamImg.webp";
+            else if (isTeto && !isMale) resultImgName = "tetoNuImg.webp";
+            else resultImgName = "egenNuImg.webp";
+
+            const shareUrl = window.location.origin + "/egenTeto/selectEgenTetoGame";
+            const imageUrl = window.location.origin + "/assets/img/egenTeto/" + resultImgName;
+
+            Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title: `나의 결과는 상위 ${topPercent}% [${resultType}]!`,
+                    description: `에겐 vs 테토 테스트 - 당신의 진짜 성향도 문답에서 확인해 보세요! 🎨🔥`,
+                    imageUrl: imageUrl,
+                    link: {
+                        mobileWebUrl: shareUrl,
+                        webUrl: shareUrl,
+                    },
+                },
+                buttons: [
+                    {
+                        title: '나도 테스트 하기',
+                        link: {
+                            mobileWebUrl: shareUrl,
+                            webUrl: shareUrl,
+                        },
+                    },
+                ],
             });
         }
 
@@ -483,6 +651,40 @@
                 });
             });
         });
+
+        // 다른 유형 상세 보기 관련 함수
+        function handleOtherResultClick(element) {
+            const title = element.getAttribute('data-title');
+            const image = element.getAttribute('data-image');
+            const content = element.getAttribute('data-content');
+            
+            openOtherResult(title, image, content);
+        }
+
+        function openOtherResult(title, image, content) {
+            document.getElementById('modalTitle').innerText = title;
+            // 에겐테토는 별도 경로(/assets/img/...) 사용
+            document.getElementById('modalImage').src = image ? '/assets/img/' + image : '/assets/img/default-img/default-content-img.png';
+            document.getElementById('modalDescription').innerText = content;
+            
+            const modal = document.getElementById('otherResultModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+            
+            // 바디 스크롤 방지
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOtherResult(event) {
+            const modal = document.getElementById('otherResultModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
         /*]]>*/
     </script>
 </body>

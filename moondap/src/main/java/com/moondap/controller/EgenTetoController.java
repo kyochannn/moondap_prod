@@ -13,7 +13,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moondap.dto.EgenTetoDTO;
 import com.moondap.service.EgenTetoService;
+import com.moondap.service.MdTestUserService;
 import com.moondap.service.StatService;
+import com.moondap.dto.MdContentItemDTO;
+import java.util.List;
 
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,10 +32,12 @@ public class EgenTetoController {
 
     private final EgenTetoService egenTetoService;
     private final StatService statService;
+    private final MdTestUserService mdTestUserService;
 
-    public EgenTetoController(EgenTetoService egenTetoService, StatService statService) {
+    public EgenTetoController(EgenTetoService egenTetoService, StatService statService, MdTestUserService mdTestUserService) {
         this.egenTetoService = egenTetoService;
         this.statService = statService;
+        this.mdTestUserService = mdTestUserService;
     }
 
     /**
@@ -155,6 +160,12 @@ public class EgenTetoController {
         // 전체 점수 통계 정보 추가 (정규분포 그래프용)
         java.util.Map<String, Object> stats = egenTetoService.getScoreStatistics();
         model.addAttribute("stats", stats);
+
+        // 하단 추천 콘텐츠 (인기순 3개씩)
+        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3);
+        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 3);
+        model.addAttribute("popularNormalTests", popularNormalTests);
+        model.addAttribute("popularBalanceTests", popularBalanceTests);
 
         return "egenTeto/result";
     }

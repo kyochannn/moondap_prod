@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <title th:text="${test.title} + ' - 질문 진행 중'">테스트 진행 중</title>
     <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
-    <link th:href="@{/assets/css/ad-coupang.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/analysis-handler.css}" rel="stylesheet">
 </head>
 
 <body layout:fragment="content">
@@ -55,17 +55,17 @@
             <input type="hidden" id="answersInput" name="answers">
         </form>
 
-        <!-- 광고 대기 모달 -->
-        <div id="adModal" class="ad-modal-overlay">
-            <div class="ad-modal-content">
+        <!-- 분석 대기 모달 -->
+        <div id="analysisModal" class="analysis-modal-overlay">
+            <div class="analysis-modal-content">
                 <div class="mb-3">
                     <span class="badge rounded-pill bg-primary px-3 py-2 mb-3">당신의 결과는?</span>
                     <h4 class="fw-bold">결과 분석이 완료되었습니다!</h4>
-                    <p id="adStatusText" class="text-secondary small mb-4">당신의 답변 데이터를 분석하고 있습니다...</p>
+                    <p id="statusText" class="text-secondary small mb-4">당신의 답변 데이터를 분석하고 있습니다...</p>
                 </div>
 
-                <div class="ad-container mb-4 highlight-ad">
-                    <!-- 실제 쿠팡 광고 영역 -->
+                <div class="analysis-container mb-4 highlight-content">
+                    <!-- 콘텐츠 영역 -->
                     <a th:href="'https://link.coupang.com/a/eByaQE'" target="_blank" class="text-decoration-none w-100">
                         <div class="text-center p-3">
                             <div style="width: 100%; height: 180px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
@@ -73,7 +73,7 @@
                                 <span class="fw-bold emphasize-text" style="font-size: 1.15rem;">결과 즉시 확인하기</span>
                                 <p class="text-info small mt-2 mb-0 fw-bold">15초 대기 없이 즉시 이동합니다</p>
                             </div>
-                            <p class="text-muted mt-3 mb-0" style="font-size: 11px;">쿠팡 오늘의 추천 상품 확인하기</p>
+                            <p class="text-muted mt-3 mb-0" style="font-size: 11px;">오늘의 추천 상품 확인하기</p>
                         </div>
                     </a>
                 </div>
@@ -83,13 +83,13 @@
                 </button>
                 
                 <p class="coupang-disclaimer">
-                    이 포스팅은 쿠팡 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받습니다.
+                    이 포스팅은 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받을 수 있습니다.
                 </p>
             </div>
         </div>
     </main>
 
-    <script src="/assets/js/ad-coupang.js"></script>
+    <script src="/assets/js/analysis-handler.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         window.onload = function() {
@@ -179,12 +179,17 @@
             // 답변 데이터를 JSON으로 변환하여 저장
             document.getElementById("answersInput").value = JSON.stringify(userAnswers);
             
-            // 공통 광고 핸들러 호출
-            AdHandler.init({
-                formId: 'submitForm',
-                countdown: 15,
-                verifyUrl: '/test/verify-ad'
-            });
+            // 공통 분석 핸들러 호출 (차단 대비 폴백 추가)
+            if (typeof AnalysisHandler !== 'undefined') {
+                AnalysisHandler.init({
+                    formId: 'submitForm',
+                    countdown: 15,
+                    verifyUrl: '/test/verify-analysis'
+                });
+            } else {
+                console.warn("AnalysisHandler가 차단되었습니다. 즉시 제출합니다.");
+                document.getElementById('submitForm').submit();
+            }
         }
 
         prevBtn.onclick = () => {

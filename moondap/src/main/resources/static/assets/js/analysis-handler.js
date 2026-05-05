@@ -1,10 +1,10 @@
 /**
- * MoonDap 광고 모달 핸들러 (AdHandler)
+ * MoonDap 분석 모달 핸들러 (AnalysisHandler)
  * - 15초 카운트다운 및 분석 애니메이션 제어
- * - 광고 클릭 시 즉시 잠금 해제 기능
- * - 서버 광고 시청 검증 후 결과 페이지 이동
+ * - 콘텐츠 클릭 시 즉시 잠금 해제 기능
+ * - 서버 검증 후 결과 페이지 이동
  */
-const AdHandler = {
+const AnalysisHandler = {
     timer: null,
     countdown: 15,
     messages: [
@@ -18,19 +18,19 @@ const AdHandler = {
         const {
             formId = 'submitForm',
             countdown = 15,
-            verifyUrl = '/test/verify-ad'
+            verifyUrl = '/test/verify-analysis'
         } = config;
 
         this.countdown = countdown;
-        const adModal = document.getElementById("adModal");
+        const analysisModal = document.getElementById("analysisModal");
         const submitBtn = document.getElementById("finalSubmitBtn");
-        const adContainer = document.querySelector(".ad-container");
-        const statusText = document.getElementById("adStatusText");
+        const analysisContainer = document.querySelector(".analysis-container");
+        const statusText = document.getElementById("statusText");
 
-        if (!adModal || !submitBtn || !adContainer || !statusText) return;
+        if (!analysisModal || !submitBtn || !analysisContainer || !statusText) return;
 
         // 모달 표시
-        adModal.classList.add("active");
+        analysisModal.classList.add("active");
         
         let currentCountdown = this.countdown;
         let progress = 0;
@@ -56,8 +56,8 @@ const AdHandler = {
             }
         }, 1000);
 
-        // 2. 광고 영역 클릭 시 즉시 잠금 해제
-        adContainer.onclick = () => {
+        // 2. 콘텐츠 영역 클릭 시 즉시 잠금 해제
+        analysisContainer.onclick = () => {
             if (submitBtn.disabled) {
                 this.unlockResult(submitBtn, statusText);
             }
@@ -76,6 +76,24 @@ const AdHandler = {
                     document.getElementById(formId).submit();
                 });
         };
+
+        // 4. 광고 차단기(AdBlock) 감지 로직
+        setTimeout(() => {
+            const isBlocked = analysisContainer.offsetHeight < 10 || analysisContainer.innerHTML.trim() === "" || getComputedStyle(analysisContainer).display === "none";
+            
+            if (isBlocked) {
+                analysisContainer.innerHTML = `
+                    <div class="blocked-message p-3 text-center">
+                        <i class="bi bi-shield-exclamation text-warning mb-2" style="font-size: 2.5rem;"></i>
+                        <h6 class="text-white fw-bold">환경 설정 안내</h6>
+                        <p class="small text-white-50 mb-0">
+                            콘텐츠를 클릭하시면<br>
+                            <span class="text-warning">대기 시간 없이 즉시</span> 결과를 확인할 수 있습니다.
+                        </p>
+                    </div>
+                `;
+            }
+        }, 1200);
     },
 
     unlockResult: function(btn, status) {

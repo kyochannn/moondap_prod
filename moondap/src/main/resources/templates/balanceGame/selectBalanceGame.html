@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세상의 모든 테스트, 문답</title>
+    <title>테스트로 만나는 또 다른 나, 문답</title>
     <style type="text/css">
 		.bg-unselected {
 		    background-color: #383838 !important;
@@ -719,34 +719,22 @@
 			location.href = '/balanceGame/selectBalanceGameListView';
 		}
 		
-		function shareKakao(userName) {
-		  Kakao.init('35c06e8ab8214c9d9e45d761f4483fe6'); // 카카오 JavaScript 키			
-		  Kakao.Link.sendDefault({
-		    objectType: 'feed',
-		    content: {
-		      title: /*[[${balanceGame.title}]]*/ 'title',
-		      description: userName + '님은 ' + '(__들어갈 값__)' + '를 선택했어요!',
-		      imageUrl: '##',
-		      link: {
-		        mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default',
-		        webUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default'
-		      }
-		    },
-		    buttons: [
-		      {
-		        title: '결과 보러가기',
-		        link: {
-		          mobileWebUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default',
-		          webUrl: 'https://moondap.com/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default'
-		        }
-		      }
-		    ]
+		function shareKakao() {
+		  const shareUrl = window.location.origin + '/balanceGame/select?userNo=' + /*[[${balanceGame.id}]]*/ 'default';
+		  const title = /*[[${balanceGame.title}]]*/ 'title';
+		  const description = '어떤 선택을 했을까요? 지금 바로 확인해 보세요!';
+
+		  shareKakaoCommon({
+		    title: title,
+		    description: description,
+		    imageUrl: window.location.origin + '/assets/img/logo.webp',
+		    shareUrl: shareUrl,
+		    buttonTitle: '결과 보러가기'
 		  });
 		}
 		
 		function copyLink() {
-		    const url = window.location.href;
-		    copyToClipboard(url, function() {
+		    copyLinkCommon(null, function() {
 		        const toast = document.getElementById("copyToast");
 		        toast.className = "show";
 		        setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
