@@ -425,7 +425,7 @@
                     <div class="mb-5">
                         <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-journal-check me-2 style-color-primary"></i>인기 테스트</h5>
                         <div class="row gy-4">
-                            <div th:each="test : ${popularNormalTests}" class="col-md-4 col-sm-6">
+                            <div th:each="test : ${popularNormalTests}" class="col-md-4 col-sm-6 col-6">
                                 <a th:href="@{/test/{key}(key=${test.key})}" class="text-decoration-none d-block">
                                     <div class="game-wrapper">
                                         <div class="game-image">
@@ -437,7 +437,7 @@
                                             <div class="game-meta">
                                                 <span class="game-type" th:text="${test.categoryName}">테스트</span>
                                                 <div class="game-rating">
-                                                    <i class="bi bi-controller"></i>
+                                                    <i class="bi bi-eye-fill"></i>
                                                     <span th:text="${#numbers.formatInteger(test.playCount, 0, 'COMMA')}">0</span>
                                                 </div>
                                             </div>
@@ -448,7 +448,8 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="text-center">
+                        <!-- 카드 바로 아래에 버튼이 붙어 있어 그리드의 일부처럼 보였다. -->
+                        <div class="text-center mt-4">
                             <a href="/test/list?type=NORMAL" class="btn btn-primary">
                                 테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
                             </a>
@@ -459,7 +460,7 @@
                     <div class="mb-4">
                         <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임</h5>
                         <div class="row gy-4">
-                            <div th:each="test : ${popularBalanceTests}" class="col-md-4 col-sm-6">
+                            <div th:each="test : ${popularBalanceTests}" class="col-md-4 col-sm-6 col-6">
                                 <a th:href="@{/balanceGame/selectBalanceGameView(id=${test.id})}" class="text-decoration-none d-block">
                                     <div class="game-wrapper">
                                         <div class="game-image">
@@ -476,7 +477,7 @@
                                             <div class="game-meta">
                                                 <span class="game-type" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">밸런스</span>
                                                 <div class="game-rating">
-                                                    <i class="bi bi-controller"></i>
+                                                    <i class="bi bi-eye-fill"></i>
                                                     <span th:text="${#numbers.formatInteger(test.playCount, 0, 'COMMA')}">0</span>
                                                 </div>
                                             </div>
@@ -487,7 +488,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center mt-4">
                             <a href="/test/list?type=BALANCE" class="btn btn-primary">
                                 밸런스 게임 전체보기 <i class="bi bi-arrow-right ms-1"></i>
                             </a>

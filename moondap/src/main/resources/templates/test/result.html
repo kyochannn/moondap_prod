@@ -346,7 +346,7 @@
                                             <div class="game-meta">
                                                 <span class="game-type" th:text="${t.categoryName}">테스트</span>
                                                 <div class="game-rating">
-                                                    <i class="bi bi-controller"></i>
+                                                    <i class="bi bi-eye-fill"></i>
                                                     <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
                                                 </div>
                                             </div>
@@ -357,7 +357,8 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="text-center">
+                        <!-- 카드 바로 아래에 버튼이 붙어 있어 그리드의 일부처럼 보였다. -->
+                        <div class="text-center mt-4">
                             <a href="/test/list?type=NORMAL" class="btn btn-primary">
                                 테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
                             </a>
@@ -385,7 +386,7 @@
                                             <div class="game-meta">
                                                 <span class="game-type" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">밸런스</span>
                                                 <div class="game-rating">
-                                                    <i class="bi bi-controller"></i>
+                                                    <i class="bi bi-eye-fill"></i>
                                                     <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
                                                 </div>
                                             </div>
@@ -396,7 +397,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center mt-4">
                             <a href="/test/list?type=BALANCE" class="btn btn-primary">
                                 밸런스 게임 전체보기 <i class="bi bi-arrow-right ms-1"></i>
                             </a>
