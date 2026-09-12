@@ -193,6 +193,34 @@ public class MdTestUserService {
      */
     @Cacheable(cacheNames = CacheConfig.CONTENT_LIST)
     public List<MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit) {
-        return mdTestMapper.selectAllContentList(category, sort, type, offset, limit);
+        return mdTestMapper.selectAllContentList(category, sort, type, null, offset, limit);
+    }
+
+    /**
+     * 키워드로 콘텐츠를 검색합니다.
+     *
+     * <p>일부러 캐시하지 않는다. 검색어는 사람마다 제각각이라 적중률이 낮은데,
+     * 캐시에 쌓이면 정작 재사용되는 메인 페이지 항목을 밀어낸다.
+     *
+     * @param keyword 사용자가 입력한 원문. 여기서 LIKE 와일드카드를 무력화한다.
+     */
+    public List<MdContentItemDTO> searchContentList(String category, String sort, String type,
+                                                    String keyword, int offset, int limit) {
+        return mdTestMapper.selectAllContentList(category, sort, type, escapeLike(keyword), offset, limit);
+    }
+
+    /**
+     * LIKE 패턴에서 특수 문자의 의미를 없앤다.
+     *
+     * <p>이 처리가 없으면 "%" 한 글자로 전체 목록을 끌어올 수 있고, "_" 는 아무 글자나
+     * 매칭한다. 매퍼의 ESCAPE '!' 와 짝이다.
+     */
+    static String escapeLike(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+        return keyword.replace("!", "!!")
+                      .replace("%", "!%")
+                      .replace("_", "!_");
     }
 }

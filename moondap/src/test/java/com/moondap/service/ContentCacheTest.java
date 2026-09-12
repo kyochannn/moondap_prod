@@ -56,7 +56,7 @@ class ContentCacheTest {
         cacheManager.getCacheNames()
                 .forEach(name -> cacheManager.getCache(name).clear());
 
-        when(mdTestMapper.selectAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestMapper.selectAllContentList(anyString(), anyString(), anyString(), any(), anyInt(), anyInt()))
                 .thenReturn(List.of(new MdContentItemDTO()));
         when(mdTestCategoryMapper.selectActiveCategories())
                 .thenReturn(List.of(new MdTestCategoryDTO()));
@@ -71,7 +71,7 @@ class ContentCacheTest {
         mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
         mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
 
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "all", 0, 6);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "all", null, 0, 6);
     }
 
     @Test
@@ -82,9 +82,20 @@ class ContentCacheTest {
         mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 6);
         mdTestUserService.getAllContentList("all", "latest", "NORMAL", 0, 6);
 
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "NORMAL", 0, 6);
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "BALANCE", 0, 6);
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "latest", "NORMAL", 0, 6);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "NORMAL", null, 0, 6);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "BALANCE", null, 0, 6);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "latest", "NORMAL", null, 0, 6);
+    }
+
+    @Test
+    @DisplayName("검색 결과는 캐시하지 않는다")
+    void searchIsNotCached() {
+        // 검색어는 사람마다 달라 적중률이 낮다. 캐시에 쌓이면 정작 재사용되는
+        // 메인 페이지 항목을 밀어내므로 일부러 캐시하지 않는다.
+        mdTestUserService.searchContentList("all", "popular", "all", "연애", 0, 6);
+        mdTestUserService.searchContentList("all", "popular", "all", "연애", 0, 6);
+
+        verify(mdTestMapper, times(2)).selectAllContentList("all", "popular", "all", "연애", 0, 6);
     }
 
     @Test
@@ -118,7 +129,7 @@ class ContentCacheTest {
         mdTestCategoryService.updateCategory(new MdTestCategoryDTO());
 
         mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
-        verify(mdTestMapper, times(2)).selectAllContentList("all", "popular", "all", 0, 6);
+        verify(mdTestMapper, times(2)).selectAllContentList("all", "popular", "all", null, 0, 6);
     }
 
     @Test

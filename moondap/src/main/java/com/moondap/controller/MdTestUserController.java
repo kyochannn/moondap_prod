@@ -41,14 +41,20 @@ public class MdTestUserController {
     public String list(@RequestParam(value = "category", required = false, defaultValue = "all") String category,
                        @RequestParam(value = "sort", required = false, defaultValue = "popular") String sort,
                        @RequestParam(value = "type", required = false, defaultValue = "all") String type,
+                       @RequestParam(value = "keyword", required = false) String keyword,
                        @RequestParam(value = "page", required = false, defaultValue = "0") int page,
                        HttpServletRequest request,
                        Model model) {
-        
+
         int limit = 6;
         int offset = page * limit;
-        
-        List<MdContentItemDTO> contentList = mdTestUserService.getAllContentList(category, sort, type, offset, limit + 1);
+
+        // 앞뒤 공백만 입력한 경우도 검색하지 않은 것으로 본다.
+        String searchWord = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+
+        List<MdContentItemDTO> contentList = (searchWord == null)
+                ? mdTestUserService.getAllContentList(category, sort, type, offset, limit + 1)
+                : mdTestUserService.searchContentList(category, sort, type, searchWord, offset, limit + 1);
         List<MdTestCategoryDTO> categories = mdTestCategoryService.getActiveCategories();
         
         boolean hasMore = contentList.size() > limit;
@@ -61,14 +67,22 @@ public class MdTestUserController {
         model.addAttribute("currentCategory", category);
         model.addAttribute("currentSort", sort);
         model.addAttribute("currentType", type);
+        model.addAttribute("currentKeyword", searchWord);
         model.addAttribute("currentPage", page);
         model.addAttribute("hasMore", hasMore);
 
         // 카테고리·정렬·페이지는 같은 문서를 다르게 보여줄 뿐이므로 canonical 은 항상 /test/list 다.
         // (SeoMetaInterceptor 가 쿼리스트링을 떼고 기본 canonical 을 만든다.)
-        model.addAttribute("seo", SeoMetaDTO.of(
+        SeoMetaDTO seo = SeoMetaDTO.of(
                 "심리테스트 · 밸런스 게임 전체 목록 - 문답",
-                "문답의 모든 심리테스트와 밸런스 게임을 카테고리별로 모았습니다. 인기순·최신순으로 골라 바로 참여해 보세요."));
+                "문답의 모든 심리테스트와 밸런스 게임을 카테고리별로 모았습니다. 인기순·최신순으로 골라 바로 참여해 보세요.");
+        if (searchWord != null) {
+            // 검색 결과는 색인 대상이 아니다. 검색어 조합만큼 URL 이 생기는데 내용은
+            // 전부 목록 페이지의 부분집합이라, 색인되면 저품질 페이지만 늘어난다.
+            seo.setRobots("noindex, follow");
+            seo.setTitle("'" + searchWord + "' 검색 결과 - 문답");
+        }
+        model.addAttribute("seo", seo);
 
         if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
             if ("true".equals(request.getHeader("X-Load-More"))) {
