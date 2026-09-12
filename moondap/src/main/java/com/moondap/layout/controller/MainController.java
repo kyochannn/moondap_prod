@@ -81,7 +81,7 @@ public class MainController {
 		// canonical 은 SeoMetaInterceptor 가 쿼리스트링을 떼고 "/" 로 만든다.
 		model.addAttribute("seo", SeoMetaDTO.of(
 				"문답: 테스트로 만나는 또 다른 나",
-				"심리테스트, 밸런스 게임, 에겐테토 성격 검사까지. 나도 몰랐던 나의 모습을 문답(moondap)에서 무료로 확인해 보세요."));
+				"심리테스트, 밸런스 게임, 에겐테토 테스트까지. 나도 몰랐던 나의 모습을 문답(moondap)에서 무료로 확인해 보세요."));
 
 		if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
 			return "index :: #main-content";

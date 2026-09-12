@@ -269,7 +269,7 @@
                 CONVERT('EGEN' USING utf8mb4) as type, 
                 CAST('egen1' AS CHAR) as id, 
                 CONVERT('selectEgenTetoGame' USING utf8mb4) as `key`, 
-                CONVERT('에겐테토 성격 검사' USING utf8mb4) as title, 
+                CONVERT('에겐테토 테스트' USING utf8mb4) as title,
                 CONVERT('나의 본모습을 찾아가는 정밀 성격 분석 테스트' USING utf8mb4) as description, 
                 CONVERT('/assets/img/egenTeto/egenTetoMain.png' USING utf8mb4) as thumbnail, 
                 CONVERT(NULL USING utf8mb4) as thumbnail2, 
