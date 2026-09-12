@@ -105,8 +105,15 @@
         const currentUserId = /*[[${currentUserId}]]*/ '';
         const isAdmin = /*[[${#authorization.expression('hasAuthority("ROLE_ADMIN")')}]]*/ false;
         
-    	// 재투표 제한 시간 설정 : 약 20초
-    	const VOTE_LIMIT_MIN = 1/4 * 60000 ;
+    	/*
+    	 * 다시 선택하기까지의 대기 시간.
+    	 *
+    	 * 서버는 재투표를 표 이동으로 정확히 처리하므로 집계가 틀어질 걱정은 없다.
+    	 * 이 대기는 결과를 본 직후 좌우를 연타하며 퍼센트가 튀는 것을 막기 위한 것이다.
+    	 *
+    	 * (이전 값 1/4 * 60000 은 주석에 "약 20초"라고 적혀 있었지만 실제로는 15초였다.)
+    	 */
+    	const VOTE_COOLDOWN_MS = 15 * 1000;
     	// 사용자 nickname
        	let nickname = '';
     	
@@ -134,9 +141,10 @@
 	            // 예전 투표 결과 디스플레이
     			applyVoteResultStyle(side);
     			
-    			// 다시하기 버튼 활성화
+    			// 다시하기 버튼 활성화 (대기 시간이 남아 있으면 카운트다운 상태로 표시)
     			$('#resetVoteBtn').fadeIn();
-    			
+    			startCooldownCountdown();
+
     			// 결과 퍼센트 바 활성화
     			$('#balance-game-progressbar-container').fadeIn();
     			
@@ -253,8 +261,9 @@
 		            // 4. 로컬 스토리지에 사용자의 밸런스 게임 정보 저장
 		            saveVoteLocalStorage(side);
 		            
-		            // 5. 다시하기 버튼 활성화
+		            // 5. 다시하기 버튼 활성화. 방금 투표했으므로 대기 시간부터 시작한다.
 					$('#resetVoteBtn').fadeIn();
+					startCooldownCountdown();
 		            
 					// 6. 결과 퍼센트 바 활성화
 	    			$('#balance-game-progressbar-container').show();
@@ -314,34 +323,77 @@
 		    localStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
 		}
 
-    	// 재투표 기능
+    	/*
+    	 * 다시 선택하기.
+    	 *
+    	 * 예전에는 대기 시간이 남았을 때 alert("N초 뒤 다시할 수 있습니다.") 를 띄웠다.
+    	 * 브라우저 경고창이라 흐름이 끊기는 데다, 버튼을 누르기 전까지는 기다려야
+    	 * 한다는 사실 자체를 알 수 없었다. 이제는 버튼이 남은 시간을 직접 보여주고,
+    	 * 다 되면 스스로 풀린다. 그래서 이 함수에 도달할 때는 이미 누를 수 있는 상태다.
+    	 */
     	function resetVote() {
-    		
-    		if (isAlreadyVoted()) {
-    		    const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
-    		    const voteData = votedGames[gameId];
-	    		
-		    	const now = new Date().getTime();
-		    	const limitMs = VOTE_LIMIT_MIN;
-		    	
-		    	const remainMs = limitMs - (now - voteData.time);
+    		if (remainingCooldownMs() > 0) {
+    			return;
+    		}
 
-		    	const seconds = Math.floor((remainMs % 60000) / 1000);
-		    	 
-		    	if (remainMs > 0) {
-			    	alert(seconds + "초 뒤 다시할 수 있습니다.");
-		    	} else {	
-				 	delete votedGames[gameId];
-	 		        localStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
-			        
-				 	location.reload();
-				 	
-	 		        return;
-		    	}
+    		const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
+    		delete votedGames[gameId];
+    		localStorage.setItem('moondap_voted_games', JSON.stringify(votedGames));
 
-    		} else {
-			 	console.log("현재는 테스트 가능함.");
-			 	location.reload();
+    		location.reload();
+    	}
+
+    	/** 다시 선택할 수 있을 때까지 남은 시간(ms). 투표 이력이 없으면 0. */
+    	function remainingCooldownMs() {
+    		const votedGames = JSON.parse(localStorage.getItem('moondap_voted_games') || '{}');
+    		const voteData = votedGames[gameId];
+    		if (!voteData || !voteData.time) {
+    			return 0;
+    		}
+    		return Math.max(0, VOTE_COOLDOWN_MS - (Date.now() - voteData.time));
+    	}
+
+    	let cooldownTimer = null;
+
+    	/**
+    	 * 대기 시간 동안 버튼을 잠그고 남은 초를 보여준다.
+    	 * 1초마다 갱신하다가 0 이 되면 스스로 풀린다.
+    	 */
+    	function startCooldownCountdown() {
+    		const $btn = $('#resetVoteBtn');
+    		if ($btn.length === 0) {
+    			return;
+    		}
+
+    		if (cooldownTimer) {
+    			clearInterval(cooldownTimer);
+    			cooldownTimer = null;
+    		}
+
+    		const enable = function() {
+    			$btn.prop('disabled', false)
+    			    .html('<i class="bi bi-arrow-counterclockwise"></i> 다시 선택');
+    		};
+
+    		const tick = function() {
+    			const remain = remainingCooldownMs();
+    			if (remain <= 0) {
+    				enable();
+    				if (cooldownTimer) {
+    					clearInterval(cooldownTimer);
+    					cooldownTimer = null;
+    				}
+    				return;
+    			}
+    			// 남은 시간을 올림해야 "1초"에서 곧바로 "0초"로 건너뛰지 않는다.
+    			const seconds = Math.ceil(remain / 1000);
+    			$btn.prop('disabled', true)
+    			    .html('<i class="bi bi-hourglass-split"></i> ' + seconds + '초 후 다시 선택');
+    		};
+
+    		tick();
+    		if (remainingCooldownMs() > 0) {
+    			cooldownTimer = setInterval(tick, 1000);
     		}
     	}
     	
@@ -898,10 +950,15 @@
 					<i class="bi bi-arrow-left-circle-fill"></i> 이전 질문
 				</button>
 
+				<!--
+				  아이콘만 있어서 무슨 버튼인지 알 수 없었다. 글자를 함께 보여준다.
+				  대기 중에는 disabled 가 되고 남은 초가 여기에 표시된다
+				  (startCooldownCountdown).
+				-->
 				<button type="button"
 					class="btn btn-outline-light" id="resetVoteBtn"
 					onclick="resetVote()">
-					<i class="bi bi-arrow-counterclockwise"></i>
+					<i class="bi bi-arrow-counterclockwise"></i> 다시 선택
 				</button>
 				<button type="button"
 					class="btn btn-outline-light"
