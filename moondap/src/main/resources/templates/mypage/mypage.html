@@ -243,7 +243,25 @@
                 </div>
                 <!-- 관리 메뉴 그리드 -->
                 <div class="menu-grid mb-5">
-                    
+
+                    <!--
+                      내 결과 보관함.
+                      이 화면의 나머지는 전부 제작자·관리자용이라, 콘텐츠를 만들지 않는
+                      회원에게는 마이페이지에 볼 것이 없었다. 그래서 맨 앞에 둔다.
+                    -->
+                    <a th:href="@{/my/results}" class="menu-card">
+                        <div class="menu-icon">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
+                        <div>
+                            <h4>내 결과 보관함</h4>
+                            <p>지금까지 참여한 테스트 결과를 모아보고 다시 확인할 수 있어요.</p>
+                        </div>
+                        <div class="menu-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+                    </a>
+
                     <!-- [Admin Only] 카테고리 관리 -->
                     <a th:if="${user.role == 'ROLE_ADMIN'}" th:href="@{/admin/category/list}" class="menu-card" style="border-color: rgba(165, 160, 255, 0.3);">
                         <div class="menu-icon" style="background: rgba(165, 160, 255, 0.1); color: #a5a0ff;">

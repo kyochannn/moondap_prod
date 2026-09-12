@@ -4,6 +4,7 @@ Allow: /
 # 로그인이 필요한 영역. 크롤러는 어차피 로그인 화면만 보게 되므로 크롤링 예산을 아낀다.
 Disallow: /admin/
 Disallow: /mypage
+Disallow: /my/
 Disallow: /test/manage/
 Disallow: /balanceGame/manage/
 

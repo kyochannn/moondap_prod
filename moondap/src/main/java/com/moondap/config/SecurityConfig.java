@@ -118,6 +118,10 @@ public class SecurityConfig {
             // ── 4. 공개 콘텐츠 ──────────────────────────────────────
             .requestMatchers("/", "/privacy", "/terms", "/partnership").permitAll()
             .requestMatchers("/test/**", "/balanceGame/**", "/egenTeto/**").permitAll()
+            // 내 결과 보관함. 로그인 여부와 무관하게 열리지만, 보이는 내용은
+            // 로그인 계정 또는 익명 쿠키(md_anon)로 서버가 정한다.
+            // 요청자가 자기 것 외에는 볼 수 없으므로 permitAll 이어도 노출되지 않는다.
+            .requestMatchers("/my/results", "/my/results/**").permitAll()
 
             // ── 5. 기본 거부 ────────────────────────────────────────
             // 이전에는 anyRequest().permitAll() 이어서 새 컨트롤러를 추가할 때마다

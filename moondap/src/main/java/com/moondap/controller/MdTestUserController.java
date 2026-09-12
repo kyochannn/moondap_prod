@@ -10,6 +10,7 @@ import com.moondap.dto.SeoMetaDTO;
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.service.MdTestUserService;
 import com.moondap.service.StatService;
+import com.moondap.service.TestHistoryService;
 import com.moondap.common.SecurityUtil;
 import com.moondap.dto.MdTestResultDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,6 +33,7 @@ public class MdTestUserController {
     private final MdTestUserService mdTestUserService;
     private final MdTestCategoryService mdTestCategoryService;
     private final StatService statService;
+    private final TestHistoryService testHistoryService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -184,6 +186,7 @@ public class MdTestUserController {
                              @RequestParam(value = "answers", required = false) String answersJson,
                              @RequestParam(value = "preview", required = false, defaultValue = "false") boolean preview,
                              HttpServletRequest request,
+                             jakarta.servlet.http.HttpServletResponse response,
                              jakarta.servlet.http.HttpSession session,
                              Model model) throws Exception {
         
@@ -226,6 +229,11 @@ public class MdTestUserController {
                 if (matchedResult != null) {
                     resultCode = String.valueOf(matchedResult.getId());
                     score = matchedResult.getCalculatedScore();
+
+                    // 보관함에 남긴다. 미리보기는 실제 참여가 아니므로 제외한다.
+                    if (!preview) {
+                        testHistoryService.record(test, matchedResult, resultCode, response);
+                    }
                 }
             } catch (Exception e) {
                 log.error("결과 계산 오류", e);

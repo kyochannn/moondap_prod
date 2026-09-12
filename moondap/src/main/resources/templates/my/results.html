@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{/layout/main_layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 결과 보관함 - 문답</title>
+
+  <style>
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background .2s ease;
+    }
+
+    .history-item:hover { background: rgba(255, 255, 255, 0.08); }
+
+    .history-thumb {
+      flex: 0 0 64px;
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #2a2550, #1b1b3a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .history-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .history-thumb-fallback { color: rgba(255, 255, 255, 0.35); font-size: 1.5rem; }
+
+    .history-body { flex: 1 1 auto; min-width: 0; }
+
+    /* 제목이 길어도 한 줄로 잘라 목록 높이를 고르게 유지한다. */
+    .history-test {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.74rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-result {
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-date { color: rgba(255, 255, 255, 0.35); font-size: 0.72rem; }
+
+    .history-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; }
+
+    .history-delete {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .history-delete:hover { color: #ff6b6b; }
+
+    .history-notice {
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(124, 117, 255, 0.1);
+      border: 1px solid rgba(124, 117, 255, 0.25);
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+
+<body layout:fragment="content">
+  <main class="main">
+    <section class="section">
+      <div class="container" style="max-width: 720px;">
+
+        <div class="section-title" style="padding-bottom: 20px;">
+          <h2>내 결과 보관함</h2>
+          <p>지금까지 참여한 테스트 결과를 모아 봤어요.</p>
+        </div>
+
+        <!-- 로그인하면 기기를 바꿔도 남는다는 점이 곧 가입할 이유가 된다. -->
+        <div th:unless="${isLoggedIn}" class="history-notice">
+          <i class="bi bi-info-circle-fill me-1"></i>
+          지금은 이 브라우저에만 저장돼요.
+          <a th:href="@{/loginView}" class="text-white fw-bold">로그인</a>하면 기기를 바꿔도 결과가 남습니다.
+        </div>
+
+        <div th:if="${isLoggedIn and claimedCount > 0}" class="history-notice">
+          <i class="bi bi-check-circle-fill me-1"></i>
+          로그인 전에 참여한 결과 <strong th:text="${claimedCount}">0</strong>건을 계정으로 옮겼어요.
+        </div>
+
+        <!-- 비어 있을 때도 막다른 화면이 되지 않도록 다음 행동을 준다. -->
+        <div th:if="${#lists.isEmpty(histories)}" class="text-center py-5">
+          <i class="bi bi-journal-text" style="font-size: 3rem; color: rgba(255,255,255,0.15);"></i>
+          <h4 class="text-white mt-3">아직 참여한 테스트가 없어요.</h4>
+          <p class="text-white-50">테스트를 마치면 결과가 여기에 쌓입니다.</p>
+          <a th:href="@{/test/list?type=NORMAL}" class="btn btn-primary mt-2">
+            <i class="bi bi-rocket-takeoff me-2"></i>테스트 하러 가기
+          </a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(histories)}">
+          <div th:each="h : ${histories}" class="history-item">
+            <a th:href="@{/test/{key}/result(key=${h.testKey}, resultCode=${h.resultCode}, score=${h.score})}"
+               class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none"
+               style="min-width: 0;">
+              <div class="history-thumb">
+                <img th:if="${h.resultImage != null and h.resultImage != ''}"
+                     th:src="${#strings.startsWith(h.resultImage, '/assets/')} ? ${h.resultImage} : (@{/uploads/} + ${h.resultImage})"
+                     th:alt="${h.resultTitle}" loading="lazy">
+                <i th:unless="${h.resultImage != null and h.resultImage != ''}"
+                   class="bi bi-journal-text history-thumb-fallback"></i>
+              </div>
+              <div class="history-body">
+                <div class="history-test" th:text="${h.testTitle}">테스트 제목</div>
+                <div class="history-result" th:text="${h.resultTitle}">결과 제목</div>
+                <div class="history-date"
+                     th:text="${h.createdAt != null} ? ${#temporals.format(h.createdAt, 'yyyy.MM.dd')} : ''">2026.01.01</div>
+              </div>
+            </a>
+
+            <div class="history-actions">
+              <!-- CSRF 토큰이 필요하므로 th:action 을 쓴 폼으로 보낸다. -->
+              <form th:action="@{/my/results/{no}/delete(no=${h.no})}" method="post"
+                    onsubmit="return confirm('이 기록을 지울까요?');">
+                <button type="submit" class="history-delete" aria-label="기록 삭제">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </form>
+              <i class="bi bi-chevron-right" style="color: rgba(255,255,255,0.25);"></i>
+            </div>
+          </div>
+
+          <div th:if="${hasMore}" class="text-center mt-4">
+            <a th:href="@{/my/results(page=${currentPage + 1})}" class="btn btn-outline-light btn-sm">
+              더보기 <i class="bi bi-chevron-down ms-1"></i>
+            </a>
+          </div>
+
+          <div th:if="${currentPage > 0}" class="text-center mt-2">
+            <a th:href="@{/my/results(page=${currentPage - 1})}" class="btn btn-outline-light btn-sm">
+              <i class="bi bi-chevron-up me-1"></i> 이전
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+</body>
+
+</html>

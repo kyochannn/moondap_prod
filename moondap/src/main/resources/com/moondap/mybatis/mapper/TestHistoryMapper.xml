@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moondap.mapper.TestHistoryMapper">
+
+    <insert id="insertHistory" parameterType="com.moondap.dto.TestHistoryDTO"
+            useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO moondap.md_test_history
+            (test_key, test_id, result_id, result_code, result_title, result_image,
+             test_title, score, user_id, anon_id)
+        VALUES
+            (#{testKey}, #{testId}, #{resultId}, #{resultCode}, #{resultTitle}, #{resultImage},
+             #{testTitle}, #{score}, #{userId}, #{anonId})
+    </insert>
+
+    <!--
+      보관함 조회.
+
+      userId 와 anonId 를 OR 로 묶지 않는다. 로그인 사용자가 예전 익명 쿠키를 그대로
+      들고 있으면 남의 기록까지 섞여 보일 수 있기 때문에, 로그인했으면 userId 만 본다.
+      (익명 기록은 claimAnonymousHistory 로 계정에 옮긴 뒤 userId 로 조회된다)
+
+      소유자가 지정되지 않으면 아무것도 반환하지 않는다. 조건이 통째로 빠져
+      전체 기록이 나가는 사고를 막기 위해 1=0 을 명시한다.
+    -->
+    <select id="selectHistory" resultType="com.moondap.dto.TestHistoryDTO">
+        SELECT no, test_key AS testKey, test_id AS testId, test_title AS testTitle,
+               result_id AS resultId, result_code AS resultCode, result_title AS resultTitle,
+               result_image AS resultImage, score, user_id AS userId, anon_id AS anonId,
+               created_at AS createdAt
+        FROM moondap.md_test_history
+        <choose>
+            <when test="userId != null and userId != ''">
+                WHERE user_id = #{userId}
+            </when>
+            <when test="anonId != null and anonId != ''">
+                WHERE anon_id = #{anonId} AND user_id IS NULL
+            </when>
+            <otherwise>
+                WHERE 1 = 0
+            </otherwise>
+        </choose>
+        ORDER BY created_at DESC, no DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!--
+      익명 기록을 계정으로 옮긴다.
+      user_id IS NULL 조건이 있어야, 이미 다른 계정에 귀속된 기록을 빼앗지 않는다.
+    -->
+    <update id="claimAnonymousHistory">
+        UPDATE moondap.md_test_history
+           SET user_id = #{userId}
+         WHERE anon_id = #{anonId}
+           AND user_id IS NULL
+    </update>
+
+    <delete id="deleteHistory">
+        DELETE FROM moondap.md_test_history
+        WHERE no = #{no}
+        <choose>
+            <when test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </when>
+            <when test="anonId != null and anonId != ''">
+                AND anon_id = #{anonId} AND user_id IS NULL
+            </when>
+            <otherwise>
+                AND 1 = 0
+            </otherwise>
+        </choose>
+    </delete>
+</mapper>

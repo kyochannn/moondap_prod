@@ -312,6 +312,17 @@
                                     <i class="bi bi-grid-3x3-gap me-2"></i> 더 많은 테스트 보러가기
                                 </a>
                             </div>
+
+                            <!--
+                              보관함 안내.
+                              결과가 저장된다는 사실을 알려주지 않으면 보관함이 있어도
+                              아무도 찾아오지 않는다. 미리보기는 저장되지 않으므로 숨긴다.
+                            -->
+                            <p th:unless="${isPreview}" class="w-100 text-center mt-3 mb-0"
+                               style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">
+                                이 결과는 보관함에 저장됐어요.
+                                <a th:href="@{/my/results}" class="text-white fw-bold text-decoration-underline">내 결과 보기</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -323,7 +334,7 @@
                     <div class="mb-5">
                         <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-journal-check me-2 style-color-primary"></i>인기 테스트</h5>
                         <div class="row gy-4">
-                            <div th:each="t : ${popularNormalTests}" class="col-md-4 col-sm-6">
+                            <div th:each="t : ${popularNormalTests}" class="col-md-4 col-sm-6 col-6">
                                 <a th:href="@{/test/{key}(key=${t.key})}" class="text-decoration-none d-block">
                                     <div class="game-wrapper">
                                         <div class="game-image">
@@ -357,7 +368,7 @@
                     <div class="mb-4">
                         <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임</h5>
                         <div class="row gy-4">
-                            <div th:each="t : ${popularBalanceTests}" class="col-md-4 col-sm-6">
+                            <div th:each="t : ${popularBalanceTests}" class="col-md-4 col-sm-6 col-6">
                                 <a th:href="@{/balanceGame/selectBalanceGameView(id=${t.id})}" class="text-decoration-none d-block">
                                     <div class="game-wrapper">
                                         <div class="game-image">
