@@ -118,8 +118,11 @@
           </a>
         </div>
 
+        <!-- 숫자는 서버가 넣은 값을 그대로 쓰고, count-up.js 가 0 부터 세어 올린다.
+             스크립트가 없어도 숫자는 그대로 보인다. -->
         <p class="hero-proof" th:if="${totalParticipantCount != null and totalParticipantCount > 0}">
-          지금까지 <strong th:text="${#numbers.formatInteger(totalParticipantCount, 0, 'COMMA')}">0</strong>명이 참여했어요
+          지금까지 <strong data-count-up
+                         th:text="${#numbers.formatInteger(totalParticipantCount, 0, 'COMMA')}">0</strong>명이 참여했어요
         </p>
       </div>
     </section>
@@ -190,6 +193,9 @@
         start();
       })();
     </script>
+
+    <!-- 참여자 수 카운트 업 -->
+    <script th:src="@{/assets/js/count-up.js(v=1.0)}"></script>
 
     <!-- 진행 중인 테스트가 있으면 히어로 아래에 "이어서 하기" 배너가 붙는다.
          기록이 없으면 아무것도 그리지 않는다. -->
