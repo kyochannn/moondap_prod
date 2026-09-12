@@ -103,11 +103,29 @@ CREATE TABLE IF NOT EXISTS site_visit_log (
     PRIMARY KEY (visit_date, ip_address)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 일자별 집계. 방문수와 참여수를 같은 행에 쌓는다(SiteStatMapper.xml).
+CREATE TABLE IF NOT EXISTS site_statistics (
+    visit_date          DATE   NOT NULL,
+    visit_count         BIGINT DEFAULT 0,
+    participation_count BIGINT DEFAULT 0,
+    PRIMARY KEY (visit_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 로컬 balance_questions 가 구버전이라 현재 매퍼가 쓰는 컬럼이 빠져 있다.
 -- (MySQL 8 은 ADD COLUMN IF NOT EXISTS 를 지원하지 않아 존재 확인 후 실행한다.)
 SET @sql := IF(
   (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='balance_questions' AND COLUMN_NAME='status') = 0,
   "ALTER TABLE balance_questions ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'active'",
+  'DO 0');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
+-- site_statistics 도 방문수만 있는 구버전이 남아 있을 수 있다.
+-- 이 컬럼이 없으면 투표할 때마다 500 이 난다
+-- (StandardBalanceGameService.vote -> MdStatService.incrementParticipationCount).
+SET @sql := IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='site_statistics' AND COLUMN_NAME='participation_count') = 0,
+  'ALTER TABLE site_statistics ADD COLUMN participation_count BIGINT DEFAULT 0',
   'DO 0');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
