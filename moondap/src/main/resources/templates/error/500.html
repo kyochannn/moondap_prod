@@ -2,7 +2,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/main_layout}">
 <head>
-    <title>시스템 오류 | 문답</title>
+    <!-- 400 응답에도 쓰이는 화면이라 "시스템 오류"로 단정하지 않는다. -->
+    <title>요청을 처리하지 못했어요 | 문답</title>
     <style>
         .error-section {
             min-height: 80vh;
@@ -64,11 +65,26 @@
     <main class="main">
         <section class="error-section">
             <div class="container error-content" data-aos="fade-up">
-                <div class="error-code">500</div>
+                <!--
+                  이 화면은 500 전용이 아니다. 잘못된 입력(400)도 여기로 온다.
+                  코드를 고정해두면 사용자가 고칠 수 있는 문제인데도 서버 장애처럼 보이고,
+                  실제로 그것 때문에 원인 파악이 늦어진 적이 있다.
+                -->
+                <!-- errorCode: GlobalExceptionHandler / status: 스프링 기본 오류 처리 경로 -->
+                <div class="error-code"
+                     th:text="${errorCode != null ? errorCode : (status != null ? status : 500)}">500</div>
                 <h1 class="error-message mb-4">테스트로 만나는 또 다른 나, 문답 <img src="/assets/img/logo.webp" alt="문답 로고" style="height: 32px; margin-left: 8px; vertical-align: middle; margin-top: -4px;"></h1>
                 <div class="identity-box">
                     <span class="identity-text">문답에서 다양한 테스트를 진행해 볼 수 있어요.</span>
-                    <p class="text-white mb-0" style="font-size: 1.1rem; opacity: 0.9;">
+
+                    <!-- 핸들러가 사용자에게 보여줘도 되는 메시지를 담아 보낸 경우에만 출력한다.
+                         내부 오류의 원문은 여기까지 오지 않는다(GlobalExceptionHandler 참고). -->
+                    <p th:if="${errorMessage != null and !#strings.isEmpty(errorMessage)}"
+                       class="text-white mb-0" style="font-size: 1.1rem; opacity: 0.9;"
+                       th:text="${errorMessage}">오류 메시지</p>
+
+                    <p th:unless="${errorMessage != null and !#strings.isEmpty(errorMessage)}"
+                       class="text-white mb-0" style="font-size: 1.1rem; opacity: 0.9;">
                         하지만 현재 시스템에 잠시 혼란이 생겨 <br>
                         요청하신 작업을 완료하지 못했어요.
                     </p>

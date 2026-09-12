@@ -177,9 +177,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
+    /**
+     * 오류 화면.
+     *
+     * <p>error/500 은 500 전용이 아니라 400 응답에서도 쓴다. 화면에 상태 코드가
+     * "500" 으로 고정돼 있으면 실제로는 잘못된 입력인데 서버 장애처럼 보이므로
+     * 실제 코드를 모델에 넣어 템플릿이 그대로 출력하게 한다.
+     */
     private ModelAndView errorView(String viewName, HttpStatus status, String message) {
         ModelAndView mav = new ModelAndView(viewName);
         mav.setStatus(status);
+        mav.addObject("errorCode", status.value());
         mav.addObject("errorMessage", message);
         return mav;
     }
