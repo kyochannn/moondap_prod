@@ -2,6 +2,7 @@ package com.moondap.controller;
 
 import lombok.RequiredArgsConstructor;
 
+import com.moondap.common.exception.ContentNotFoundException;
 import com.moondap.common.exception.UserMessageException;
 
 import java.nio.charset.StandardCharsets;
@@ -155,7 +156,7 @@ public class BalanceGameController {
 
 		// 데이터가 없는 경우(null) 처리
 		if (balanceGame == null) {
-			throw new UserMessageException("해당 게임을 찾을 수 없습니다.");
+			throw new ContentNotFoundException("요청하신 밸런스 게임을 찾을 수 없습니다.");
 		}
 
 		model.addAttribute("balanceGame", balanceGame);
@@ -397,7 +398,7 @@ public class BalanceGameController {
 		BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
 		// 데이터가 없는 경우(null) 처리
 		if (balanceGame == null) {
-			throw new UserMessageException("수정할 게임을 찾을 수 없습니다.");
+			throw new ContentNotFoundException("수정할 밸런스 게임을 찾을 수 없습니다.");
 		}
 
 		model.addAttribute("balanceGame", balanceGame);

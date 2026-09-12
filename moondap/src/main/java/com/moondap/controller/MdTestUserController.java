@@ -1,5 +1,6 @@
 package com.moondap.controller;
 
+import com.moondap.common.exception.ContentNotFoundException;
 import com.moondap.common.exception.UserMessageException;
 
 import com.moondap.dto.MdContentItemDTO;
@@ -88,7 +89,9 @@ public class MdTestUserController {
                             Model model) {
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
         
-        if (test == null) return "redirect:/";
+        if (test == null) {
+            throw new ContentNotFoundException("요청하신 테스트를 찾을 수 없습니다.");
+        }
         
         // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
         if (!isPublished(test.getStatus())) {
@@ -140,7 +143,9 @@ public class MdTestUserController {
                                 Model model) {
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
         
-        if (test == null) return "redirect:/";
+        if (test == null) {
+            throw new ContentNotFoundException("요청하신 테스트를 찾을 수 없습니다.");
+        }
 
         // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
         if (!isPublished(test.getStatus())) {
@@ -169,7 +174,9 @@ public class MdTestUserController {
                              Model model) throws Exception {
         
         MdTestDTO test = mdTestUserService.getFullTestData(testKey);
-        if (test == null) return "redirect:/";
+        if (test == null) {
+            throw new ContentNotFoundException("요청하신 테스트를 찾을 수 없습니다.");
+        }
 
         // [보안] preview 는 요청 파라미터라 누구나 붙일 수 있다.
         // 관리자·작성자가 아니면 무시한다. 이전에는 ?preview=true 만 붙이면

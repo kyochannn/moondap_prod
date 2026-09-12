@@ -17,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import com.moondap.common.exception.ContentNotFoundException;
 import com.moondap.common.exception.UserMessageException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +57,22 @@ public class GlobalExceptionHandler {
             return jsonError(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
         return errorView("error/500", HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /**
+     * 요청한 콘텐츠가 없는 경우.
+     *
+     * <p>리다이렉트나 400 이 아니라 404 로 답한다. 크롤러가 없는 URL 을 살아 있는
+     * 페이지로 인식하면(soft 404) 삭제한 콘텐츠 주소가 색인에 계속 남는다.
+     */
+    @ExceptionHandler(ContentNotFoundException.class)
+    public Object handleContentNotFound(ContentNotFoundException ex, HttpServletRequest request) {
+        log.debug("콘텐츠 없음: {} (uri={})", ex.getMessage(), request.getRequestURI());
+
+        if (isAjax(request)) {
+            return jsonError(HttpStatus.NOT_FOUND, ex.getMessage());
+        }
+        return errorView("error/404", HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     /**

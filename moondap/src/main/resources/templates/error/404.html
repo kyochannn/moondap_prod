@@ -75,7 +75,11 @@
                 <div class="error-code">404</div>
                 <h1 class="error-message mb-4">테스트로 만나는 또 다른 나, <span style="color: #524dd3;">문답</span> <img src="/assets/img/logo.webp" alt="문답 로고" style="height: 32px; margin-left: 8px; vertical-align: middle; margin-top: -4px;"></h1>
                 <div class="identity-box">
-                    <span class="identity-text">원하시는 페이지를 찾지 못했지만, 더 재미있는 것들이 많아요!</span>
+                    <!-- 무엇을 못 찾았는지 알려준다. 없으면 일반 문구만 나온다. -->
+                    <span th:if="${errorMessage != null and !#strings.isEmpty(errorMessage)}"
+                          class="identity-text" th:text="${errorMessage}">찾을 수 없습니다</span>
+                    <span th:unless="${errorMessage != null and !#strings.isEmpty(errorMessage)}"
+                          class="identity-text">원하시는 페이지를 찾지 못했지만, 더 재미있는 것들이 많아요!</span>
                     <p class="text-white mb-0" style="font-size: 1.1rem; opacity: 0.9; line-height: 1.7;">
                         지금 문답에서 <strong>나의 진짜 성향</strong>을 확인하고 <br>
                         친구들과 결과를 공유해 보시는 건 어떨까요?
