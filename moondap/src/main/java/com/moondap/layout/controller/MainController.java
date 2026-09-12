@@ -15,6 +15,7 @@ import com.moondap.service.MdTestUserService;
 import com.moondap.service.MdTestAdminService;
 import com.moondap.dto.MdContentItemDTO;
 import com.moondap.dto.MdTestCategoryDTO;
+import com.moondap.dto.SeoMetaDTO;
 import com.moondap.common.CommonUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -76,6 +77,12 @@ public class MainController {
 		model.addAttribute("currentNormalSort", normalSort);
 		model.addAttribute("currentBalanceSort", balanceSort);
 
+		// 정렬 파라미터는 같은 문서의 다른 표현일 뿐이다.
+		// canonical 은 SeoMetaInterceptor 가 쿼리스트링을 떼고 "/" 로 만든다.
+		model.addAttribute("seo", SeoMetaDTO.of(
+				"문답: 테스트로 만나는 또 다른 나",
+				"심리테스트, 밸런스 게임, 에겐테토 성격 검사까지. 나도 몰랐던 나의 모습을 문답(moondap)에서 무료로 확인해 보세요."));
+
 		if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
 			return "index :: #main-content";
 		}
@@ -84,12 +91,18 @@ public class MainController {
 	}
 
 	@GetMapping("/privacy")
-	public String privacy() {
+	public String privacy(Model model) {
+		model.addAttribute("seo", SeoMetaDTO.of(
+				"개인정보처리방침 - 문답",
+				"문답(moondap)이 수집하는 개인정보 항목, 이용 목적, 보유 기간과 제3자 광고 쿠키 사용에 관한 안내입니다."));
 		return "legal/privacy";
 	}
 
 	@GetMapping("/terms")
-	public String terms() {
+	public String terms(Model model) {
+		model.addAttribute("seo", SeoMetaDTO.of(
+				"이용약관 - 문답",
+				"문답(moondap) 서비스 이용에 관한 조건과 절차, 이용자와 운영자의 권리·의무를 정한 약관입니다."));
 		return "legal/terms";
 	}
 
@@ -104,6 +117,9 @@ public class MainController {
 		long totalParticipantCount = balanceGameTotalCount + normalTestTotalCount + egenTetoTotalCount;
 		
 		model.addAttribute("totalParticipantCount", totalParticipantCount);
+		model.addAttribute("seo", SeoMetaDTO.of(
+				"광고 · 제휴 문의 - 문답",
+				"문답(moondap)의 배너 광고, 브랜드 테스트 제작, 제휴 마케팅 문의를 받고 있습니다. 매체 소개와 참여자 지표를 확인해 보세요."));
 		return "partnership";
 	}
 	

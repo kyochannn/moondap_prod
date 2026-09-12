@@ -22,6 +22,10 @@ public class WebConfig implements WebMvcConfigurer {
 	@Value("${file.profile-dir}")
 	private String profileDir;
 
+	/** canonical·og:image·sitemap 의 절대 URL 기준. */
+	@Value("${app.base-url}")
+	private String baseUrl;
+
 	@Override
 	public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
 
@@ -62,5 +66,8 @@ public class WebConfig implements WebMvcConfigurer {
 				return true;
 			}
 		}).addPathPatterns("/uploads/**", "/profile/**");
+
+		// 모든 뷰에 canonical / og:* / robots 메타를 채운다.
+		registry.addInterceptor(new SeoMetaInterceptor(baseUrl));
 	}
 }

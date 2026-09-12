@@ -5,6 +5,7 @@ import com.moondap.common.exception.UserMessageException;
 import com.moondap.dto.MdContentItemDTO;
 import com.moondap.dto.MdTestCategoryDTO;
 import com.moondap.dto.MdTestDTO;
+import com.moondap.dto.SeoMetaDTO;
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.service.MdTestUserService;
 import com.moondap.service.StatService;
@@ -62,6 +63,12 @@ public class MdTestUserController {
         model.addAttribute("currentPage", page);
         model.addAttribute("hasMore", hasMore);
 
+        // 카테고리·정렬·페이지는 같은 문서를 다르게 보여줄 뿐이므로 canonical 은 항상 /test/list 다.
+        // (SeoMetaInterceptor 가 쿼리스트링을 떼고 기본 canonical 을 만든다.)
+        model.addAttribute("seo", SeoMetaDTO.of(
+                "심리테스트 · 밸런스 게임 전체 목록 - 문답",
+                "문답의 모든 심리테스트와 밸런스 게임을 카테고리별로 모았습니다. 인기순·최신순으로 골라 바로 참여해 보세요."));
+
         if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
             if ("true".equals(request.getHeader("X-Load-More"))) {
                 return "test/list :: #content-grid-items";
@@ -93,7 +100,23 @@ public class MdTestUserController {
         model.addAttribute("test", test);
         // preview 는 요청 파라미터라 누구나 붙일 수 있다. 권한이 있을 때만 인정한다.
         model.addAttribute("isPreview", preview && isAdminOrAuthor(test.getCreatedBy()));
+
+        // 테스트마다 제목·설명·썸네일이 달라야 검색 결과와 SNS 공유 카드가 구분된다.
+        SeoMetaDTO seo = SeoMetaDTO.of(test.getTitle() + " - 문답", test.getDescription());
+        seo.setImage(thumbnailUrl(test.getThumbnailImage()));
+        seo.setOgType("article");
+        model.addAttribute("seo", seo);
+
         return "test/intro";
+    }
+
+    /** 업로드 썸네일의 공개 경로. 없거나 기본 이미지면 공통 대체 이미지를 쓴다. */
+    private String thumbnailUrl(String thumbnailImage) {
+        if (thumbnailImage == null || thumbnailImage.isBlank()
+                || "default-content-img.png".equals(thumbnailImage)) {
+            return "/assets/img/default-img/default-content-img.png";
+        }
+        return "/uploads/" + thumbnailImage;
     }
 
     /**

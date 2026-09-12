@@ -1,6 +1,17 @@
 User-agent: *
 Allow: /
+
+# 로그인이 필요한 영역. 크롤러는 어차피 로그인 화면만 보게 되므로 크롤링 예산을 아낀다.
 Disallow: /admin/
-Disallow: /my/
+Disallow: /mypage
+Disallow: /test/manage/
+Disallow: /balanceGame/manage/
+
+# 개발용 정적 문서
+Disallow: /testBtn.html
+
+# 질문/결과 페이지(/test/*/questions, /test/*/result, /egenTeto/result 등)는
+# 일부러 차단하지 않는다. 이미 색인된 URL 을 빼려면 크롤러가 페이지에 접근해
+# noindex 메타 태그를 읽어야 하는데, robots.txt 로 막으면 그 접근 자체가 차단된다.
 
 Sitemap: https://moondap.com/sitemap.xml

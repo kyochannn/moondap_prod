@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moondap.dto.EgenTetoDTO;
+import com.moondap.dto.SeoMetaDTO;
 import com.moondap.service.EgenTetoService;
 import com.moondap.service.MdTestUserService;
 import com.moondap.service.StatService;
@@ -52,7 +53,14 @@ public class EgenTetoController {
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("maleCount", counts.get("maleCount"));
         model.addAttribute("femaleCount", counts.get("femaleCount"));
-        
+
+        SeoMetaDTO seo = SeoMetaDTO.of(
+                "에겐남 테토남 에겐녀 테토녀 테스트 - 문답",
+                "나는 에겐일까 테토일까? 성향 문항에 답하고 에겐남·테토남·에겐녀·테토녀 중 나의 유형과 상세 해설을 무료로 확인해 보세요.");
+        seo.setImage("/assets/img/egenTeto/egenTetoMain.png");
+        seo.setOgType("article");
+        model.addAttribute("seo", seo);
+
         return "egenTeto/selectEgenTetoGame";
     }
 

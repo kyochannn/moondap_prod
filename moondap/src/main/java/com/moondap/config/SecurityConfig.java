@@ -78,8 +78,12 @@ public class SecurityConfig {
             // ── 1. 정적 리소스 / 업로드 파일 ──────────────────────────
             .requestMatchers("/assets/**", "/uploads/**", "/profile/**").permitAll()
             .requestMatchers("/favicon.png", "/apple-touch-icon.png",
-                             "/robots.txt", "/sitemap.xml", "/.well-known/**").permitAll()
+                             "/robots.txt", "/sitemap.xml", "/ads.txt",
+                             "/.well-known/**").permitAll()
             .requestMatchers("/error").permitAll()
+            // 버튼 디자인 가이드. 개발용 정적 문서라 데이터를 담지 않는다.
+            // 검색 노출은 페이지의 noindex 와 robots.txt 로 막는다.
+            .requestMatchers("/testBtn.html").permitAll()
 
             // ── 2. 보호 영역 ────────────────────────────────────────
             // 반드시 공개 규칙(4번)보다 먼저 선언한다. 시큐리티는 먼저 매칭되는 규칙이

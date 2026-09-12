@@ -1,23 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="테스트로 만나는 또 다른 나, 문답(moondap)! 나를 알아가는 가장 재미있는 방법.">
-    <meta name="keywords" content="테스트, 밸런스게임, 성격테스트, 연애테스트, 에겐테토, 문답, moondap">
-    
+
+    <!-- 아래 메타는 SeoMetaInterceptor 가 채우는 ${seo} 를 따른다.
+         컨트롤러가 값을 지정하지 않은 페이지에는 사이트 기본값이 들어간다.
+         하드코딩으로 되돌리지 말 것: 전 페이지가 같은 description 을 쓰면
+         검색엔진이 중복 콘텐츠로 판단한다. -->
+    <meta name="description" th:content="${seo?.description}">
+    <meta name="robots" th:content="${seo?.robots} ?: 'index, follow'">
+    <link rel="canonical" th:if="${seo != null}" th:href="${seo.canonical}">
+
     <!-- Open Graph / SNS Share -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="문답: 테스트로 만나는 또 다른 나">
-    <meta property="og:description" content="나도 몰랐던 나의 모습을 발견하는 즐거움, 문답에서 확인하세요!">
-    <meta property="og:image" content="/assets/img/logo.webp">
-    
+    <meta property="og:type" th:content="${seo?.ogType} ?: 'website'">
+    <meta property="og:site_name" content="문답">
+    <meta property="og:title" th:content="${seo?.title}">
+    <meta property="og:description" th:content="${seo?.description}">
+    <meta property="og:image" th:content="${seo?.image}">
+    <meta property="og:url" th:content="${seo?.canonical}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${seo?.title}">
+    <meta name="twitter:description" th:content="${seo?.description}">
+    <meta name="twitter:image" th:content="${seo?.image}">
+
     <!-- google seacrh -->
     <meta name="google-site-verification" content="XyiaKYwTkRMZ-SPFLtteHO2m9HKfOvhcMCIGTeIduXA" />
     <!-- google ads -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5509463812555494"
      crossorigin="anonymous"></script>
-    
+
     <!-- link -->
     <th:block th:replace="~{fragment/link::link}"></th:block>
 </head>
