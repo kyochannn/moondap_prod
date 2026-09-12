@@ -2,6 +2,7 @@ package com.moondap.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -245,6 +246,6 @@ class CommentTrustBoundaryTest {
         assertThat(created).isNotNull();
         assertThat(created.getNo()).isEqualTo(COMMENT_NO);
         // 좋아요 하나에도 전체 목록을 다시 읽던 동작을 없앴다.
-        verify(balanceGameMapper, never()).selectBalanceGameComment(anyString());
+        verify(balanceGameMapper, never()).selectBalanceGameComment(anyString(), any(), anyInt(), anyInt());
     }
 }

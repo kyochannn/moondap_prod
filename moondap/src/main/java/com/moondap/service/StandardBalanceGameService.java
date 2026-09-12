@@ -24,6 +24,7 @@ import com.moondap.common.ProfanityUtil;
 import com.moondap.common.SecurityUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
+import com.moondap.dto.CommentPageDTO;
 import com.moondap.dto.request.AdjacentGameRequest;
 import com.moondap.dto.request.BalanceGameForm;
 import com.moondap.dto.request.BalanceGameSearchRequest;
@@ -40,6 +41,14 @@ import lombok.extern.slf4j.Slf4j;
 public class StandardBalanceGameService implements BalanceGameService {
 
     private static final String DEFAULT_IMAGE = "default-content-img.png";
+
+    /**
+     * 한 번에 내려주는 댓글 수.
+     *
+     * 화면에 한 번에 다 보여줄 필요가 없다. 20개면 스크롤 한두 번 분량이라
+     * 더보기를 누르기 전까지 읽을 거리가 충분하다.
+     */
+    public static final int COMMENT_PAGE_SIZE = 20;
 
 	private final BalanceGameMapper balanceGameMapper;
 	private final FileService fileService;
@@ -198,12 +207,23 @@ public class StandardBalanceGameService implements BalanceGameService {
     
 	// 밸런스 게임 댓글 조회
     @Override
-    public List<BalanceGameCommentDTO> selectBalanceGameComment(String id, String voterKey) throws Exception {
+    public CommentPageDTO selectBalanceGameComment(String id, String voterKey, String sort, int offset)
+    		throws Exception {
     	log.info("========== 밸런스 게임 댓글 select ==========");
 
-    	List<BalanceGameCommentDTO> comments = balanceGameMapper.selectBalanceGameComment(id);
+    	// 한 건 더 요청해서 다음 페이지가 있는지 판단한다.
+    	// COUNT 쿼리를 따로 치는 것보다 싸고, 마지막 페이지에서 빈 더보기가 남지 않는다.
+    	int safeOffset = Math.max(0, offset);
+    	List<BalanceGameCommentDTO> fetched =
+    			balanceGameMapper.selectBalanceGameComment(id, sort, safeOffset, COMMENT_PAGE_SIZE + 1);
+
+    	boolean hasMore = fetched.size() > COMMENT_PAGE_SIZE;
+    	List<BalanceGameCommentDTO> comments = hasMore
+    			? new java.util.ArrayList<>(fetched.subList(0, COMMENT_PAGE_SIZE))
+    			: fetched;
+
     	if (comments.isEmpty()) {
-    		return comments;
+    		return CommentPageDTO.of(comments, false, safeOffset);
     	}
 
     	// 이 요청자가 좋아요를 누른 댓글 번호들을 한 번에 읽어 표시한다.
@@ -217,8 +237,9 @@ public class StandardBalanceGameService implements BalanceGameService {
     		comment.setDeletable(canDeleteComment(comment));
     	}
 
-    	log.info("밸런스 게임 댓글 {}개", comments.size());
-        return comments;
+    	log.info("밸런스 게임 댓글 {}개 (offset={}, sort={}, hasMore={})",
+    			comments.size(), safeOffset, sort, hasMore);
+        return CommentPageDTO.of(comments, hasMore, safeOffset + comments.size());
     }
     
     // 밸런스 게임 댓글 달기

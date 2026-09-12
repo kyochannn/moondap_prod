@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
+import com.moondap.dto.CommentPageDTO;
 import com.moondap.dto.request.AdjacentGameRequest;
 import com.moondap.dto.request.BalanceGameForm;
 import com.moondap.dto.request.BalanceGameSearchRequest;
@@ -33,11 +34,14 @@ public interface BalanceGameService {
 	public BalanceGameDTO vote(VoteRequest request, String voterKey) throws Exception;
 	
 	/**
-	 * 댓글 목록 조회.
+	 * 댓글 한 페이지 조회.
 	 *
 	 * @param voterKey 요청자 식별자. likedByMe 표시에 사용한다. null 이면 전부 false.
+	 * @param sort     "popular" 면 좋아요순, 그 외에는 최신순
+	 * @param offset   이미 받아간 댓글 수
 	 */
-	public List<BalanceGameCommentDTO> selectBalanceGameComment(String id, String voterKey) throws Exception;
+	public CommentPageDTO selectBalanceGameComment(String id, String voterKey, String sort, int offset)
+			throws Exception;
 
 	/**
 	 * 댓글 등록.

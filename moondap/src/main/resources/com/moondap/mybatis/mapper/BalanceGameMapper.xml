@@ -191,12 +191,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </insert>
     
     
-    <!-- 밸런스 게임 댓글 조회 -->
+    <!--
+      밸런스 게임 댓글 조회.
+
+      예전에는 LIMIT 없이 전부 가져와 최신순으로만 보여줬다. 댓글이 쌓이면 한 번에
+      다 내려받아 화면이 무거워지고, 좋아요를 아무리 받아도 재밌는 댓글이 아래로 밀렸다.
+
+      인기순은 좋아요가 같을 때 최신이 위로 오게 이중 정렬한다. 정렬 기준이 하나뿐이면
+      좋아요 0 인 댓글들의 순서가 매 조회마다 달라져 더보기에서 같은 댓글이 또 나온다.
+    -->
     <select id="selectBalanceGameComment" resultType="BalanceGameCommentDTO">
         SELECT *
         FROM moondap.balance_comments
         WHERE question_id = #{id}
-        ORDER BY created_at DESC
+        <choose>
+            <when test="sort == 'popular'">
+                ORDER BY like_count DESC, created_at DESC, no DESC
+            </when>
+            <otherwise>
+                ORDER BY created_at DESC, no DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 밸런스 게임 관련 댓글 삭제 -->

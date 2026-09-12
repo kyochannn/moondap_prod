@@ -75,8 +75,15 @@ public interface BalanceGameMapper {
 	// 밸런스 게임 단일 댓글 삭제
 	public int deleteSingleComment(@Param("no") int no) throws Exception;
 	
-	// 밸런스 게임 댓글 조회
-	public List<BalanceGameCommentDTO> selectBalanceGameComment(String id) throws Exception;
+	/**
+	 * 밸런스 게임 댓글 조회.
+	 *
+	 * @param sort "popular" 면 좋아요순, 그 외에는 최신순
+	 */
+	public List<BalanceGameCommentDTO> selectBalanceGameComment(@Param("id") String id,
+			@Param("sort") String sort,
+			@Param("offset") int offset,
+			@Param("limit") int limit) throws Exception;
 	
 	// 밸런스 게임 좋아요 수 증감 (증감분은 서버가 결정한다)
 	public int updateBalanceGameCommentLikeCount(@Param("no") int no, @Param("id") String id, @Param("cnt") int cnt) throws Exception;

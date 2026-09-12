@@ -95,7 +95,31 @@
 		}
 
 		.rec-arrow { color: rgba(255, 255, 255, 0.3); flex: 0 0 auto; }
-    </style> 
+
+		/* ── 댓글 정렬 ──────────────────────────────────────── */
+		.comment-sort {
+			display: flex;
+			justify-content: flex-end;
+			gap: 14px;
+			padding: 0 6px 8px;
+		}
+
+		.comment-sort-link {
+			background: none;
+			border: none;
+			padding: 2px 0;
+			font-size: 0.82rem;
+			color: rgba(255, 255, 255, 0.45);
+			cursor: pointer;
+		}
+
+		.comment-sort-link.active {
+			color: #fff;
+			font-weight: 700;
+		}
+
+		.comment-sort-link:hover { color: rgba(255, 255, 255, 0.8); }
+    </style>
     <script th:inline="javascript"> 
         // 서버에서 넘겨준 현재 게임 ID
         const gameId = /*[[${balanceGame.id}]]*/ 'default';
@@ -156,7 +180,7 @@
     			$('#recommend-tests').fadeIn();
     			
     			// 댓글 그리기
-    	        selectBalanceGameComment();
+    	        selectBalanceGameComment(false);
     			
 	        } else {
 	        	
@@ -297,7 +321,7 @@
 		            });
 
                     // 9. 댓글 데이터 가져오기
-	                selectBalanceGameComment();
+	                selectBalanceGameComment(false);
 		        },
 		        error: function(xhr, status, error) {
 		        	console.log("Status: " + status);
@@ -397,26 +421,71 @@
     		}
     	}
     	
-    	// 댓글 조회
-    	function selectBalanceGameComment() {
-    		
+    	// 현재 댓글 정렬과 다음 더보기 위치
+    	let commentSort = 'latest';
+    	let commentOffset = 0;
+
+    	/**
+    	 * 댓글 조회.
+    	 *
+    	 * 예전에는 한 게임의 댓글을 LIMIT 없이 전부 받아왔다. 댓글이 쌓이면 그만큼
+    	 * 한 번에 내려받아야 해서 화면이 무거워졌다. 이제 20개씩 끊어 받는다.
+    	 *
+    	 * @param append true 면 기존 목록 뒤에 붙인다(더보기). false 면 새로 그린다.
+    	 */
+    	function selectBalanceGameComment(append) {
+    		const offset = append ? commentOffset : 0;
+
 	    	$.ajax({
 		        url: '/balanceGame/selectBalanceGameComment',
 		        type: 'POST',
 		        contentType: 'application/json',
-		        data: JSON.stringify({ 
-		            id: /*[[${balanceGame.id}]]*/ 'default'
+		        data: JSON.stringify({
+		            id: /*[[${balanceGame.id}]]*/ 'default',
+		            sort: commentSort,
+		            offset: offset
 		        }),
-		        success: function(commentList) {
-		        	renderCommentList(commentList);
+		        success: function(page) {
+		        	if (append) {
+		        		appendCommentList(page.comments);
+		        	} else {
+		        		renderCommentList(page.comments);
+		        	}
+		        	commentOffset = page.nextOffset;
+		        	$('#comment-more-container').toggle(!!page.hasMore);
 		        },
 		        error: function(xhr, status, error) {
 		        	console.log("Status: " + status);
 		            console.log("Error: " + error);
 		            console.log("ResponseText: " + xhr.responseText);
 		            alert("댓글 조회 중 오류가 발생했습니다.");
+		        },
+		        complete: function() {
+		        	$('#commentMoreBtn').prop('disabled', false)
+		        	                    .html('댓글 더보기 <i class="bi bi-chevron-down ms-1"></i>');
 		        }
 		    });
+    	}
+
+    	/** 더보기. 연타로 같은 페이지를 두 번 받지 않도록 버튼을 잠근다. */
+    	function loadMoreComments() {
+    		const $btn = $('#commentMoreBtn');
+    		if ($btn.prop('disabled')) {
+    			return;
+    		}
+    		$btn.prop('disabled', true).html('불러오는 중...');
+    		selectBalanceGameComment(true);
+    	}
+
+    	/** 정렬 전환. 같은 정렬을 다시 눌러도 재조회하지 않는다. */
+    	function changeCommentSort(sort) {
+    		if (commentSort === sort) {
+    			return;
+    		}
+    		commentSort = sort;
+    		$('.comment-sort-link').removeClass('active');
+    		$('.comment-sort-link[data-sort="' + sort + '"]').addClass('active');
+    		selectBalanceGameComment(false);
     	}
     	
     	// 댓글 삭제 (관리자용)
@@ -593,6 +662,22 @@
 		    }
 		}
 
+		/** 더보기로 받은 댓글을 기존 목록 뒤에 붙인다. */
+		function appendCommentList(commentList) {
+		    if (!commentList || commentList.length === 0) {
+		        return;
+		    }
+		    const $container = $('.comment-list');
+		    $container.find('.comment-empty-message').remove();
+		    commentList.forEach(comment => {
+		        $container.append(buildCommentHtml(comment));
+		    });
+
+		    if (typeof AOS !== 'undefined') {
+		        AOS.refresh();
+		    }
+		}
+
 		/**
 		 * 댓글 하나만 갱신한다.
 		 *
@@ -608,13 +693,20 @@
 		}
 
 		/**
-		 * 새 댓글을 목록 맨 앞에 붙인다(정렬이 최신순이므로).
+		 * 새 댓글을 목록 맨 앞에 붙인다.
+		 *
+		 * 인기순으로 보고 있어도 맨 앞에 둔다. 방금 자기가 쓴 글이 보이지 않으면
+		 * 등록이 안 된 줄 알기 때문이다.
+		 *
+		 * commentOffset 을 함께 올려야 한다. 서버 쪽 목록이 한 건 늘었으므로
+		 * 그대로 두면 다음 더보기에서 한 건을 건너뛴다.
 		 */
 		function prependComment(comment) {
 		    if (!comment) return;
 		    const $container = $('.comment-list');
 		    $container.find('.comment-empty-message').remove();
 		    $container.prepend(buildCommentHtml(comment));
+		    commentOffset += 1;
 		}
 
 		function buildEmptyMessage() {
@@ -1010,8 +1102,28 @@
 				</div>
 			</section>
 			
+			<!--
+			  정렬 선택.
+			  좋아요 기능이 있는데 정렬에 쓰이지 않아서, 좋아요를 아무리 받아도
+			  재밌는 댓글이 최신 댓글 아래로 계속 밀렸다.
+			-->
+			<div class="comment-sort">
+				<button type="button" class="comment-sort-link active"
+						data-sort="latest" onclick="changeCommentSort('latest')">최신순</button>
+				<button type="button" class="comment-sort-link"
+						data-sort="popular" onclick="changeCommentSort('popular')">인기순</button>
+			</div>
+
 			<!-- 댓글을 보여줄 영역 -->
 			<div class="comment-list"></div>
+
+			<!-- 더보기. 남은 댓글이 있을 때만 보인다. -->
+			<div class="text-center mt-3" id="comment-more-container" style="display: none;">
+				<button type="button" class="btn btn-outline-light btn-sm" id="commentMoreBtn"
+						onclick="loadMoreComments()">
+					댓글 더보기 <i class="bi bi-chevron-down ms-1"></i>
+				</button>
+			</div>
 		</section>
 		<!-- /Chat Section -->
 

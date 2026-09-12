@@ -31,8 +31,10 @@ import com.moondap.common.CommonUtil;
 import com.moondap.common.SecurityUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
+import com.moondap.dto.CommentPageDTO;
 import com.moondap.dto.SeoMetaDTO;
 import com.moondap.dto.request.AdjacentGameRequest;
+import com.moondap.dto.request.CommentListRequest;
 import com.moondap.dto.request.BalanceGameForm;
 import com.moondap.dto.request.BalanceGameSearchRequest;
 import com.moondap.dto.request.CommentDeleteRequest;
@@ -270,13 +272,15 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/selectBalanceGameComment")
 	@ResponseBody
-	public List<BalanceGameCommentDTO> selectBalanceGameComment(@Valid @RequestBody GameIdRequest request,
+	public CommentPageDTO selectBalanceGameComment(@Valid @RequestBody CommentListRequest request,
 			HttpServletRequest servletRequest) throws Exception {
 
-		log.info("selectBalanceGameComment ::::::::::: {}", request.getId());
+		log.info("selectBalanceGameComment ::::::::::: {} (sort={}, offset={})",
+				request.getId(), request.getSort(), request.getOffset());
 
 		// 요청자 기준으로 likedByMe / deletable 을 채워 내려준다.
-		return balanceGameService.selectBalanceGameComment(request.getId(), resolveVoterKey(servletRequest));
+		return balanceGameService.selectBalanceGameComment(
+				request.getId(), resolveVoterKey(servletRequest), request.getSort(), request.getOffset());
 	}
 
 	/**
