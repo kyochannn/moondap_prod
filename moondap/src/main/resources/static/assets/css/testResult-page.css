@@ -245,3 +245,59 @@
 }
 
 /* 모달 닫기 버튼은 buttons.css 의 .btn.btn-outline-light 를 씁니다. */
+
+/*--------------------------------------------------------------
+# 결과 화면 모바일 정리
+--------------------------------------------------------------*/
+
+/* 테스트 이름보다 내 결과가 먼저 보여야 한다. */
+@media (max-width: 575.98px) {
+    #starter-section.starter-section {
+        padding: 8px 12px !important;
+    }
+
+    .result-page-head h2 {
+        font-size: 1.25rem;
+        margin-bottom: 4px;
+    }
+
+    .result-page-head p {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+}
+
+/* 에겐테토 결과의 영역별 표.
+   "유형" 칸이 70px 로 고정돼 "스타일 테 / 토형" 처럼 단어 중간에서 끊겼다.
+   좁은 화면에서는 칸을 넓히고 단어 단위로만 줄바꿈한다. */
+@media (max-width: 575.98px) {
+    .domain-score-table th,
+    .domain-score-table td {
+        word-break: keep-all;
+    }
+
+    .domain-score-table th:nth-child(2),
+    .domain-score-table td:nth-child(2) {
+        width: auto !important;
+        min-width: 84px;
+    }
+
+    .domain-score-table th:first-child,
+    .domain-score-table td:first-child {
+        word-break: keep-all;
+    }
+}
+
+/* 공유 버튼 묶음.
+   페이지 끝에 있던 것을 본문 중간으로 옮기면서, 바로 아래 "점수 계산 상세 내역"
+   제목과 경계가 없어졌다. 특히 그 사이의 회색 안내 문구가 다음 섹션에 딸린
+   설명처럼 읽혔다. 여백을 늘리고 옅은 선으로 여기까지가 행동 영역임을 알린다.
+   (.result-report-card .mb-5 가 !important 로 28px 을 강제하므로 전용 클래스를 쓴다.) */
+.result-actions {
+    margin-bottom: 2.25rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* 하단 추천은 밸런스 게임 상세와 같은 가로형 목록(.rec-*)을 쓴다.
+   스타일은 main.css 의 "추천 목록" 절에 있다. */

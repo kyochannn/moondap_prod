@@ -53,7 +53,12 @@
 # 기본형
 --------------------------------------------------------------*/
 .btn {
-  --bs-btn-padding-y: 0.625rem;
+  /* 높이는 --btn-h 하나로 고정한다. 패딩·글자 크기로 높이가 정해지면
+     변형마다 소수점 단위로 어긋나(44.5px 등) 나란히 놓았을 때 맞지 않는다.
+     세로 여백은 min-height 에 맡기고 패딩은 그보다 작게 둬서, 글자가 두 줄로
+     넘어갈 때만 버튼이 자연스럽게 늘어나게 한다. */
+  --btn-h: 44px;
+  --bs-btn-padding-y: 0.375rem;
   --bs-btn-padding-x: 1.5rem;
   --bs-btn-font-size: 0.9375rem;
   --bs-btn-font-weight: var(--btn-font-weight);
@@ -66,6 +71,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: var(--btn-h);
   white-space: nowrap;
   transition: var(--btn-transition);
 }
@@ -101,19 +107,22 @@
 # 크기
 --------------------------------------------------------------*/
 .btn-xs {
-  --bs-btn-padding-y: 0.25rem;
+  --btn-h: 28px;
+  --bs-btn-padding-y: 0.125rem;
   --bs-btn-padding-x: 0.75rem;
   --bs-btn-font-size: 0.75rem;
 }
 
 .btn-sm {
-  --bs-btn-padding-y: 0.375rem;
+  --btn-h: 34px;
+  --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 1rem;
   --bs-btn-font-size: 0.8125rem;
 }
 
 .btn-lg {
-  --bs-btn-padding-y: 0.875rem;
+  --btn-h: 56px;
+  --bs-btn-padding-y: 0.5rem;
   --bs-btn-padding-x: 2rem;
   --bs-btn-font-size: 1.0625rem;
 }
@@ -296,28 +305,16 @@
 
 /* 아이콘 전용 정사각 버튼. 색은 위 변형을 그대로 조합해서 씁니다.
    예) <button class="btn btn-danger btn-icon"><i class="bi bi-trash"></i></button> */
+/* 같은 크기 단계의 글자 버튼과 높이가 같아야 한 줄에 섞어도 줄이 맞는다.
+   그래서 지름을 따로 정하지 않고 --btn-h 를 그대로 가로세로에 쓴다. */
 .btn-icon {
   --bs-btn-padding-y: 0;
   --bs-btn-padding-x: 0;
-  width: 36px;
-  height: 36px;
+  width: var(--btn-h);
+  height: var(--btn-h);
+  min-height: var(--btn-h);
   flex-shrink: 0;
   gap: 0;
-}
-
-.btn-icon.btn-sm {
-  width: 30px;
-  height: 30px;
-}
-
-.btn-icon.btn-xs {
-  width: 26px;
-  height: 26px;
-}
-
-.btn-icon.btn-lg {
-  width: 44px;
-  height: 44px;
 }
 
 /* 완전한 원형 아이콘 버튼 (댓글 전송 등) */

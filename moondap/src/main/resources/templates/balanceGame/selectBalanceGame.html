@@ -44,57 +44,7 @@
 		@-webkit-keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 		@keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
-		/* ── 추천 테스트 (가로형 리스트) ────────────────────────
-		   댓글을 지나온 뒤 위치라 세로 카드로는 너무 길어진다.
-		   한 항목을 90px 안팎으로 유지해 3개가 한눈에 들어오게 한다. */
-		.rec-list { display: flex; flex-direction: column; gap: 10px; }
-
-		.rec-item {
-			display: flex; align-items: center; gap: 12px;
-			padding: 10px; text-decoration: none;
-			background: rgba(255, 255, 255, 0.04);
-			border: 1px solid rgba(255, 255, 255, 0.08);
-			border-radius: 14px;
-			transition: background .2s ease, transform .2s ease;
-		}
-		.rec-item:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
-
-		.rec-thumb {
-			position: relative; flex: 0 0 72px;
-			width: 72px; height: 72px; border-radius: 10px; overflow: hidden;
-			background: linear-gradient(135deg, #2a2550, #1b1b3a);
-			display: flex; align-items: center; justify-content: center;
-		}
-		.rec-thumb img { width: 100%; height: 100%; object-fit: cover; }
-		.rec-thumb-fallback { color: rgba(255, 255, 255, 0.35); font-size: 1.6rem; }
-
-		.rec-new {
-			position: absolute; top: 4px; left: 4px;
-			background: #ff4d6d; color: #fff;
-			font-size: 0.55rem; font-weight: 700;
-			padding: 1px 5px; border-radius: 6px;
-		}
-
-		.rec-body { flex: 1 1 auto; min-width: 0; }
-		.rec-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
-		.rec-cat {
-			font-size: 0.68rem; color: #b9b4ff;
-			background: rgba(124, 117, 255, 0.15);
-			padding: 1px 7px; border-radius: 20px;
-		}
-		.rec-play { font-size: 0.68rem; color: #ffc107; }
-
-		/* 제목·설명이 길어도 한 줄로 잘라 높이를 고정한다 */
-		.rec-title {
-			color: #fff; font-weight: 700; font-size: 0.92rem;
-			white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-		}
-		.rec-desc {
-			color: rgba(255, 255, 255, 0.5); font-size: 0.75rem;
-			white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-		}
-
-		.rec-arrow { color: rgba(255, 255, 255, 0.3); flex: 0 0 auto; }
+    /* 추천 목록(.rec-*) 스타일은 main.css 의 '추천 목록' 절로 옮겼다. */
 
 		/* ── 댓글 정렬 ──────────────────────────────────────── */
 		.comment-sort {
@@ -1134,7 +1084,9 @@
 		  '이전/다음 질문'과 '리스트로 이동' 뿐이라 밸런스 게임 안에서만 돌게 됐다.
 		  테스트 결과·에겐테토 화면에는 이미 있던 패턴을 여기에도 둔다.
 
-		  밸런스 게임은 일부러 추천하지 않는다. '다음 질문' 버튼이 그 역할을 한다.
+		  인기 밸런스 게임도 함께 추천한다. '다음 질문' 버튼은 순서대로 한 칸씩만
+		  옮겨주므로, 지금 화제가 되는 질문으로 건너뛸 길이 따로 필요하다.
+		  현재 보고 있는 게임은 컨트롤러에서 걸러낸다.
 
 		  [레이아웃] 다른 화면의 큰 세로 카드 대신 가로형으로 만든다.
 		  여기는 댓글을 모두 지나온 뒤에 나오는 위치라, 세로 카드 3개를 쓰면
@@ -1185,9 +1137,66 @@
 				</a>
 			</div>
 
-			<div class="text-center mt-3">
+			<div th:if="${popularBalanceGames != null and !#lists.isEmpty(popularBalanceGames)}"
+				 class="mt-4">
+				<div class="text-center mb-3">
+					<h5 class="fw-bold text-white mb-1">
+						<i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임
+					</h5>
+					<p class="text-white-50 small mb-0">지금 가장 많이 갈린 질문들이에요</p>
+				</div>
+
+				<div class="rec-list">
+					<a th:each="g : ${popularBalanceGames}"
+					   th:href="@{/balanceGame/selectBalanceGameView(id=${g.id})}"
+					   class="rec-item">
+						<div class="rec-thumb rec-thumb-split">
+							<img th:src="${g.thumbnail != null and g.thumbnail != ''}
+										 ? (${#strings.startsWith(g.thumbnail, '/assets/')}
+											? ${g.thumbnail}
+											: (@{/uploads/} + ${g.thumbnail}))
+										 : @{/assets/img/default-img/default-content-img.png}"
+								 alt="선택지1" loading="lazy">
+							<img th:src="${g.thumbnail2 != null and g.thumbnail2 != ''}
+										 ? (${#strings.startsWith(g.thumbnail2, '/assets/')}
+											? ${g.thumbnail2}
+											: (@{/uploads/} + ${g.thumbnail2}))
+										 : @{/assets/img/default-img/default-content-img.png}"
+								 alt="선택지2" loading="lazy">
+							<span class="rec-vs">VS</span>
+							<span th:if="${g.isNew}" class="rec-new">NEW</span>
+						</div>
+
+						<div class="rec-body">
+							<div class="rec-meta">
+								<span class="rec-cat" th:text="${g.categoryName}">카테고리</span>
+								<span class="rec-play">
+									<i class="bi bi-eye-fill"></i>
+									<span th:text="${#numbers.formatInteger(g.playCount, 0, 'COMMA')}">0</span>
+								</span>
+							</div>
+							<div class="rec-title" th:text="${g.title}">밸런스 게임 제목</div>
+							<!-- 매퍼가 description 에 title 을 그대로 넣는다. 같은 문장을
+								 두 줄로 반복하는 대신 참여 안내를 둔다. -->
+							<div class="rec-desc">당신의 선택은?</div>
+						</div>
+
+						<i class="bi bi-chevron-right rec-arrow"></i>
+					</a>
+				</div>
+			</div>
+
+			<!--
+			  나가는 길을 테스트 쪽으로만 두면, 댓글을 끝까지 읽고 내려온 사용자에게는
+			  밸런스 게임으로 돌아갈 방법이 없다. '이전/다음 질문'과 '리스트로 이동'은
+			  모두 댓글 섹션 위에 있어서 여기서는 보이지 않는다.
+			-->
+			<div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
 				<a href="/test/list?type=NORMAL" class="btn btn-primary btn-sm px-4">
 					테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
+				</a>
+				<a href="/balanceGame/selectBalanceGameListView" class="btn btn-outline-light btn-sm px-4">
+					<i class="bi bi-list-task me-1"></i> 밸런스 게임 더보기
 				</a>
 			</div>
 		</section>

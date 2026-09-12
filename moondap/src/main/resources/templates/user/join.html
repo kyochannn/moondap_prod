@@ -46,22 +46,46 @@
         .upload-guide-layer {
             border-radius: 50% !important;
         }
+        /* 입력창(42px) 안쪽에 위아래 6px 여백을 두고 들어간다.
+           buttons.css 가 .btn 에 min-height 를 주므로, 크기를 !important 로 덮지 말고
+           --btn-h 를 넘겨야 한다. 예전에는 기본값 44px 이 이겨서 입력창 밖으로 삐져나왔다. */
         .check-btn {
             position: absolute;
-            right: 8px;
+            right: 6px;
             top: 6px;
             bottom: 6px;
             height: auto;
-            border-radius: 15px !important;
-            padding: 0 15px !important;
-            font-size: 0.8rem !important;
+            --btn-h: 30px;
+            --bs-btn-padding-x: 0.875rem;
+            --bs-btn-font-size: 0.75rem;
+            /* 입력창 안이라 primary 의 글로우는 과하다. */
+            box-shadow: none;
             z-index: 5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .input-wrapper {
             position: relative;
+        }
+        .email-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* flex-basis 0 이어야 아이디·도메인 칸이 글자 수와 무관하게 같은 폭이 된다. */
+        .email-row .custom-input {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        .email-at {
+            flex: 0 0 auto;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .email-domain-select {
+            width: 100%;
+            margin-top: 8px;
+            cursor: pointer;
+            /* .form-select 이 글자를 14px 로 줄여 옆 입력창(16px)보다 3px 낮았다.
+               16px 미만이면 iOS 에서 포커스할 때 화면이 확대되기도 한다. */
+            font-size: 1rem;
         }
     </style>
 
@@ -274,11 +298,15 @@
                                     <p class="text-start ms-2 text-primary small mb-2">
                                         <i class="bi bi-envelope-fill"></i> 이메일 주소 (선택) <span id="emailCheckMsg" class="ms-2 small"></span>
                                     </p>
-                                    <div class="d-flex gap-2 flex-wrap">
-                                        <input type="text" id="emailId" class="custom-input flex-grow-1" placeholder="아이디" style="width: auto; min-width: 120px;">
-                                        <span class="text-white-50 align-self-center">@</span>
-                                        <input type="text" id="emailDomain" class="custom-input flex-grow-1" placeholder="도메인" style="width: auto; min-width: 120px;">
-                                        <select id="domainSelect" class="form-select custom-input" style="width: auto; cursor: pointer;" onchange="changeDomain()">
+                                    <!-- 넷을 한 줄에 두면 390px 에서 "@" 만 홀로 줄바꿈된다.
+                                         아이디 @ 도메인 을 한 줄로 묶고, 선택 목록은 아래로 내린다. -->
+                                    <div class="email-row">
+                                        <input type="text" id="emailId" class="custom-input" placeholder="아이디">
+                                        <span class="email-at">@</span>
+                                        <input type="text" id="emailDomain" class="custom-input" placeholder="도메인">
+                                    </div>
+                                    <div>
+                                        <select id="domainSelect" class="form-select custom-input email-domain-select" onchange="changeDomain()">
                                             <option value="">직접 입력</option>
                                             <option value="naver.com">naver.com</option>
                                             <option value="gmail.com">gmail.com</option>

@@ -1,0 +1,221 @@
+/**
+ * 테스트 소개 화면 (test/intro.html, egenTeto/selectEgenTetoGame.html)
+ *
+ * 모바일 우선으로 잡는다. 이 화면의 목적은 하나 — "테스트 시작"을 누르게 하는 것이라
+ * 작은 화면에서 그 버튼이 항상 손에 닿는 곳에 있도록 구성한다.
+ *
+ * 버튼의 색·모양은 buttons.css 가 담당한다. 여기서는 배치만 다룬다.
+ */
+
+/*--------------------------------------------------------------
+# 행동 버튼 묶음
+# 모바일: 「테스트 시작」을 전체 너비로 위에, 공유 두 개를 아래 반반.
+# 데스크톱: 기존처럼 한 줄 (공유 · 링크공유 · 시작).
+--------------------------------------------------------------*/
+.intro-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* 높이는 buttons.css 의 기본 단계(44px)를 그대로 쓴다. 여기서 패딩이나 크기를
+   따로 주면 같은 줄의 버튼들과 어긋난다.
+   모바일이라고 큰 단계(56px)를 쓰면 세 개가 쌓여 120px 넘는 덩어리가 되어
+   화면을 잡아먹는다. 주요 행동의 존재감은 전체 너비와 색이 만든다. */
+
+.intro-actions .intro-start {
+  order: 1;
+  width: 100%;
+}
+
+.intro-actions .intro-share {
+  order: 2;
+  display: flex;
+  gap: 0.625rem;
+}
+
+/* 공유 버튼 둘이 남은 폭을 똑같이 나눠 갖는다.
+   flex-basis 를 0 으로 둬야 글자 길이가 달라도 폭이 같다. */
+.intro-actions .intro-share > .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (min-width: 992px) {
+  .intro-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .intro-actions .intro-share {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .intro-actions .intro-start {
+    order: 2;
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  .intro-actions .intro-share > .btn {
+    flex: 0 0 auto;
+  }
+}
+
+/*--------------------------------------------------------------
+# 썸네일
+# 정사각 그대로 두면 390px 화면에서 세로로 390px 을 먹어 제목과 CTA 가
+# 접힌 선 아래로 밀린다. 작은 화면에서만 가로로 넓게 잘라 높이를 줄인다.
+--------------------------------------------------------------*/
+/* 가로로 넓게 잘라내는(16:10 crop) 방식을 먼저 썼다가 되돌렸다.
+   썸네일에는 제목 글자가 이미지 안에 박혀 있는 경우가 많아 위아래가 잘려나간다.
+   정사각 비율은 그대로 두고 폭만 줄여 세로 공간을 확보한다. */
+@media (max-width: 991.98px) {
+  .content-thumbnail-container {
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 8px;
+    border-radius: 24px;
+  }
+
+  .content-thumbnail-img {
+    border-radius: 18px;
+  }
+}
+
+/*--------------------------------------------------------------
+# 메타 정보
+# 항목이 4개라 한 줄에 3개 + 1개로 어색하게 끊겼다. 좁은 화면에서는
+# 2×2 로 고정해 균형을 맞춘다.
+--------------------------------------------------------------*/
+/* 부트스트랩의 d-flex 는 !important 라 미디어쿼리에서 display 를 바꿀 수 없어
+   마크업의 유틸리티를 걷어냈다.
+   선택자가 긴 이유: main.css 가 이 요소를
+   `.game-gallery-details .game-gallery-details-content .project-meta .date-client`
+   (명시도 0,4,0) 로 잡고 있어, 그보다 높아야 배치를 넘겨받을 수 있다.
+   main.css 쪽 중첩을 푸는 게 근본 해결이지만 다른 화면에 영향이 가므로 여기서 받는다. */
+.game-gallery-details .game-gallery-details-content .project-meta .date-client.intro-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+@media (min-width: 992px) {
+  .game-gallery-details .game-gallery-details-content .project-meta .date-client.intro-meta {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .game-gallery-details .game-gallery-details-content .project-meta .date-client.intro-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem 0.75rem;
+  }
+
+  .game-gallery-details .game-gallery-details-content .project-meta .date-client.intro-meta .meta-item {
+    justify-content: center;
+    min-width: 0;
+  }
+}
+
+/*--------------------------------------------------------------
+# 세로 여백
+# 모바일에서 썸네일과 제목 사이가 지나치게 벌어져 첫 화면을 낭비한다.
+--------------------------------------------------------------*/
+@media (max-width: 991.98px) {
+  /* .section 의 기본 60px 상단 여백은 작은 화면에서 첫 화면을 크게 낭비한다. */
+  #game-gallery-details {
+    padding-top: 24px;
+  }
+
+  #game-gallery-details .row.gy-5 {
+    --bs-gutter-y: 1.25rem;
+  }
+
+  #game-gallery-details .col-lg-4 {
+    margin-bottom: 0 !important;
+  }
+
+  #game-gallery-details .project-title {
+    margin-bottom: 1rem !important;
+  }
+}
+
+/*--------------------------------------------------------------
+# 하단 고정 CTA
+# 본문의 「테스트 시작」이 화면 밖으로 나가면 대신 나타난다.
+# 푸터가 보이면 다시 숨겨서 푸터 내용을 가리지 않는다.
+--------------------------------------------------------------*/
+.intro-sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  padding: 0.75rem 1rem;
+  /* 아이폰 홈 인디케이터 영역만큼 더 띄운다. */
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--background-color), transparent 8%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  transform: translateY(110%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 숨어 있는 동안에는 탭을 가로채지 않는다. */
+  pointer-events: none;
+}
+
+.intro-sticky-cta.is-visible {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* 본문의 시작 버튼과 같은 높이(기본 44px)로 둔다. 스크롤에 따라 둘이 번갈아
+   보이므로 높이가 다르면 바뀌는 순간이 눈에 띈다. */
+.intro-sticky-cta .btn {
+  width: 100%;
+}
+
+/* 고정 바는 화면 맨 아래에 떠 있으므로, 페이지의 마지막 요소인 푸터에
+   바 높이만큼 여백을 줘서 약관·문의 링크가 가리지 않게 한다.
+   (이 파일은 소개 화면에서만 불러오므로 다른 페이지의 푸터에는 영향이 없다.) */
+@media (max-width: 991.98px) {
+  .footer {
+    padding-bottom: 96px;
+  }
+}
+
+/* 맨 위로 가기 버튼이 고정 바 위에 겹친다. 바가 떠 있는 동안만 위로 밀어낸다.
+   (main.css 가 bottom 을 애니메이션하므로 transform 으로 비켜준다.) */
+@media (max-width: 991.98px) {
+  .scroll-top {
+    transition: all 0.4s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .intro-sticky-cta.is-visible ~ .scroll-top,
+  body:has(.intro-sticky-cta.is-visible) .scroll-top {
+    transform: translateY(-72px);
+  }
+}
+
+/* 복사 완료 토스트가 고정 바에 겹치지 않게 위로 올린다.
+   (선택자를 body 로 한 단계 좁혀 템플릿 인라인 스타일보다 우선하게 한다.) */
+@media (max-width: 991.98px) {
+  body #copyToast,
+  body #previewToast {
+    bottom: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-sticky-cta {
+    transition: none;
+  }
+}

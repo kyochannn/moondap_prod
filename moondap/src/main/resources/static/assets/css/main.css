@@ -1362,12 +1362,24 @@ section,
   box-shadow: 0 8px 30px color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 
+/* 카드가 열 높이를 꽉 채우게 해서 같은 행의 카드 높이를 맞춘다.
+   부트스트랩 .row 는 자식 열을 이미 늘려주지만, 열 안의 <a> 와 카드가
+   내용 높이 그대로라 제목이 한 줄이냐 두 줄이냐에 따라 높이가 달라졌다. */
+.game-gallery .row > [class*="col-"] > a {
+  height: 100%;
+}
+
 .game-gallery .game-wrapper {
   background-color: var(--surface-color);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 4px 20px color-mix(in srgb, var(--default-color), transparent 92%);
-  margin-bottom: 30px;
+  /* 행 간격은 .row 의 gy-* 거터가 담당한다. 여기에 margin 을 더하면
+     거터와 합쳐져 행 사이가 54px 로 벌어진다. */
+  margin-bottom: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
 }
@@ -1674,6 +1686,11 @@ section,
 
 .game-gallery .game-wrapper .game-content {
   padding: 25px;
+  /* 남는 높이를 본문이 흡수하고, 카테고리 배지는 항상 카드 맨 아래에 붙는다.
+     그래야 같은 행의 카드끼리 배지 줄이 나란히 맞는다. */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .game-gallery .game-wrapper .game-content .game-meta {
@@ -1736,6 +1753,7 @@ section,
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: auto;
 }
 
 .game-gallery .game-wrapper .game-content .game-type-bundle .category-badge {
@@ -4304,8 +4322,17 @@ section,
   .game-gallery .game-wrapper .game-content h3 {
     font-size: 0.92rem;
     margin-bottom: 4px;
-    /* 2줄 고정 높이를 풀어 제목이 짧으면 카드도 짧아지게 한다 */
-    min-height: 0;
+    /* 2줄 자리를 항상 확보한다. 이걸 0 으로 풀면 제목이 한 줄인 카드만
+       19px 짧아져서, 2열로 늘어놓았을 때 옆 카드와 높이가 어긋난다. */
+    min-height: 2.6em;
+  }
+
+  /* 카드가 작아진 만큼 카드 사이 간격도 줄인다.
+     세로만 줄이면 가로는 부트스트랩 기본값(1.5rem)이 남아 8px 어긋나므로
+     가로·세로를 같은 값으로 둔다. */
+  .game-gallery .row {
+    --bs-gutter-y: 1rem;
+    --bs-gutter-x: 1rem;
   }
 
   /* 2열에서는 설명까지 넣으면 글자가 뭉개진다. 한 줄로 자른다. */
@@ -4317,10 +4344,13 @@ section,
     text-overflow: ellipsis;
   }
 
-  /* 히어로 바로 아래 섹션 제목이 32px + 60px 패딩이라, 카드가
-     첫 화면 밖으로 밀렸다. 제목을 줄여 카드를 화면 안으로 끌어올린다. */
+  /* 첫 화면에 카드가 보이게 한다.
+     히어로와 카드 사이에 섹션 제목·탭·정렬이 겹겹이 쌓여 201px 을 차지했고,
+     그 결과 첫 카드가 644px 에서 시작해 844px 화면에서 위쪽 24% 만 보였다.
+     제목·참여수가 접힌 선 아래라 "여기에 뭐가 있는지" 판단할 근거가 없었다.
+     아래 규칙은 전부 여백을 걷어내는 것이고, 내용을 지우는 건 설명 문구 하나뿐이다. */
   #game-gallery.section {
-    padding: 24px 0 40px;
+    padding: 16px 0 40px;
   }
 
   #game-gallery .section-title h2 {
@@ -4328,7 +4358,368 @@ section,
     margin-bottom: 6px;
   }
 
+  /* "지금 가장 많이 참여하고 있는..." 은 히어로의 문구와 하는 말이 겹친다.
+     좁은 화면에서는 그 자리를 카드에 내준다. */
   #game-gallery .section-title p {
-    font-size: 0.85rem;
+    display: none;
+  }
+
+  /* 글자 세 개짜리 탭에 붙은 위아래 60px(패딩 30 + 마진 30)을 줄인다. */
+  .type-tabs {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  .sort-options {
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+
+  /* 히어로 자체는 제 역할을 하므로 크기는 두고 아래 여백만 줄인다. */
+  #hero-intro {
+    padding: 40px 0 20px;
   }
 }
+
+/*--------------------------------------------------------------
+# 이어서 하기 배너 / 안내
+# 진행 중인 테스트가 있을 때만 나타난다. (test-resume-banner.js)
+--------------------------------------------------------------*/
+.resume-banner {
+  position: relative;
+  max-width: 1140px;
+  margin: 0 auto 20px;
+  padding: 0 16px;
+}
+
+.resume-banner-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--accent-color), transparent 90%);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 72%);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.resume-banner-link:hover {
+  background: color-mix(in srgb, var(--accent-color), transparent 84%);
+  border-color: color-mix(in srgb, var(--accent-color), transparent 55%);
+}
+
+.resume-banner-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.resume-banner-label {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-right: 8px;
+}
+
+.resume-banner-title {
+  color: var(--heading-color);
+  font-size: 0.95rem;
+  font-weight: 700;
+  /* 제목이 길어도 배너가 두 줄로 늘어나지 않게 한 줄로 자른다. */
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: bottom;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resume-banner-count {
+  display: block;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--default-color), transparent 35%);
+  margin-top: 2px;
+}
+
+.resume-banner-track {
+  height: 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--default-color), transparent 88%);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.resume-banner-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-color);
+}
+
+.resume-banner-cta {
+  flex-shrink: 0;
+}
+
+.resume-banner-close {
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface-color);
+  color: color-mix(in srgb, var(--default-color), transparent 40%);
+  font-size: 0.7rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.resume-banner-close:hover {
+  color: var(--heading-color);
+}
+
+@media (max-width: 575.98px) {
+  .resume-banner {
+    margin-bottom: 12px;
+  }
+
+  /* 좁은 화면에서는 버튼을 아래로 내려 제목이 잘리지 않게 한다. */
+  .resume-banner-link {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .resume-banner-cta {
+    width: 100%;
+  }
+}
+
+/* 질문 화면 상단의 이어하기 안내 */
+.resume-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--default-color), transparent 20%);
+  background: color-mix(in srgb, var(--accent-color), transparent 92%);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+}
+
+.resume-notice i {
+  color: var(--accent-color);
+  margin-right: 4px;
+}
+
+/*--------------------------------------------------------------
+# 대기 화면 (Waiting / Loading)
+#
+# 로딩 오버레이(main_layout)와 분석 대기 모달(analysis-handler)이 서로
+# 같은 모양을 따로 정의하고 있었고, 둘 다 시안·파랑(#00d2ff, #3a7bd5)이라
+# 브랜드 색과 어긋났다. 여기서 한 번만 정의하고 양쪽이 함께 쓴다.
+--------------------------------------------------------------*/
+:root {
+  --wait-overlay-bg: color-mix(in srgb, var(--background-color), transparent 18%);
+  --wait-panel-bg: rgba(255, 255, 255, 0.05);
+  --wait-panel-border: rgba(255, 255, 255, 0.1);
+  --wait-panel-radius: 20px;
+}
+
+/* 화면 전체를 덮는 배경 */
+.loading-overlay,
+.analysis-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  opacity: 0;
+  background: var(--wait-overlay-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: opacity 0.3s ease;
+}
+
+.loading-overlay.active,
+.analysis-modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+/* 가운데 유리 패널. 반경은 카드(.game-wrapper)와 같은 20px 로 맞춘다. */
+.loading-box,
+.analysis-modal-content {
+  background: var(--wait-panel-bg);
+  border: 1px solid var(--wait-panel-border);
+  border-radius: var(--wait-panel-radius);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  color: #fff;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+}
+
+.loading-box {
+  padding: 40px;
+}
+
+/* 스피너 */
+.spinner-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 25px;
+}
+
+.custom-spinner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top: 4px solid var(--accent-color);
+  border-right: 4px solid color-mix(in srgb, var(--accent-color), white 40%);
+  animation: spin 1s linear infinite;
+}
+
+.spinner-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--accent-color);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.loading-subtext {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+/* 질문 화면 등 본문 안에서 기다릴 때 쓰는 작은 대기 표시 */
+.waiting-inline {
+  text-align: center;
+  padding: 48px 0;
+  color: color-mix(in srgb, var(--default-color), transparent 35%);
+}
+
+.waiting-inline .spinner-container {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.waiting-inline .custom-spinner {
+  border-width: 3px;
+}
+
+.waiting-inline .spinner-core {
+  width: 12px;
+  height: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-spinner,
+  .spinner-core {
+    animation: none;
+  }
+}
+
+
+/*--------------------------------------------------------------
+# 추천 목록 (.rec-*)
+#
+# 밸런스 게임 상세에서 쓰던 가로형 목록을, 테스트·에겐테토 결과 화면의
+# 하단 추천에서도 함께 쓴다. 원래 selectBalanceGame.html 안에 인라인으로
+# 있었는데 세 화면이 같은 모양을 써야 하므로 여기로 옮겼다.
+--------------------------------------------------------------*/
+  /* ── 추천 테스트 (가로형 리스트) ────────────────────────
+     댓글을 지나온 뒤 위치라 세로 카드로는 너무 길어진다.
+     한 항목을 90px 안팎으로 유지해 3개가 한눈에 들어오게 한다. */
+  .rec-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .rec-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px; text-decoration: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .rec-item:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+
+  .rec-thumb {
+    position: relative; flex: 0 0 72px;
+    width: 72px; height: 72px; border-radius: 10px; overflow: hidden;
+    background: linear-gradient(135deg, #2a2550, #1b1b3a);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rec-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .rec-thumb-fallback { color: rgba(255, 255, 255, 0.35); font-size: 1.6rem; }
+
+  /* 밸런스 게임은 선택지 이미지가 둘이다. 한 장만 쓰면 어느 쪽 선택지인지
+     알 수 없어 오해를 부르므로, 72px 안에 반씩 나눠 담고 VS 를 겹친다. */
+  .rec-thumb-split { display: flex; gap: 1px; }
+  .rec-thumb-split img { width: 50%; height: 100%; }
+  .rec-vs {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.6); color: #fbbf24;
+    font-size: 0.5rem; font-weight: 800;
+    padding: 1px 4px; border-radius: 6px;
+  }
+
+  .rec-new {
+    position: absolute; top: 4px; left: 4px;
+    background: #ff4d6d; color: #fff;
+    font-size: 0.55rem; font-weight: 700;
+    padding: 1px 5px; border-radius: 6px;
+  }
+
+  .rec-body { flex: 1 1 auto; min-width: 0; }
+  .rec-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .rec-cat {
+    font-size: 0.68rem; color: #b9b4ff;
+    background: rgba(124, 117, 255, 0.15);
+    padding: 1px 7px; border-radius: 20px;
+  }
+  .rec-play { font-size: 0.68rem; color: #ffc107; }
+
+  /* 제목·설명이 길어도 한 줄로 잘라 높이를 고정한다 */
+  .rec-title {
+    color: #fff; font-weight: 700; font-size: 0.92rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rec-desc {
+    color: rgba(255, 255, 255, 0.5); font-size: 0.75rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .rec-arrow { color: rgba(255, 255, 255, 0.3); flex: 0 0 auto; }

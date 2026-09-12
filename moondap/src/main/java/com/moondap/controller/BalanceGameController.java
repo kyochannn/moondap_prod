@@ -32,6 +32,7 @@ import com.moondap.common.SecurityUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
 import com.moondap.dto.CommentPageDTO;
+import com.moondap.dto.MdContentItemDTO;
 import com.moondap.dto.SeoMetaDTO;
 import com.moondap.dto.request.AdjacentGameRequest;
 import com.moondap.dto.request.CommentListRequest;
@@ -180,11 +181,21 @@ public class BalanceGameController {
 		// '이전/다음 질문'과 '리스트로 이동' 뿐이라 사용자가 밸런스 게임 안에서만 돌았다.
 		// 테스트 결과·에겐테토 화면에는 이미 있는 추천 섹션이 여기만 빠져 있었다.
 		//
-		// 밸런스 게임은 일부러 추천하지 않는다. 다음 질문 버튼이 이미 그 역할을 하고,
-		// 여기서 또 추천하면 같은 루프를 넓히는 셈이다.
 		// type='NORMAL' 은 매퍼에서 심리테스트와 에겐테토를 함께 반환한다.
 		model.addAttribute("popularNormalTests",
 				mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3));
+
+		// 인기 밸런스 게임도 함께 추천한다. '다음 질문' 버튼은 순서대로 한 칸씩만
+		// 옮겨주므로, 지금 화제가 되는 질문으로 바로 건너뛸 길이 따로 필요하다.
+		//
+		// 지금 보고 있는 게임은 제외한다. 눌러도 제자리인 항목이 섞이면 세 칸 중
+		// 하나가 통째로 낭비된다. 4개를 받아 하나를 걸러도 3개가 남게 한다.
+		List<MdContentItemDTO> balanceRecommendations =
+				mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 4).stream()
+						.filter(item -> !balanceGame.getId().equals(item.getId()))
+						.limit(3)
+						.toList();
+		model.addAttribute("popularBalanceGames", balanceRecommendations);
 
 		// 이 페이지는 id 파라미터가 콘텐츠를 결정하므로 canonical 에서 뗄 수 없다.
 		// 반면 spicyFilter·category 는 "다음 게임"을 고르는 탐색용 파라미터일 뿐이라

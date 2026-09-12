@@ -40,7 +40,9 @@
 
     <main class="main">
         <section id="starter-section" class="starter-section section p-3">
-            <div class="container section-title pb-2" data-aos="fade-up">
+            <!-- 사용자가 보러 온 것은 "내 결과"지 테스트 이름이 아니다.
+                 제목 블록이 크면 결과가 접힌 선 아래로 밀리므로 좁은 화면에서는 줄인다. -->
+            <div class="container section-title pb-2 result-page-head" data-aos="fade-up">
                 <h2 th:text="${test.title}" class="fw-bold text-white">테스트 제목</h2>
                 <p class="text-white-50">테스트가 완료되었습니다! 당신의 리포트를 확인해 보세요.</p>
             </div>
@@ -97,53 +99,50 @@
                             </div>
                         </div>
 
-                        <!-- 점수 계산 상세 내역 -->
+                        <!-- 결과를 막 확인한 직후가 공유 의욕이 가장 높다.
+                             예전에는 이 버튼들이 6,000px 아래에 있어 대부분 닿지 못했다. -->
+                        <!-- 원래 페이지 맨 끝이라 아래 여백이 없었다. 중간으로 옮겼으니
+                             아래 부가 정보와의 경계를 result-actions 가 만든다. -->
+                        <div class="mt-5 result-actions d-flex flex-wrap justify-content-center gap-2">
+                            <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary">
+                                <i class="bi bi-arrow-repeat me-1"></i> 다시 하기
+                            </a>
+                            <button onclick="shareKakaoAction()" class="btn btn-kakao">
+                                <i class="bi bi-chat-fill"></i> 카톡 공유
+                            </button>
+                            <button onclick="copyLinkAction()" class="btn btn-outline-light">
+                                <i class="bi bi-link-45deg me-1"></i> 링크 복사
+                            </button>
+                            <button onclick="downloadResultImage()" class="btn btn-warning">
+                                <i class="bi bi-download me-1"></i> 결과 저장
+                            </button>
+                            <div class="w-100 mt-4">
+                                <a href="/test/list" class="btn btn-primary w-100">
+                                    <i class="bi bi-grid-3x3-gap me-2"></i> 더 많은 테스트 보러가기
+                                </a>
+                            </div>
+
+                            <!--
+                              보관함 안내.
+                              결과가 저장된다는 사실을 알려주지 않으면 보관함이 있어도
+                              아무도 찾아오지 않는다. 미리보기는 저장되지 않으므로 숨긴다.
+                            -->
+                            <p th:unless="${isPreview}" class="w-100 text-center mt-3 mb-0"
+                               style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">
+                                이 결과는 보관함에 저장됐어요.
+                                <a th:href="@{/my/results}" class="text-white fw-bold text-decoration-underline">내 결과 보기</a>
+                            </p>
+                        </div>
+
+                        <!-- 분석 요약.
+                             문항별 점수 표는 뺐다. 결과를 보러 온 사람에게 필요한 정보가 아니고,
+                             아래 요약(문항 수·유형별 지수)만으로 근거는 충분하다.
+                             표가 사라졌으므로 제목도 "상세 내역"에서 "분석 요약"으로 바꿨다. -->
                         <div class="text-start mb-5">
-                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                <div class="d-flex align-items-center">
-                                    <div style="width: 4px; height: 20px; background: #0dcaf0; border-radius: 2px; margin-right: 12px;"></div>
-                                    <h5 class="fw-bold text-white mb-0">점수 계산 상세 내역</h5>
-                                </div>
-                                <span class="text-secondary" style="font-size: 0.75rem;">
-                                    <span class="badge bg-danger me-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span> 역채점 문항
-                                </span>
+                            <div class="d-flex align-items-center mb-3">
+                                <div style="width: 4px; height: 20px; background: #0dcaf0; border-radius: 2px; margin-right: 12px;"></div>
+                                <h5 class="fw-bold text-white mb-0">분석 요약</h5>
                             </div>
-
-                            <div th:if="${result.breakdown != null}" class="p-3 mb-3" style="background: rgba(0, 210, 255, 0.05); border-radius: 15px; border: 1px solid rgba(0, 210, 255, 0.1);">
-                                <p class="text-info small mb-0">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    선택하신 답변을 바탕으로 <strong>표준 성향 측정 방식</strong>에 따라 점수를 산출했습니다. 
-                                    역채점 문항(R)은 질문의 성격에 맞춰 점수가 자동으로 변환되었습니다.
-                                </p>
-                            </div>
-                            <div th:if="${result.breakdown != null}" class="card card-body bg-dark text-white border-0 small text-start p-0" style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important;">
-                                <div class="table-responsive">
-                                    <table class="table table-dark-custom table-hover mb-0 align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 35px;">#</th>
-                                                <th>질문 문구</th>
-                                                <th class="text-center" style="width: 75px;">선택</th>
-                                                <th class="text-center" style="width: 50px;">점수</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="item, stat : ${result.breakdown}">
-                                                <td th:text="${stat.count}" class="text-white">1</td>
-                                                <td>
-                                                    <span th:text="${item.questionText}">질문</span>
-                                                    <span th:if="${item.isReverse}" class="badge bg-danger ms-1" style="font-size: 0.6rem; padding: 2px 4px;">R</span>
-                                                </td>
-                                                <td class="text-center" th:text="${item.originalAnswer == 5 ? '매우 그렇다' : (item.originalAnswer == 4 ? '그렇다' : (item.originalAnswer == 3 ? '보통이다' : (item.originalAnswer == 2 ? '그렇지 않다' : '매우 그렇지 않다')))}">보통이다</td>
-                                                <td class="text-center fw-bold text-warning">
-                                                    <span th:text="${item.finalScore}">3</span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
                             <!-- 나의 총점 및 유형 기준표 -->
                                                          <!-- 나의 분석 요약 리포트 (SCORE/TYPE 공용) -->
                              <div class="mt-4">
@@ -222,47 +221,10 @@
                                      </div>
                                  </div>
 
-                                 <!-- 결과 유형 안내 테이블 (공용) -->
-                                 <div class="text-start mb-4">
-                                     <div class="d-flex align-items-center mb-3">
-                                         <div style="width: 4px; height: 20px; background: #ffc107; border-radius: 2px; margin-right: 12px;"></div>
-                                         <h5 class="fw-bold text-white mb-0" th:text="${test.testType == 'SCORE' ? '점수대별 결과 유형 안내' : '전체 결과 유형 안내'}">결과 유형 안내</h5>
-                                     </div>
-                                     <div class="card card-body bg-dark text-white border-0 small text-start p-0" 
-                                          style="background: rgba(255,255,255,0.03) !important; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05) !important; overflow: hidden;">
-                                         <div class="table-responsive">
-                                             <table class="table table-dark-custom table-hover mb-0 align-middle text-center">
-                                                 <thead>
-                                                     <tr>
-                                                         <th style="width: 50px;">상태</th>
-                                                         <th style="width: 120px;" th:text="${test.testType == 'SCORE' ? '점수 구간' : '나의 지수'}">분류</th>
-                                                         <th class="text-start ps-4">분석 결과 유형</th>
-                                                     </tr>
-                                                 </thead>
-                                                 <tbody>
-                                                     <tr th:each="type : ${test.results}" 
-                                                         th:with="isMatched=${result.calculatedScore != null ? (test.testType == 'SCORE' ? (result.calculatedScore >= type.minScore and result.calculatedScore <= type.maxScore) : (result.resultTitle == type.resultTitle)) : (result.resultTitle == type.resultTitle)},
-                                                                  analysisData=${result.domainAnalysisMap != null ? result.domainAnalysisMap.get(type.resultTitle) : null}"
-                                                         th:classappend="${isMatched} ? 'table-info-highlight' : ''">
-                                                         <td class="py-3">
-                                                             <i th:if="${isMatched}" class="bi bi-check-circle-fill text-info fs-5 pulse-badge"></i>
-                                                             <i th:unless="${isMatched}" class="bi bi-circle text-white opacity-25"></i>
-                                                         </td>
-                                                         <td class="py-3">
-                                                             <!-- 점수형일 때: 점수 구간 / 유형형일 때: 나의 백분율 지수 -->
-                                                             <span class="text-white" th:classappend="${isMatched} ? 'fw-bold text-info' : ''"
-                                                                   th:text="${test.testType == 'SCORE' ? (#numbers.formatInteger(type.minScore, 0) + ' ~ ' + #numbers.formatInteger(type.maxScore, 0) + '점') : (analysisData != null ? #numbers.formatInteger(analysisData.average / 5.0 * 100, 0) + '%' : '-') }">0~10점</span>
-                                                         </td>
-                                                         <td class="text-start ps-4 py-3">
-                                                             <span th:text="${type.resultTitle}" 
-                                                                   th:classappend="${isMatched} ? 'fw-bold text-info' : 'text-white'">유형명</span>
-                                                         </td>
-                                                     </tr>
-                                                 </tbody>
-                                             </table>
-                                         </div>
-                                     </div>
-                                 </div>
+                                 <!-- "전체 결과 유형 안내" 표는 뺐다.
+                                      바로 아래 "다른 유형도 궁금하신가요?" 카드가 같은 6종을 이미지와 함께
+                                      보여주고 눌러서 열어볼 수도 있어, 표는 같은 내용을 한 번 더 늘어놓을 뿐이었다.
+                                      게다가 "나의 지수" 칸이 모든 행에서 100% 로 나와 정보가 없었다. -->
                              </div>
                         </div>
 
@@ -293,71 +255,57 @@
                             </div>
                         </div>
 
-                        <!-- 액션 버튼 -->
-                        <div class="mt-5 d-flex flex-wrap justify-content-center gap-2">
-                            <a th:href="@{/test/{key}(key=${test.testKey})}" class="btn btn-primary">
-                                <i class="bi bi-arrow-repeat me-1"></i> 다시 하기
-                            </a>
-                            <button onclick="shareKakaoAction()" class="btn btn-kakao">
-                                <i class="bi bi-chat-fill"></i> 카톡 공유
-                            </button>
-                            <button onclick="copyLinkAction()" class="btn btn-outline-light">
-                                <i class="bi bi-link-45deg me-1"></i> 링크 복사
-                            </button>
-                            <button onclick="downloadResultImage()" class="btn btn-warning">
-                                <i class="bi bi-download me-1"></i> 결과 저장
-                            </button>
-                            <div class="w-100 mt-4">
-                                <a href="/test/list" class="btn btn-primary w-100">
-                                    <i class="bi bi-grid-3x3-gap me-2"></i> 더 많은 테스트 보러가기
-                                </a>
-                            </div>
-
-                            <!--
-                              보관함 안내.
-                              결과가 저장된다는 사실을 알려주지 않으면 보관함이 있어도
-                              아무도 찾아오지 않는다. 미리보기는 저장되지 않으므로 숨긴다.
-                            -->
-                            <p th:unless="${isPreview}" class="w-100 text-center mt-3 mb-0"
-                               style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">
-                                이 결과는 보관함에 저장됐어요.
-                                <a th:href="@{/my/results}" class="text-white fw-bold text-decoration-underline">내 결과 보기</a>
-                            </p>
-                        </div>
                     </div>
                 </div>
 
                 <!-- 추천 테스트 섹션 (DB 연동 및 가로 배치) -->
                 <div class="mt-0 game-gallery" data-aos="fade-up">
                     
-                    <!-- 인기 테스트 가로 배치 (3개) -->
+                    <!-- 추천 목록.
+                         밸런스 게임 상세와 같은 가로형(.rec-*)을 쓴다. 세로 카드로 두면
+                         결과를 다 읽고 내려온 자리에서 지나치게 길어진다. -->
                     <div class="mb-5">
-                        <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-journal-check me-2 style-color-primary"></i>인기 테스트</h5>
-                        <div class="row gy-4">
-                            <div th:each="t : ${popularNormalTests}" class="col-6">
-                                <a th:href="@{/test/{key}(key=${t.key})}" class="text-decoration-none d-block">
-                                    <div class="game-wrapper">
-                                        <div class="game-image">
-                                            <div th:if="${t.isNew}" class="new-badge">NEW</div>
-                                            <img th:src="${t.thumbnail != null and t.thumbnail != ''} ? (${#strings.startsWith(t.thumbnail, '/assets/')} ? ${t.thumbnail} : (@{/uploads/} + ${t.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
-                                                 alt="테스트 썸네일" class="img-fluid" loading="lazy">
-                                        </div>  
-                                        <div class="game-content">
-                                            <div class="game-meta">
-                                                <span class="game-type" th:text="${t.categoryName}">테스트</span>
-                                                <div class="game-rating">
-                                                    <i class="bi bi-eye-fill"></i>
-                                                    <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
-                                                </div>
-                                            </div>
-                                            <h3 th:text="${t.title}">테스트 제목</h3>
-                                            <p th:text="${t.description}">설명</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
+                        <div class="text-center mb-3">
+                            <h5 class="fw-bold text-white mb-1">
+                                <i class="bi bi-journal-check me-2 style-color-primary"></i>이런 테스트는 어때요?
+                            </h5>
+                            <p class="text-white-50 small mb-0">결과는 확인했으니, 다음 나를 만나러 가볼까요</p>
                         </div>
-                        <!-- 카드 바로 아래에 버튼이 붙어 있어 그리드의 일부처럼 보였다. -->
+
+                        <div class="rec-list">
+                            <a th:each="t : ${popularNormalTests}"
+                               th:href="${t.type == 'EGEN'}
+                                        ? @{/egenTeto/selectEgenTetoGame}
+                                        : @{/test/{key}(key=${t.key})}"
+                               class="rec-item">
+                                <div class="rec-thumb">
+                                    <img th:if="${t.thumbnail != null and t.thumbnail != ''}"
+                                         th:src="${#strings.startsWith(t.thumbnail, '/assets/')}
+                                                 ? ${t.thumbnail}
+                                                 : (@{/uploads/} + ${t.thumbnail})"
+                                         th:alt="${t.title}" loading="lazy">
+                                    <span th:unless="${t.thumbnail != null and t.thumbnail != ''}" class="rec-thumb-fallback">
+                                        <i class="bi bi-journal-text"></i>
+                                    </span>
+                                    <span th:if="${t.isNew}" class="rec-new">NEW</span>
+                                </div>
+
+                                <div class="rec-body">
+                                    <div class="rec-meta">
+                                        <span class="rec-cat" th:text="${t.categoryName}">카테고리</span>
+                                        <span class="rec-play">
+                                            <i class="bi bi-eye-fill"></i>
+                                            <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
+                                        </span>
+                                    </div>
+                                    <div class="rec-title" th:text="${t.title}">테스트 제목</div>
+                                    <div class="rec-desc" th:text="${t.description}">설명</div>
+                                </div>
+
+                                <i class="bi bi-chevron-right rec-arrow"></i>
+                            </a>
+                        </div>
+
                         <div class="text-center mt-4">
                             <a href="/test/list?type=NORMAL" class="btn btn-primary">
                                 테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
@@ -365,38 +313,53 @@
                         </div>
                     </div>
 
-                    <!-- 인기 밸런스 게임 가로 배치 (3개) -->
                     <div class="mb-4">
-                        <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임</h5>
-                        <div class="row gy-4">
-                            <div th:each="t : ${popularBalanceTests}" class="col-6">
-                                <a th:href="@{/balanceGame/selectBalanceGameView(id=${t.id})}" class="text-decoration-none d-block">
-                                    <div class="game-wrapper">
-                                        <div class="game-image">
-                                            <div th:if="${t.isNew}" class="new-badge">NEW</div>
-                                            <div class="split-thumbnail">
-                                                <img th:src="${t.thumbnail != null and t.thumbnail != ''} ? (${#strings.startsWith(t.thumbnail, '/assets/')} ? ${t.thumbnail} : (@{/uploads/} + ${t.thumbnail})) : @{/assets/img/default-img/default-content-img.png}"
-                                                     alt="옵션1" class="img-left" loading="lazy">
-                                                <img th:src="${t.thumbnail2 != null and t.thumbnail2 != ''} ? (${#strings.startsWith(t.thumbnail2, '/assets/')} ? ${t.thumbnail2} : (@{/uploads/} + ${t.thumbnail2})) : @{/assets/img/default-img/default-content-img.png}"
-                                                     alt="옵션2" class="img-right" loading="lazy">
-                                                <div class="vs-badge">VS</div>
-                                            </div>
-                                        </div>
-                                        <div class="game-content">
-                                            <div class="game-meta">
-                                                <span class="game-type" style="color: #fbbf24; background: rgba(251, 191, 36, 0.1);">밸런스</span>
-                                                <div class="game-rating">
-                                                    <i class="bi bi-eye-fill"></i>
-                                                    <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
-                                                </div>
-                                            </div>
-                                            <h3 th:text="${t.title}">밸런스 게임 제목</h3>
-                                            <p th:text="${t.description}">설명</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
+                        <div class="text-center mb-3">
+                            <h5 class="fw-bold text-white mb-1">
+                                <i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임
+                            </h5>
+                            <p class="text-white-50 small mb-0">지금 가장 많이 갈린 질문들이에요</p>
                         </div>
+
+                        <div class="rec-list">
+                            <a th:each="t : ${popularBalanceTests}"
+                               th:href="@{/balanceGame/selectBalanceGameView(id=${t.id})}"
+                               class="rec-item">
+                                <div class="rec-thumb rec-thumb-split">
+                                    <img th:src="${t.thumbnail != null and t.thumbnail != ''}
+                                                 ? (${#strings.startsWith(t.thumbnail, '/assets/')}
+                                                    ? ${t.thumbnail}
+                                                    : (@{/uploads/} + ${t.thumbnail}))
+                                                 : @{/assets/img/default-img/default-content-img.png}"
+                                         alt="선택지1" loading="lazy">
+                                    <img th:src="${t.thumbnail2 != null and t.thumbnail2 != ''}
+                                                 ? (${#strings.startsWith(t.thumbnail2, '/assets/')}
+                                                    ? ${t.thumbnail2}
+                                                    : (@{/uploads/} + ${t.thumbnail2}))
+                                                 : @{/assets/img/default-img/default-content-img.png}"
+                                         alt="선택지2" loading="lazy">
+                                    <span class="rec-vs">VS</span>
+                                    <span th:if="${t.isNew}" class="rec-new">NEW</span>
+                                </div>
+
+                                <div class="rec-body">
+                                    <div class="rec-meta">
+                                        <span class="rec-cat" th:text="${t.categoryName}">카테고리</span>
+                                        <span class="rec-play">
+                                            <i class="bi bi-eye-fill"></i>
+                                            <span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
+                                        </span>
+                                    </div>
+                                    <div class="rec-title" th:text="${t.title}">밸런스 게임 제목</div>
+                                    <!-- 매퍼가 description 에 title 을 그대로 넣는다. 같은 문장을
+                                         두 줄로 반복하는 대신 참여 안내를 둔다. -->
+                                    <div class="rec-desc">당신의 선택은?</div>
+                                </div>
+
+                                <i class="bi bi-chevron-right rec-arrow"></i>
+                            </a>
+                        </div>
+
                         <div class="text-center mt-4">
                             <a href="/test/list?type=BALANCE" class="btn btn-primary">
                                 밸런스 게임 전체보기 <i class="bi bi-arrow-right ms-1"></i>

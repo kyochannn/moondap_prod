@@ -7,6 +7,7 @@
     <title th:text="${test.title} + ' - 질문 진행 중'">테스트 진행 중</title>
     <link th:href="@{/assets/css/question-page.css}" rel="stylesheet">
     <link th:href="@{/assets/css/analysis-handler.css}" rel="stylesheet">
+    <script th:src="@{/assets/js/test-progress.js(v=1.0)}"></script>
 </head>
 
 <body layout:fragment="content">
@@ -35,9 +36,12 @@
 
             <!-- 질문 노출 영역 -->
             <div id="questionContainer">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-3">질문을 준비하고 있습니다...</p>
+                <div class="waiting-inline">
+                    <div class="spinner-container">
+                        <div class="custom-spinner"></div>
+                        <div class="spinner-core"></div>
+                    </div>
+                    <p class="mb-0">질문을 준비하고 있습니다...</p>
                 </div>
             </div>
 
@@ -60,26 +64,31 @@
             <div class="analysis-modal-content">
                 <div class="mb-3">
                     <span class="badge rounded-pill bg-primary px-3 py-2 mb-3">당신의 결과는?</span>
-                    <h4 class="fw-bold">결과 분석이 완료되었습니다!</h4>
-                    <p id="statusText" class="text-secondary small mb-4">당신의 답변 데이터를 분석하고 있습니다...</p>
+                    <!-- 카운트다운 중에도 "완료되었습니다"라고 띄워 두면 아래 버튼의
+                         "분석 중 (14초)"와 정면으로 모순된다. 두 상태 모두에서 참인 문구로 둔다. -->
+                    <h4 class="fw-bold">결과가 준비되었습니다</h4>
+                    <p id="statusText" class="text-secondary small mb-4">잠시 후 결과가 열립니다</p>
                 </div>
 
-                <div class="analysis-container mb-4 highlight-content">
-                    <!-- 콘텐츠 영역 -->
-                    <a th:href="'https://link.coupang.com/a/eByaQE'" target="_blank" class="text-decoration-none w-100">
-                        <div class="text-center p-3">
-                            <div style="width: 100%; height: 180px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                                <i class="bi bi-fast-forward-fill mb-2 emphasize-text" style="font-size: 2.8rem; color: #ffca28;"></i>
-                                <span class="fw-bold emphasize-text" style="font-size: 1.15rem;">결과 즉시 확인하기</span>
-                                <p class="text-info small mt-2 mb-0 fw-bold">15초 대기 없이 즉시 이동합니다</p>
+                <!-- 광고 영역.
+                     브랜드색을 쓰면 사이트의 기능(주요 버튼)과 구분이 안 돼 광고를 기능으로
+                     오인하게 된다. 중립색으로 두고 「광고」 라벨을 눈에 보이게 붙인다. -->
+                <div class="analysis-container ad-slot mb-4">
+                    <a th:href="'https://link.coupang.com/a/eByaQE'" target="_blank"
+                       rel="sponsored noopener" class="text-decoration-none w-100">
+                        <div class="text-center">
+                            <div class="ad-slot-body">
+                                <span class="ad-slot-label">광고</span>
+                                <i class="bi bi-box-seam mb-2" style="font-size: 2.4rem;"></i>
+                                <span class="fw-bold" style="font-size: 1.05rem;">오늘의 추천 상품 보기</span>
+                                <p class="small mt-2 mb-0">새 탭에서 열리고, 결과는 바로 열립니다</p>
                             </div>
-                            <p class="text-muted mt-3 mb-0" style="font-size: 11px;">오늘의 추천 상품 확인하기</p>
                         </div>
                     </a>
                 </div>
 
                 <button id="finalSubmitBtn" class="btn btn-primary btn-lg w-100" disabled>
-                    무료 분석 로딩 중 (15초)
+                    결과 확인하기 (7초)
                 </button>
                 
                 <p class="coupang-disclaimer">
@@ -117,7 +126,36 @@
         const optionScores = { "매우 그렇다": 5, "그렇다": 4, "보통이다": 3, "그렇지 않다": 2, "매우 그렇지 않다": 1 };
         
         let currentIndex = 0;
-        const userAnswers = []; // 각 질문의 실제 점수(1~5)가 담길 예정
+        let userAnswers = []; // 각 질문의 실제 점수(1~5)가 담길 예정
+
+        // ── 이어하기 ──────────────────────────────────────────────
+        // 미리보기 모드는 실제 응시가 아니므로 저장하지 않는다.
+        const PROGRESS_ID = /*[[${test.testKey}]]*/ '';
+        const PROGRESS_URL = /*[[@{/test/{key}/questions(key=${test.testKey})}]]*/ '';
+        const PROGRESS_TITLE = /*[[${test.title}]]*/ '';
+        const canSaveProgress = !(/*[[${isPreview}]]*/ false);
+
+        function saveProgress() {
+            if (!canSaveProgress || !window.TestProgress) return;
+            TestProgress.save({
+                id: PROGRESS_ID, url: PROGRESS_URL, title: PROGRESS_TITLE,
+                index: currentIndex, total: questionsRaw.length, answers: userAnswers,
+            });
+        }
+
+        function clearProgress() {
+            if (window.TestProgress) TestProgress.clear(PROGRESS_ID);
+        }
+
+        function restoreProgress() {
+            if (!canSaveProgress || !window.TestProgress) return false;
+            const saved = TestProgress.load(PROGRESS_ID);
+            // 문항이 바뀌었을 수 있으므로 개수가 다르면 버린다.
+            if (!saved || saved.total !== questionsRaw.length) return false;
+            currentIndex = saved.index;
+            userAnswers = Array.isArray(saved.answers) ? saved.answers.slice() : [];
+            return true;
+        }
 
         const container = document.getElementById("questionContainer");
         const progressBar = document.getElementById("progressBar");
@@ -169,13 +207,34 @@
                 if (qIdx < questionsRaw.length - 1) {
                     currentIndex++;
                     renderQuestion(currentIndex);
+                    saveProgress();
                 } else {
                     finishTest();
                 }
             }, 350);
         };
 
+        // 이어서 시작했다는 사실과 "처음부터" 선택지를 함께 보여준다.
+        function showResumeNotice() {
+            const notice = document.createElement('div');
+            notice.className = 'resume-notice';
+            notice.innerHTML =
+                '<span><i class="bi bi-clock-history"></i> 저장된 답변부터 이어서 진행합니다.</span>' +
+                '<button type="button" class="btn btn-muted btn-sm">처음부터</button>';
+            notice.querySelector('button').addEventListener('click', function () {
+                clearProgress();
+                currentIndex = 0;
+                userAnswers = [];
+                renderQuestion(0);
+                notice.remove();
+            });
+            container.parentNode.insertBefore(notice, container);
+        }
+
         function finishTest() {
+            // 끝까지 푼 기록은 이어할 것이 없으므로 지운다.
+            clearProgress();
+
             // 답변 데이터를 JSON으로 변환하여 저장
             document.getElementById("answersInput").value = JSON.stringify(userAnswers);
             
@@ -183,7 +242,7 @@
             if (typeof AnalysisHandler !== 'undefined') {
                 AnalysisHandler.init({
                     formId: 'submitForm',
-                    countdown: 15,
+                    countdown: 7,
                     verifyUrl: '/test/verify-analysis'
                 });
             } else {
@@ -196,12 +255,16 @@
             if (currentIndex > 0) {
                 currentIndex--;
                 renderQuestion(currentIndex);
+                saveProgress();
             }
         };
 
         // 초기 시작
         if (questionsRaw.length > 0) {
+            const resumed = restoreProgress();
             renderQuestion(currentIndex);
+            // 말없이 중간부터 시작하면 사용자가 당황하므로 알리고 되돌릴 길을 준다.
+            if (resumed) showResumeNotice();
         } else {
             container.innerHTML = '<p class="text-center">등록된 질문이 없습니다.</p>';
         }

@@ -155,29 +155,31 @@
   <h2>크기</h2>
   <p class="hint">
     크기는 <strong>반드시 이 네 가지로만</strong> 조절합니다.
-    <code style="font-size:12px">px-4</code>, <code style="font-size:12px">py-2</code> 같은 유틸리티를 덧붙이면 통일이 깨집니다.
+    <code style="font-size:12px">px-4</code>, <code style="font-size:12px">py-2</code> 같은 유틸리티를 덧붙이면 통일이 깨집니다.<br>
+    각 단계의 높이는 <strong>28 / 34 / 44 / 56px</strong> 로 고정돼 있습니다. 색 변형이 무엇이든,
+    아이콘 버튼이든 같은 단계면 높이가 정확히 같으므로 한 줄에 섞어도 줄이 맞습니다.
   </p>
   <div class="demo">
     <table class="spec">
       <tr>
         <td><button class="btn btn-primary btn-xs">확인</button></td>
         <td><code class="cls">btn btn-primary btn-xs</code></td>
-        <td class="desc">촘촘한 목록 행 안. 12px</td>
+        <td class="desc">촘촘한 목록 행 안. 높이 <strong>28px</strong></td>
       </tr>
       <tr>
         <td><button class="btn btn-primary btn-sm">확인</button></td>
         <td><code class="cls">btn btn-primary btn-sm</code></td>
-        <td class="desc">표·카드 안의 보조 행동. 13px</td>
+        <td class="desc">표·카드 안의 보조 행동. 높이 <strong>34px</strong></td>
       </tr>
       <tr>
         <td><button class="btn btn-primary">확인</button></td>
         <td><code class="cls">btn btn-primary</code></td>
-        <td class="desc"><strong>기본값.</strong> 특별한 이유가 없으면 이걸 씁니다. 15px</td>
+        <td class="desc"><strong>기본값.</strong> 특별한 이유가 없으면 이걸 씁니다. 높이 <strong>44px</strong></td>
       </tr>
       <tr>
         <td><button class="btn btn-primary btn-lg">확인</button></td>
         <td><code class="cls">btn btn-primary btn-lg</code></td>
-        <td class="desc">랜딩 페이지의 주요 전환 버튼. 17px</td>
+        <td class="desc">랜딩 페이지의 주요 전환 버튼. 높이 <strong>56px</strong></td>
       </tr>
     </table>
   </div>
@@ -194,7 +196,7 @@
           <button class="btn btn-danger btn-icon"><i class="bi bi-trash"></i></button>
         </td>
         <td><code class="cls">btn btn-danger btn-icon</code></td>
-        <td class="desc">정사각 36px. 관리자 목록의 보기·수정·삭제가 이 조합입니다.
+        <td class="desc">정사각 <strong>44px</strong> — 같은 단계의 글자 버튼과 높이가 같아 한 줄에 섞어도 줄이 맞습니다. 관리자 목록의 보기·수정·삭제가 이 조합입니다.
             글자가 없으니 <code style="font-size:11px">title</code> 속성을 꼭 넣으세요.</td>
       </tr>
       <tr>
@@ -203,7 +205,7 @@
           <button class="btn btn-danger btn-icon btn-xs"><i class="bi bi-trash"></i></button>
         </td>
         <td><code class="cls">btn btn-danger btn-icon btn-sm</code></td>
-        <td class="desc">30px / 26px. 크기 클래스를 같이 붙이면 됩니다.</td>
+        <td class="desc">34px / 28px. 크기 클래스를 같이 붙이면 됩니다.</td>
       </tr>
       <tr>
         <td><button class="btn btn-primary btn-icon btn-circle"><i class="bi bi-send-fill"></i></button></td>

@@ -1,23 +1,25 @@
 /**
  * MoonDap 분석 모달 핸들러 (AnalysisHandler)
- * - 15초 카운트다운 및 분석 애니메이션 제어
+ * - 대기 카운트다운 및 결과 잠금 해제 제어
  * - 콘텐츠 클릭 시 즉시 잠금 해제 기능
  * - 서버 검증 후 결과 페이지 이동
  */
 const AnalysisHandler = {
     timer: null,
-    countdown: 15,
-    messages: [
-        '<i class="bi bi-search me-2"></i>답변 데이터를 분석 중...',
-        '<i class="bi bi-cpu me-2"></i>알고리즘 가동 중...',
-        '<i class="bi bi-magic me-2"></i>결과지 생성 중...',
-        "모든 분석이 완료되었습니다! 결과를 확인하세요."
-    ],
+    countdown: 7,
+    // 이 카운트다운 동안 실제로 계산되는 것은 없다. 결과는 아래 폼을 제출한 뒤
+    // 서버가 만든다. 예전에는 "알고리즘 가동 중", "결과지 생성 중" 처럼 하지 않는 일을
+    // 한다고 적어 두었는데, 매번 정확히 같은 시간에 끝나므로 사용자는 금세 알아챈다.
+    // 그때 깎이는 신뢰는 광고가 아니라 테스트 결과 쪽이라 사실대로 적는다.
+    messages: {
+        waiting: '잠시 후 결과가 열립니다',
+        done: '이제 결과를 확인할 수 있어요',
+    },
 
     init: function(config) {
         const {
             formId = 'submitForm',
-            countdown = 15,
+            countdown = 7,
             verifyUrl = '/test/verify-analysis'
         } = config;
 
@@ -41,16 +43,9 @@ const AnalysisHandler = {
             progress += (100 / this.countdown);
             submitBtn.style.setProperty('--progress', `${progress}%`);
             
-            let currentMsg = "";
-            if (currentCountdown > 10) currentMsg = this.messages[0];
-            else if (currentCountdown > 5) currentMsg = this.messages[1];
-            else if (currentCountdown > 0) currentMsg = this.messages[2];
-
             if (currentCountdown > 0) {
-                const tempDiv = document.createElement("div");
-                tempDiv.innerHTML = currentMsg;
-                statusText.innerText = tempDiv.innerText;
-                submitBtn.innerHTML = `${currentMsg} (${currentCountdown}초)`;
+                statusText.innerText = this.messages.waiting;
+                submitBtn.innerText = `결과 확인하기 (${currentCountdown}초)`;
             } else {
                 this.unlockResult(submitBtn, statusText);
             }
@@ -100,9 +95,10 @@ const AnalysisHandler = {
         if (this.timer) clearInterval(this.timer);
         btn.style.setProperty('--progress', '100%');
         btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>모든 분석 완료! 결과 확인하기';
+        btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>결과 확인하기';
         btn.classList.add("unlocked");
-        status.innerText = this.messages[3];
-        status.classList.add("text-info");
+        status.innerText = this.messages.done;
+        // text-info 는 부트스트랩 시안이라 브랜드 색과 어긋났다.
+        status.classList.add("analysis-status-done");
     }
 };

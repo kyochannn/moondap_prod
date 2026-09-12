@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${test.title} + ' - 문답'">테스트 상세 정보</title>
     <link rel="stylesheet" th:href="@{/assets/css/testResult-page.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/test-intro.css(v=1.0)}">
     <style>
         #copyToast {
             visibility: hidden; min-width: 200px; background-color: #ffffff; color: #000;
@@ -50,7 +51,7 @@
                             <h4 class="project-title fw-bold mb-4 text-center text-lg-start" th:text="${test.title}">테스트 제목</h4>
                             
                             <div class="project-meta text-center text-lg-start">
-                                <div class="date-client d-flex align-items-center justify-content-center justify-content-lg-start gap-3 flex-wrap">
+                                <div class="date-client intro-meta">
                                     <div class="meta-item">
                                         <i class="bi bi-eye-fill"></i>
                                         <span th:text="(${test.playCount != null ? test.playCount : 0}) + '명 참여'">참여수</span>
@@ -70,20 +71,22 @@
                                 </div>
                             </div>
 
+                            <!-- 모바일에서는 시작 버튼이 위에 전체 너비로, 공유는 아래 반반으로
+                                 배치된다. 순서는 test-intro.css 가 flex order 로 바꾼다. -->
                             <div class="button-group mb-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <button onclick="shareKakaoAction()" class="btn btn-kakao text-nowrap">
-                                        <i class="bi bi-chat-fill"></i> 공유
-                                    </button>
-                                    <button onclick="copyLinkAction()" class="btn btn-outline-info">
-                                        <i class="bi bi-link-45deg"></i> 링크 공유
-                                    </button>
-                                    
+                                <div class="intro-actions">
                                     <button th:onclick="|startTest('@{/test/{key}/questions(key=${test.testKey})}')|"
-                                       class="btn btn-primary flex-grow-1"
-                                      >
-                                        테스트 시작 <i class="bi bi-arrow-right ms-1"></i>
+                                            class="btn btn-primary intro-start">
+                                        테스트 시작 <i class="bi bi-arrow-right"></i>
                                     </button>
+                                    <div class="intro-share">
+                                        <button onclick="shareKakaoAction()" class="btn btn-kakao">
+                                            <i class="bi bi-chat-fill"></i> 공유
+                                        </button>
+                                        <button onclick="copyLinkAction()" class="btn btn-outline-info">
+                                            <i class="bi bi-link-45deg"></i> 링크 공유
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -151,6 +154,15 @@
             </div>
         </div>
     </main>
+
+    <!-- 본문의 「테스트 시작」이 화면 밖으로 나가면 나타나는 모바일 전용 고정 바.
+         동작은 본문 버튼을 그대로 눌러 위임한다. (test-intro.js) -->
+    <div class="intro-sticky-cta d-lg-none" id="introStickyCta" aria-hidden="true">
+        <button type="button" class="btn btn-primary">
+            테스트 시작 <i class="bi bi-arrow-right"></i>
+        </button>
+    </div>
+    <script th:src="@{/assets/js/test-intro.js(v=1.0)}"></script>
 
     <script th:inline="javascript">
         window.onload = function() {
