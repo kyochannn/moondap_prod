@@ -285,9 +285,11 @@ public class MdTestUserController {
         }
         model.addAttribute("shareUrl", shareUrl);
 
-        // 추천 콘텐츠 데이터 추가 (인기 테스트 3개, 인기 밸런스 게임 3개)
-        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3);
-        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 3);
+        // 추천 콘텐츠 (종류별 2개씩).
+        // 3개일 때는 모바일 2열 그리드에서 두 번째 줄에 한 장만 남아 빈칸이 생겼고,
+        // 결과 화면이 그만큼 길어졌다. 2개면 정확히 한 줄로 끝난다.
+        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 2);
+        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 2);
         model.addAttribute("popularNormalTests", popularNormalTests);
         model.addAttribute("popularBalanceTests", popularBalanceTests);
 

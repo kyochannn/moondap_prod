@@ -169,9 +169,9 @@ public class EgenTetoController {
         java.util.Map<String, Object> stats = egenTetoService.getScoreStatistics();
         model.addAttribute("stats", stats);
 
-        // 하단 추천 콘텐츠 (인기순 3개씩)
-        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3);
-        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 3);
+        // 하단 추천 콘텐츠 (종류별 2개씩). 테스트 결과 화면과 같은 기준이다.
+        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 2);
+        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 2);
         model.addAttribute("popularNormalTests", popularNormalTests);
         model.addAttribute("popularBalanceTests", popularBalanceTests);
 

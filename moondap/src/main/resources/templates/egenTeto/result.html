@@ -425,7 +425,7 @@
                     <div class="mb-5">
                         <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-journal-check me-2 style-color-primary"></i>인기 테스트</h5>
                         <div class="row gy-4">
-                            <div th:each="test : ${popularNormalTests}" class="col-md-4 col-sm-6 col-6">
+                            <div th:each="test : ${popularNormalTests}" class="col-6">
                                 <a th:href="@{/test/{key}(key=${test.key})}" class="text-decoration-none d-block">
                                     <div class="game-wrapper">
                                         <div class="game-image">
@@ -460,7 +460,7 @@
                     <div class="mb-4">
                         <h5 class="fw-bold text-white mb-4 text-center"><i class="bi bi-lightning-charge me-2 text-warning"></i>인기 밸런스 게임</h5>
                         <div class="row gy-4">
-                            <div th:each="test : ${popularBalanceTests}" class="col-md-4 col-sm-6 col-6">
+                            <div th:each="test : ${popularBalanceTests}" class="col-6">
                                 <a th:href="@{/balanceGame/selectBalanceGameView(id=${test.id})}" class="text-decoration-none d-block">
                                     <div class="game-wrapper">
                                         <div class="game-image">
