@@ -6,11 +6,14 @@
 -- 이 스크립트는 여러 번 실행해도 안전하다(멱등).
 -- 이미 적용된 항목은 건너뛰고 메시지만 남긴다.
 --
--- [멱등성이 필요한 이유]
--- MySQL 의 ALTER TABLE ... ADD COLUMN 에는 IF NOT EXISTS 가 없다.
--- 그래서 두 번 실행하면 "Error Code: 1060. Duplicate column name" 으로 멈추고,
--- 그 뒤에 있는 문장들이 아예 실행되지 않는다. 운영 DB 와 개발 DB 에 나눠 적용하거나
--- 중간에 끊겼을 때 이 차이를 눈치채기 어려워, information_schema 로 확인 후 실행한다.
+-- [멱등성을 information_schema 로 구현한 이유]
+-- 실제 서버는 MariaDB 10.1.13 이고, MariaDB 는 ALTER TABLE ... ADD COLUMN IF NOT EXISTS
+-- 를 지원한다. 그럼에도 그 문법을 쓰지 않는 것은 MySQL 에는 없는 확장이기 때문이다.
+-- information_schema 로 확인하는 방식은 양쪽에서 모두 동작한다.
+--
+-- 멱등성 자체가 필요한 이유는, 한 번 실패하면 그 지점에서 스크립트가 멈추기 때문이다.
+-- 실제로 재실행 시 "Error Code: 1060. Duplicate column name" 으로 중단되어
+-- 뒤에 있던 anon_id 컬럼과 인덱스 생성이 실행되지 않을 뻔했다.
 -- ============================================================
 
 
@@ -98,21 +101,26 @@ PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
 
 
 -- ────────────────────────────────────────────────────────────
--- 적용 결과 확인 — 3행이 모두 '있음' 이어야 정상
+-- 적용 결과 확인 — status 가 모두 OK 여야 정상
+--
+-- 컬럼 별칭에 한글을 쓰지 않는다. MariaDB 10.1 에서는 따옴표 없는 비ASCII
+-- 식별자가 접속 문자셋에 따라 파싱 오류(ERROR 1064)를 낸다.
 -- ────────────────────────────────────────────────────────────
-SELECT 'balance_comment_like 테이블' AS 항목,
-       IF(COUNT(*) > 0, '있음', '없음') AS 상태
+SELECT 'balance_comment_like (table)' AS item, IF(COUNT(*) > 0, 'OK', 'MISSING') AS status
   FROM information_schema.TABLES
  WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_comment_like'
 UNION ALL
-SELECT 'balance_vote_log.selected_side',
-       IF(COUNT(*) > 0, '있음', '없음')
+SELECT 'balance_vote_log.selected_side', IF(COUNT(*) > 0, 'OK', 'MISSING')
   FROM information_schema.COLUMNS
  WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_vote_log'
    AND COLUMN_NAME = 'selected_side'
 UNION ALL
-SELECT 'balance_comments.anon_id',
-       IF(COUNT(*) > 0, '있음', '없음')
+SELECT 'balance_comments.anon_id', IF(COUNT(*) > 0, 'OK', 'MISSING')
   FROM information_schema.COLUMNS
  WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_comments'
-   AND COLUMN_NAME = 'anon_id';
+   AND COLUMN_NAME = 'anon_id'
+UNION ALL
+SELECT 'idx_comment_anon (index)', IF(COUNT(*) > 0, 'OK', 'MISSING')
+  FROM information_schema.STATISTICS
+ WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_comments'
+   AND INDEX_NAME = 'idx_comment_anon';
