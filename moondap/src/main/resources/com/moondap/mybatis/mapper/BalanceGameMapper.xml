@@ -123,19 +123,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	    </if>
 	</sql>
 
-	<!-- 밸런스 게임 투표 -->
-    <!--
-      total_count 를 두 카운트의 합으로 다시 계산하지 않고 증가분만 더한다.
+	<!--
+	  밸런스 게임 집계 반영.
 
-      이전 구문은 SET 절 안에서 option_1_count 를 참조했는데, 그 값이 "갱신 전"인지
-      "갱신 후"인지는 MySQL 의 좌→우 평가 순서에 의존한다. 지금은 맞게 동작하지만
-      DB 를 바꾸거나 절 순서를 손대면 조용히 틀어진다.
-    -->
-    <update id="vote">
+	  증감분을 파라미터로 받아 "첫 투표"와 "진영 변경"을 같은 구문으로 처리한다.
+	    첫 투표      : (+1, 0, +1) 또는 (0, +1, +1)
+	    left → right : (-1, +1, 0)   총 투표수는 그대로 둔다
+	    right → left : (+1, -1, 0)
+
+	  GREATEST(0, ...) 는 데이터가 어긋났을 때 음수 카운트가 화면에 노출되는 것을
+	  막기 위한 최소한의 방어다. 정상 흐름에서는 음수가 될 수 없다
+	  (기록된 진영에서만 차감하기 때문).
+	-->
+    <update id="applyVote">
         UPDATE moondap.balance_questions
-           SET option_1_count = option_1_count + #{option1Count}
-              ,option_2_count = option_2_count + #{option2Count}
-              ,total_count    = total_count + #{option1Count} + #{option2Count}
+           SET option_1_count = GREATEST(0, option_1_count + #{option1Delta})
+              ,option_2_count = GREATEST(0, option_2_count + #{option2Delta})
+              ,total_count    = GREATEST(0, total_count + #{totalDelta})
         WHERE id = #{id}
     </update>
 	
@@ -159,12 +163,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE question_id = #{questionId} AND voter_key = #{voterKey}
     </select>
 
-    <!-- 진영이 비어 있는 예전 행 보정 (컬럼 추가 이전에 투표한 사용자) -->
+    <!--
+      투표 로그의 진영 갱신.
+      재투표(진영 변경)와, 컬럼 추가 이전에 투표해 진영이 비어 있는 행의 보정에 함께 쓴다.
+      IS NULL 조건을 두지 않는 이유는 재투표 시 기존 값을 덮어써야 하기 때문이다.
+    -->
     <update id="updateVoteLogSide">
         UPDATE moondap.balance_vote_log
            SET selected_side = #{side}
          WHERE question_id = #{questionId} AND voter_key = #{voterKey}
-           AND selected_side IS NULL
     </update>
 
     <!-- 게임 삭제 시 투표 로그 정리 -->

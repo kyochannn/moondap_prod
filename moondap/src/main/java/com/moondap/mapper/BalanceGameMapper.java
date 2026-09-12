@@ -39,8 +39,12 @@ public interface BalanceGameMapper {
 			@Param("isSpicy") String isSpicy, 
 			@Param("category") String category) throws Exception;
 	
-	// 밸런스 게임 투표
-	public int vote(@Param("id") String id, @Param("option1Count") int option1Count, @Param("option2Count") int option2Count);
+	// 밸런스 게임 집계 반영.
+	// 증감분을 호출부가 정한다. 첫 투표는 (+1,0,+1), 진영 변경은 (-1,+1,0) 처럼 쓴다.
+	public int applyVote(@Param("id") String id,
+			@Param("option1Delta") int option1Delta,
+			@Param("option2Delta") int option2Delta,
+			@Param("totalDelta") int totalDelta);
 
 	// 투표 로그 기록. 이미 투표했다면 INSERT IGNORE 로 0 을 반환한다(중복 판정의 기준).
 	public int insertVoteLog(@Param("questionId") String questionId, @Param("voterKey") String voterKey,
@@ -53,7 +57,7 @@ public interface BalanceGameMapper {
 	// 투표 기록 존재 여부 (진영 미기록 행과 구분하기 위해 따로 둔다)
 	public int countVoteLog(@Param("questionId") String questionId, @Param("voterKey") String voterKey);
 
-	// 진영이 비어 있는 예전 행을 보정한다.
+	// 투표 로그의 진영을 갱신한다(재투표 반영 및 예전 행 보정).
 	public int updateVoteLogSide(@Param("questionId") String questionId, @Param("voterKey") String voterKey,
 			@Param("side") String side);
 

@@ -149,28 +149,46 @@ public class StandardBalanceGameService implements BalanceGameService {
     		return null;
     	}
 
-    	// [중복 방지] 투표 로그를 먼저 남긴다.
-    	// UNIQUE(question_id, voter_key) + INSERT IGNORE 이므로,
-    	// 이미 투표한 경우 affected rows 가 0 이 된다.
-    	// 집계 UPDATE 와 같은 트랜잭션이라 둘이 어긋날 일이 없다.
-    	int logged = balanceGameMapper.insertVoteLog(id, voterKey, side);
-    	if (logged == 0) {
-    		log.info("중복 투표 차단: id={}", id);
-    		// 오류로 처리하지 않고 현재 집계를 그대로 돌려준다.
-    		// 화면은 응답의 퍼센트를 그리기만 하므로 사용자는 정상적으로 결과를 본다.
-    		// 참여수도 증가시키지 않는다.
+    	boolean left = request.isLeft();
+
+    	// 이전 투표 기록을 먼저 읽는다. INSERT 이후에 읽으면 방금 넣은 값이 보인다.
+    	String previous = balanceGameMapper.selectVotedSide(id, voterKey);
+
+    	// UNIQUE(question_id, voter_key) + INSERT IGNORE 이므로
+    	// 처음 투표하는 경우에만 1 이 반환된다.
+    	boolean firstVote = balanceGameMapper.insertVoteLog(id, voterKey, side) == 1;
+
+    	int updatedRows;
+    	if (firstVote) {
+    		// 새 표를 더한다. 총 투표수도 함께 증가한다.
+    		updatedRows = balanceGameMapper.applyVote(id, left ? 1 : 0, left ? 0 : 1, 1);
+
+    		// 실제로 집계된 투표만 참여수에 반영한다.
+    		if (updatedRows == 1) {
+    			statService.incrementParticipationCount();
+    		}
+    	} else if (side.equals(previous)) {
+    		// 같은 진영에 다시 투표. 바뀔 것이 없다.
     		return selectBalanceGame(id, null, null);
+    	} else if (previous == null) {
+    		// selected_side 컬럼 추가 이전에 투표한 행이다.
+    		// 그 표가 어느 컬럼에 들어갔는지 알 수 없어 옮길 수가 없다.
+    		// 기록만 채우고 집계는 건드리지 않는다.
+    		log.info("진영 미기록 투표 보정: id={}, side={}", id, side);
+    		balanceGameMapper.updateVoteLogSide(id, voterKey, side);
+    		return selectBalanceGame(id, null, null);
+    	} else {
+    		// [재투표] 마음을 바꾼 경우. 표를 새로 만들지 않고 옮긴다.
+    		// 이전 진영에서 빼고 새 진영에 더하므로 총 투표수는 그대로다.
+    		// 참여수도 올리지 않는다 — 새로운 참여가 아니라 기존 표의 이동이다.
+    		log.info("투표 변경: id={}, {} -> {}", id, previous, side);
+    		updatedRows = balanceGameMapper.applyVote(id, left ? 1 : -1, left ? -1 : 1, 0);
+    		if (updatedRows == 1) {
+    			balanceGameMapper.updateVoteLogSide(id, voterKey, side);
+    		}
     	}
 
-    	int option1Count = request.isLeft() ? 1 : 0;
-    	int option2Count = request.isLeft() ? 0 : 1;
-
-    	int updatedRows = balanceGameMapper.vote(id, option1Count, option2Count);
-
     	if (updatedRows == 1) {
-    		// 실제로 집계된 투표만 참여수에 반영한다.
-    		// 컨트롤러에서 호출하면 중복 투표도 참여수를 올려 통계가 부풀려진다.
-    		statService.incrementParticipationCount();
     		return selectBalanceGame(id, null, null);
     	}
 
