@@ -35,6 +35,18 @@
       width: auto;
     }
 
+    /* 모바일에서는 우측 고정 카드가 콘텐츠를 크게 가린다.
+       화면 폭에 맞춘 얇은 바 형태로 바꾼다. */
+    @media (max-width: 575.98px) {
+      .new-test-toast {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        max-width: none;
+        padding: 10px 14px;
+      }
+    }
+
     .toast-content {
       display: flex;
       align-items: center;
@@ -122,22 +134,52 @@
   </style>
 
   <script>
+    // 한 번 본 사람에게는 다시 띄우지 않는다.
+    // 화면 하단에 고정돼 콘텐츠를 가리는데, 재방문할 때마다 매번 뜨면
+    // 이미 아는 소식 때문에 카드가 계속 가려진다.
+    const TOAST_SEEN_KEY = 'moondap_toast_seen_renewal';
+    const TOAST_REPEAT_DAYS = 7;
+
+    function wasToastSeen() {
+      try {
+        const seenAt = Number(localStorage.getItem(TOAST_SEEN_KEY) || 0);
+        if (!seenAt) return false;
+        return (Date.now() - seenAt) < TOAST_REPEAT_DAYS * 24 * 60 * 60 * 1000;
+      } catch (e) {
+        // 시크릿 모드 등에서 localStorage 를 못 쓰면 그냥 보여준다.
+        return false;
+      }
+    }
+
+    function markToastSeen() {
+      try {
+        localStorage.setItem(TOAST_SEEN_KEY, String(Date.now()));
+      } catch (e) { /* 저장 실패는 무시한다 */ }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const toast = document.getElementById('new-test-toast');
-      if (toast) {
-        setTimeout(() => {
-          toast.classList.remove('d-none');
-        }, 1500);
+      if (!toast) return;
 
-        setTimeout(() => {
-          closeToast();
-        }, 9000);
+      if (wasToastSeen()) {
+        toast.remove();
+        return;
       }
+
+      setTimeout(() => {
+        toast.classList.remove('d-none');
+        markToastSeen();
+      }, 1500);
+
+      setTimeout(() => {
+        closeToast();
+      }, 9000);
     });
 
     function closeToast() {
       const toast = document.getElementById('new-test-toast');
       if (toast) {
+        markToastSeen();
         toast.style.animation = 'fadeOut 0.5s forwards';
         setTimeout(() => {
           toast.remove();

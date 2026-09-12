@@ -11,17 +11,63 @@
 <body layout:fragment="content">
   <main class="main">
 
+    <!--
+      히어로 섹션
+
+      이전에는 첫 화면이 곧바로 '문답 인기 콘텐츠' 그리드로 시작했다.
+      브랜드 메시지가 스크롤 맨 아래 CTA 와 푸터에만 있어서, 처음 온 사람은
+      여기가 무엇을 하는 곳인지 모른 채 카드 목록부터 마주했다.
+
+      주 CTA 는 테스트로 보낸다. 밸런스 게임은 광고가 붙어 있지 않아
+      수익이 발생하지 않는 경로다.
+
+      data-aos 를 쓰지 않는다. 첫 화면 요소에 스크롤 애니메이션을 걸면
+      로드 직후 투명 상태로 자리만 차지해 빈 화면처럼 보인다.
+    -->
+    <section id="hero-intro">
+      <div class="container">
+        <h1 class="hero-title">테스트로 만나는<br>또 다른 나</h1>
+        <p class="hero-sub">3분이면 충분해요. 나도 몰랐던 나를 만나보세요.</p>
+
+        <div class="hero-actions">
+          <!-- 가장 인기 있는 테스트로 바로 보낸다. 목록을 한 번 더 거치지 않는다. -->
+          <a th:if="${popularNormalTests != null and !#lists.isEmpty(popularNormalTests)}"
+             th:with="top=${popularNormalTests[0]}"
+             th:href="${top.type == 'EGEN'}
+                      ? @{/egenTeto/selectEgenTetoGame}
+                      : @{/test/{key}(key=${top.key})}"
+             class="btn btn-primary hero-cta">
+            <i class="bi bi-play-fill me-1"></i>
+            <span th:text="${top.title}">인기 테스트</span> 바로 하기
+          </a>
+          <!-- 추천할 테스트가 없을 때의 대비 -->
+          <a th:if="${popularNormalTests == null or #lists.isEmpty(popularNormalTests)}"
+             href="/test/list?type=NORMAL" class="btn btn-primary hero-cta">
+            <i class="bi bi-play-fill me-1"></i> 테스트 시작하기
+          </a>
+
+          <a href="/balanceGame/selectBalanceGameView" class="btn btn-outline-light hero-sub-cta">
+            <i class="bi bi-lightning-charge me-1"></i> 3초 밸런스 게임
+          </a>
+        </div>
+
+        <p class="hero-proof" th:if="${totalParticipantCount != null and totalParticipantCount > 0}">
+          지금까지 <strong th:text="${#numbers.formatInteger(totalParticipantCount, 0, 'COMMA')}">0</strong>명이 참여했어요
+        </p>
+      </div>
+    </section>
+
     <div id="main-content">
       <section id="game-gallery" class="game-gallery section">
 
-        <div class="container section-title" data-aos="fade-up">
+        <div class="container section-title">
           <h2>문답 인기 콘텐츠</h2>
           <p>지금 가장 많이 참여하고 있는 테스트와 밸런스 게임을 확인해보세요!</p>
         </div>
 
         <div class="container">
           <!-- 콘텐츠 타입 탭 (list.html과 동일 구조) -->
-          <div class="type-tabs" data-aos="fade-up">
+          <div class="type-tabs">
             <a href="javascript:void(0);" class="type-tab active" data-tab="all" id="tab-all">
               <i class="bi bi-grid-fill me-2"></i>전체
             </a>
@@ -36,7 +82,7 @@
           <!-- 탭 패널: 전체 -->
           <div id="panel-all">
             <!-- 정렬 옵션 -->
-            <div class="sort-options" id="all-sort-area" data-aos="fade-up">
+            <div class="sort-options" id="all-sort-area">
               <a th:href="@{/(allSort='popular', normalSort=${currentNormalSort}, balanceSort=${currentBalanceSort})}"
                  class="sort-link" th:classappend="${currentAllSort == 'popular'} ? 'active' : ''">인기순</a>
               <a th:href="@{/(allSort='latest', normalSort=${currentNormalSort}, balanceSort=${currentBalanceSort})}"
@@ -44,7 +90,7 @@
             </div>
 
             <div class="row gy-4 mb-4" id="all-cards">
-              <div th:each="test, stat : ${popularAllTests}" class="col-xl-4 col-lg-6" data-aos="fade-up" th:data-aos-delay="${stat.index * 100}">
+              <div th:each="test, stat : ${popularAllTests}" class="col-xl-4 col-lg-6 col-6" data-aos="fade-up">
                 <a th:href="${test.type == 'EGEN'} ? @{/egenTeto/selectEgenTetoGame} : (${test.type == 'BALANCE'} ? @{/balanceGame/selectBalanceGameView(id=${test.id})} : @{/test/{key}(key=${test.key})})" class="text-decoration-none d-block">
                   <div class="game-wrapper">
                     <!-- Image Area -->
@@ -89,14 +135,14 @@
               </div>
             </div>
             <div class="text-center mt-2 mb-5">
-              <a href="/test/list" class="btn btn-primary rounded-pill px-4">전체 콘텐츠 더보기 <i class="bi bi-arrow-right"></i></a>
+              <a href="/test/list" class="btn btn-primary">전체 콘텐츠 더보기 <i class="bi bi-arrow-right"></i></a>
             </div>
           </div>
 
           <!-- 탭 패널: 테스트 -->
           <div id="panel-normal" style="display:none;">
             <!-- 정렬 옵션 -->
-            <div class="sort-options" id="normal-sort-area" data-aos="fade-up">
+            <div class="sort-options" id="normal-sort-area">
               <a th:href="@{/(allSort=${currentAllSort}, normalSort='popular', balanceSort=${currentBalanceSort})}"
                  class="sort-link" th:classappend="${currentNormalSort == 'popular'} ? 'active' : ''">인기순</a>
               <a th:href="@{/(allSort=${currentAllSort}, normalSort='latest', balanceSort=${currentBalanceSort})}"
@@ -104,7 +150,7 @@
             </div>
 
             <div class="row gy-4 mb-4" id="normal-cards">
-              <div th:each="test, stat : ${popularNormalTests}" class="col-xl-4 col-lg-6" data-aos="fade-up" th:data-aos-delay="${stat.index * 100}">
+              <div th:each="test, stat : ${popularNormalTests}" class="col-xl-4 col-lg-6 col-6" data-aos="fade-up">
                 <a th:href="${test.type == 'EGEN'} ? @{/egenTeto/selectEgenTetoGame} : @{/test/{key}(key=${test.key})}" class="text-decoration-none d-block">
                   <div class="game-wrapper">
                     <div class="game-image">
@@ -131,14 +177,14 @@
               </div>
             </div>
             <div class="text-center mt-2 mb-5">
-              <a href="/test/list?type=NORMAL" class="btn btn-primary rounded-pill px-4">테스트 더보기 <i class="bi bi-arrow-right"></i></a>
+              <a href="/test/list?type=NORMAL" class="btn btn-primary">테스트 더보기 <i class="bi bi-arrow-right"></i></a>
             </div>
           </div>
 
           <!-- 탭 패널: 밸런스 게임 -->
           <div id="panel-balance" style="display:none;">
             <!-- 정렬 옵션 -->
-            <div class="sort-options" id="balance-sort-area" data-aos="fade-up">
+            <div class="sort-options" id="balance-sort-area">
               <a th:href="@{/(allSort=${currentAllSort}, normalSort=${currentNormalSort}, balanceSort='popular')}"
                  class="sort-link" th:classappend="${currentBalanceSort == 'popular'} ? 'active' : ''">인기순</a>
               <a th:href="@{/(allSort=${currentAllSort}, normalSort=${currentNormalSort}, balanceSort='latest')}"
@@ -146,7 +192,7 @@
             </div>
 
             <div class="row gy-4 mb-4" id="balance-cards">
-              <div th:each="test, stat : ${popularBalanceTests}" class="col-xl-4 col-lg-6" data-aos="fade-up" th:data-aos-delay="${stat.index * 100}">
+              <div th:each="test, stat : ${popularBalanceTests}" class="col-xl-4 col-lg-6 col-6" data-aos="fade-up">
                 <a th:href="${test.type == 'EGEN'} ? @{/egenTeto/selectEgenTetoGame} : @{/balanceGame/selectBalanceGameView(id=${test.id})}" class="text-decoration-none d-block">
                   <div class="game-wrapper">
                     <div class="game-image">
@@ -183,7 +229,7 @@
               </div>
             </div>
             <div class="text-center mt-2 mb-5">
-              <a href="/test/list?type=BALANCE" class="btn btn-primary rounded-pill px-4">밸런스 게임 더보기 <i class="bi bi-arrow-right"></i></a>
+              <a href="/test/list?type=BALANCE" class="btn btn-primary">밸런스 게임 더보기 <i class="bi bi-arrow-right"></i></a>
             </div>
           </div>
 
@@ -267,10 +313,10 @@
         <h3 class="fw-bold text-white mb-3">테스트로 만나는 또 다른 나, 문답</h3>
         <p class="text-white-50 mb-4 fs-5">더 많은 콘텐츠가 당신을 기다리고 있어요!</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-          <a href="/test/list" class="btn btn-primary rounded-pill px-5 py-2 fw-bold btn-cta-primary">
+          <a href="/test/list" class="btn btn-primary">
             <i class="bi bi-grid-fill me-2"></i>전체 리스트 보기
           </a>
-          <a href="https://www.instagram.com/moondap_com/" target="_blank" class="btn btn-outline-light rounded-pill px-4 py-2">
+          <a href="https://www.instagram.com/moondap_com/" target="_blank" class="btn btn-outline-light">
             <i class="bi bi-instagram me-2"></i>문답 인스타그램
           </a>
         </div>

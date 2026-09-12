@@ -4658,3 +4658,137 @@ section,
   font-size: 0.85rem;
   margin-left: 0.5rem;
 }
+
+/*--------------------------------------------------------------
+# 메인 히어로 섹션
+#
+# 이전 첫 화면은 곧바로 콘텐츠 그리드로 시작해서, 처음 온 사람이
+# 여기가 무엇을 하는 곳인지 알 수 없었다. 브랜드 한 줄과 단일 주 CTA 를 둔다.
+--------------------------------------------------------------*/
+#hero-intro {
+  padding: 48px 0 32px;
+  text-align: center;
+}
+
+#hero-intro .hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--heading-color);
+  margin-bottom: 12px;
+}
+
+#hero-intro .hero-sub {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+#hero-intro .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* 주 CTA 는 테스트로 보낸다. 밸런스 게임은 광고가 없는 경로라 보조로 둔다. */
+#hero-intro .hero-cta {
+  font-weight: 700;
+  padding: 12px 26px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#hero-intro .hero-sub-cta {
+  padding: 12px 20px;
+}
+
+#hero-intro .hero-proof {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+#hero-intro .hero-proof strong {
+  color: var(--accent-color);
+}
+
+/*--------------------------------------------------------------
+# 모바일 카드 압축
+#
+# 기본 카드는 이미지가 정사각(aspect-ratio 1/1)이고 내용 여백이 25px 라,
+# 모바일 전체 폭에서 한 장이 647px(뷰포트의 77%)이 됐다. 한 화면에 하나만
+# 보여서 훑어보고 고르는 행동이 불가능했다.
+# 2열 배치(col-6)와 함께 카드 자체를 줄여 한 화면에 네 장이 들어오게 한다.
+--------------------------------------------------------------*/
+@media (max-width: 575.98px) {
+  #hero-intro {
+    padding: 32px 0 24px;
+  }
+
+  #hero-intro .hero-title {
+    font-size: 1.6rem;
+  }
+
+  /* 좁은 화면에서는 버튼을 세로로 쌓아 터치 영역을 확보한다 */
+  #hero-intro .hero-actions {
+    flex-direction: column;
+  }
+
+  .game-gallery .game-wrapper .game-image {
+    /* 정사각 → 가로형. 이미지 높이가 절반 가까이 줄어든다 */
+    aspect-ratio: 4 / 3;
+  }
+
+  .game-gallery .game-wrapper .game-content {
+    padding: 12px;
+  }
+
+  .game-gallery .game-wrapper .game-content .game-meta {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .game-gallery .game-wrapper .game-content .game-meta .game-type {
+    font-size: 0.62rem;
+    padding: 3px 8px;
+  }
+
+  .game-gallery .game-wrapper .game-content .game-meta .game-rating {
+    font-size: 0.72rem;
+  }
+
+  .game-gallery .game-wrapper .game-content h3 {
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+    /* 2줄 고정 높이를 풀어 제목이 짧으면 카드도 짧아지게 한다 */
+    min-height: 0;
+  }
+
+  /* 2열에서는 설명까지 넣으면 글자가 뭉개진다. 한 줄로 자른다. */
+  .game-gallery .game-wrapper .game-content p {
+    font-size: 0.75rem;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 히어로 바로 아래 섹션 제목이 32px + 60px 패딩이라, 카드가
+     첫 화면 밖으로 밀렸다. 제목을 줄여 카드를 화면 안으로 끌어올린다. */
+  #game-gallery.section {
+    padding: 24px 0 40px;
+  }
+
+  #game-gallery .section-title h2 {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  #game-gallery .section-title p {
+    font-size: 0.85rem;
+  }
+}
