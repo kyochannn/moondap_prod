@@ -38,11 +38,6 @@ public interface MdTestMapper {
     void deleteResultsByTestId(@Param("testId") Long testId);
 
     // 통합 조회 (메인/리스트용)
-    /**
-     * @param keyword 제목·설명 부분 일치. null 이거나 빈 값이면 검색 조건을 걸지 않는다.
-     *                LIKE 와일드카드는 호출 전에 이스케이프되어 있어야 한다
-     *                (MdTestUserService.escapeLike).
-     */
-    List<MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
+    List<MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("offset") int offset, @Param("limit") int limit);
     long selectTotalPlayCount();
 }

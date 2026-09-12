@@ -7,94 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>전체 테스트 리스트 - 문답</title>
 
-  <!-- 검색 영역 스타일. 이 페이지에서만 쓰이므로 main.css 를 더 키우지 않는다. -->
-  <style>
-    .content-search {
-      max-width: 560px;
-      margin: 0 auto 20px;
-    }
-
-    .content-search-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .content-search-icon {
-      position: absolute;
-      left: 16px;
-      color: rgba(255, 255, 255, 0.4);
-      pointer-events: none;
-    }
-
-    .content-search-input {
-      width: 100%;
-      padding: 12px 44px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.04);
-      color: #fff;
-      font-size: 0.95rem;
-      transition: border-color 0.2s, background 0.2s;
-    }
-
-    .content-search-input::placeholder {
-      color: rgba(255, 255, 255, 0.35);
-    }
-
-    .content-search-input:focus {
-      outline: none;
-      border-color: var(--accent-color, #524dd3);
-      background: rgba(255, 255, 255, 0.07);
-    }
-
-    /* 검색 타입 기본 X 버튼은 브라우저마다 모양이 달라 직접 그린다. */
-    .content-search-input::-webkit-search-cancel-button {
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .content-search-clear {
-      position: absolute;
-      right: 12px;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-
-    .content-search-clear:hover {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-
-    .content-search-summary {
-      margin: 12px 0 0;
-      text-align: center;
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    .content-search-summary strong {
-      color: #fff;
-    }
-
-    .content-search-reset {
-      margin-left: 8px;
-      color: var(--accent-color, #7d77ff);
-      text-decoration: none;
-    }
-
-    .content-search-reset:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 
@@ -108,46 +20,13 @@
       </div>
 
       <div class="container">
-        <!--
-          제목·설명 검색.
-          이전에는 타입 탭과 카테고리 칩으로만 좁힐 수 있어서, 찾는 콘텐츠의 카테고리를
-          모르면 목록을 끝까지 훑는 수밖에 없었다.
-        -->
-        <div class="content-search" data-aos="fade-up">
-          <form id="searchForm" th:action="@{/test/list}" method="get" role="search">
-            <!-- 검색해도 지금 보고 있는 탭·카테고리·정렬은 유지한다. -->
-            <input type="hidden" name="type" th:value="${currentType}">
-            <input type="hidden" name="category" th:value="${currentCategory}">
-            <input type="hidden" name="sort" th:value="${currentSort}">
-
-            <div class="content-search-box">
-              <i class="bi bi-search content-search-icon"></i>
-              <input type="search" id="searchInput" name="keyword" class="content-search-input"
-                     th:value="${currentKeyword}"
-                     placeholder="어떤 테스트를 찾으세요?"
-                     maxlength="50" autocomplete="off" aria-label="콘텐츠 검색">
-              <button type="button" id="searchClear" class="content-search-clear"
-                      th:classappend="${currentKeyword == null} ? 'd-none' : ''"
-                      aria-label="검색어 지우기">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-          </form>
-
-          <p th:if="${currentKeyword != null}" class="content-search-summary">
-            <strong th:text="'&quot;' + ${currentKeyword} + '&quot;'">검색어</strong> 검색 결과
-            <a th:href="@{/test/list(type=${currentType}, category=${currentCategory}, sort=${currentSort})}"
-               class="content-search-reset">전체 보기</a>
-          </p>
-        </div>
-
         <!-- Content Type Tabs -->
         <div class="type-tabs" data-aos="fade-up">
-          <a th:href="@{/test/list(type='all', category=${currentCategory}, sort=${currentSort}, keyword=${currentKeyword})}" 
+          <a th:href="@{/test/list(type='all', category=${currentCategory}, sort=${currentSort})}" 
              class="type-tab" th:classappend="${currentType == 'all'} ? 'active' : ''"><i class="bi bi-grid me-2"></i>전체</a>
-          <a th:href="@{/test/list(type='NORMAL', category=${currentCategory}, sort=${currentSort}, keyword=${currentKeyword})}" 
+          <a th:href="@{/test/list(type='NORMAL', category=${currentCategory}, sort=${currentSort})}" 
              class="type-tab" th:classappend="${currentType == 'NORMAL'} ? 'active' : ''"><i class="bi bi-journal-check me-2"></i>테스트</a>
-          <a th:href="@{/test/list(type='BALANCE', category=${currentCategory}, sort=${currentSort}, keyword=${currentKeyword})}" 
+          <a th:href="@{/test/list(type='BALANCE', category=${currentCategory}, sort=${currentSort})}" 
              class="type-tab" th:classappend="${currentType == 'BALANCE'} ? 'active' : ''"><i class="bi bi-lightning-charge me-2"></i>밸런스게임</a>
         </div>
 
@@ -164,10 +43,10 @@
         <div class="collapsible-filters" id="filterContent" data-aos="fade-up">
           <div class="filter-section">
             <div class="category-chips">
-              <a th:href="@{/test/list(category='all', type=${currentType}, sort=${currentSort}, keyword=${currentKeyword})}" 
+              <a th:href="@{/test/list(category='all', type=${currentType}, sort=${currentSort})}" 
                  class="category-chip" th:classappend="${currentCategory == 'all'} ? 'active' : ''">전체</a>
               <a th:each="cat : ${categories}" 
-                 th:href="@{/test/list(category=${cat.categoryName}, type=${currentType}, sort=${currentSort}, keyword=${currentKeyword})}" 
+                 th:href="@{/test/list(category=${cat.categoryName}, type=${currentType}, sort=${currentSort})}" 
                  class="category-chip" 
                  th:classappend="${currentCategory == cat.categoryName} ? 'active' : ''"
                  th:text="${cat.displayName}">카테고리</a>
@@ -177,9 +56,9 @@
 
         <!-- Sort Options -->
         <div class="sort-options" data-aos="fade-up">
-          <a th:href="@{/test/list(category=${currentCategory}, type=${currentType}, sort='popular', keyword=${currentKeyword})}" 
+          <a th:href="@{/test/list(category=${currentCategory}, type=${currentType}, sort='popular')}" 
              class="sort-link" th:classappend="${currentSort == 'popular'} ? 'active' : ''">인기순</a>
-          <a th:href="@{/test/list(category=${currentCategory}, type=${currentType}, sort='latest', keyword=${currentKeyword})}" 
+          <a th:href="@{/test/list(category=${currentCategory}, type=${currentType}, sort='latest')}" 
              class="sort-link" th:classappend="${currentSort == 'latest'} ? 'active' : ''">최신순</a>
         </div>
 
@@ -187,14 +66,11 @@
         <div id="content-grid">
           <div th:if="${#lists.isEmpty(contentList)}" class="col-12 empty-state" data-aos="fade-up">
             <i class="bi bi-search"></i>
-            <h4 th:if="${currentKeyword != null}"
-                th:text="'&quot;' + ${currentKeyword} + '&quot;' + ' 에 대한 결과가 없어요.'">검색 결과가 없습니다.</h4>
-            <h4 th:unless="${currentKeyword != null}">검색 결과가 없습니다.</h4>
+            <h4>표시할 콘텐츠가 없습니다.</h4>
 
             <!-- 막다른 화면이 되지 않도록 다음 행동을 준다. -->
-            <p th:if="${currentKeyword != null}">다른 단어로 찾아보시거나, 전체 목록을 둘러보세요.</p>
-            <p th:unless="${currentKeyword != null}">다른 카테고리를 선택해보세요!</p>
-            <a th:if="${currentKeyword != null}" th:href="@{/test/list}" class="btn btn-primary mt-2">
+            <p>다른 카테고리를 선택해보세요!</p>
+            <a th:href="@{/test/list}" class="btn btn-primary mt-2">
               <i class="bi bi-grid-fill me-2"></i>전체 콘텐츠 보기
             </a>
           </div>
@@ -269,44 +145,6 @@
               filterContent.classList.toggle('show');
               this.classList.toggle('active');
             });
-
-            /*
-             * 검색.
-             * 탭·정렬과 달리 일반 폼 전송(전체 새로고침)으로 둔다. 검색은 결과 그리드뿐
-             * 아니라 검색어 요약줄과 페이지 제목까지 함께 바뀌는데, AJAX 로 그리드만
-             * 갈아끼우면 그 둘이 이전 검색어를 그대로 달고 남는다.
-             */
-            const searchForm = document.getElementById('searchForm');
-            const searchInput = document.getElementById('searchInput');
-            const searchClear = document.getElementById('searchClear');
-
-            if (searchForm && searchInput) {
-              searchForm.addEventListener('submit', function(e) {
-                const word = searchInput.value.trim();
-                searchInput.value = word;
-                // 빈 검색은 주소에 keyword= 를 남기지 않는다.
-                if (!word) {
-                  searchInput.removeAttribute('name');
-                }
-              });
-
-              // 입력이 있을 때만 지우기 버튼을 보여준다.
-              searchInput.addEventListener('input', function() {
-                searchClear.classList.toggle('d-none', this.value.length === 0);
-              });
-
-              searchClear.addEventListener('click', function() {
-                searchInput.value = '';
-                searchClear.classList.add('d-none');
-                // 검색 중이었다면 검색을 푼 목록으로, 아니면 입력칸만 비운다.
-                if (/*[[${currentKeyword != null}]]*/ false) {
-                  searchInput.removeAttribute('name');
-                  searchForm.submit();
-                } else {
-                  searchInput.focus();
-                }
-              });
-            }
 
             document.addEventListener('click', function(e) {
               const link = e.target.closest('.type-tab, .category-chip, .sort-link');

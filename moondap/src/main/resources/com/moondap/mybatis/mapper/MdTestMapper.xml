@@ -295,16 +295,6 @@
                     </otherwise>
                 </choose>
             </if>
-            <!--
-              제목과 설명을 함께 본다. 제목만 보면 "연애"로 찾을 때 제목에 그 단어가 없는
-              연애 관련 테스트가 통째로 빠진다.
-              ESCAPE 를 명시해야 사용자가 입력한 %, _ 가 와일드카드로 동작하지 않는다.
-              (이스케이프 자체는 MdTestUserService.escapeLike 가 한다)
-            -->
-            <if test="keyword != null and keyword != ''">
-                AND (title LIKE CONCAT('%', #{keyword}, '%') ESCAPE '!'
-                  OR description LIKE CONCAT('%', #{keyword}, '%') ESCAPE '!')
-            </if>
         </where>
         <choose>
             <when test="sort == 'popular'">ORDER BY playCount DESC</when>
