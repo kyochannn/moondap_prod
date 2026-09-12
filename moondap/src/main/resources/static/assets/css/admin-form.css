@@ -7,53 +7,6 @@
     margin-bottom: 25px;
 }
 
-/* Expansion Button Style */
-.expand-btn {
-    width: 40px; 
-    height: 40px;
-    border-radius: 20px !important;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    border: none;
-    white-space: nowrap;
-}
-
-.expand-btn i {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-.btn-text {
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
-    transition: all 0.3s ease-out;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-left: -5px;
-}
-
-.expand-btn:hover, .expand-btn:active {
-    width: 150px;
-}
-
-.expand-btn:hover .btn-text, .expand-btn:active .btn-text {
-    opacity: 1;
-    max-width: 110px;
-    margin-left: 0px;
-    padding-right: 15px;
-}
-
 /* Drop-zone Component */
 .drop-zone.active-upload {
     position: relative;
@@ -141,11 +94,13 @@
 }
 
 
+/* 이 파일은 main.css 를 불러오지 않는 로그인 페이지에서도 쓰이므로
+   --accent-color 에 기본값을 함께 준다. */
 .custom-input:focus {
     background: rgba(255,255,255,0.08);
-    border-color: #6366f1;
+    border-color: var(--accent-color, #865EF4);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color, #865EF4), transparent 85%);
 }
 
 .custom-input::placeholder {
@@ -325,50 +280,10 @@
     gap: 6px;
 }
 
-/* Standardized Buttons (Rounded Pill & Global Transition) */
-.btn {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-}
-
+/* 버튼 스타일은 buttons.css 가 담당합니다. 여기에 다시 정의하지 마세요.
+   중복 응답 확인 버튼만 눌린 위치가 흔들리지 않도록 들어올림 효과를 끕니다. */
 .check-btn:hover, .check-btn:active, .check-btn:focus {
-    transform: none !important;
-}
-
-.btn.rounded-pill {
-    border-radius: 50px !important;
-    padding: 8px 24px;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.btn-primary.rounded-pill {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
-    border: none !important;
-    color: #fff !important;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-}
-
-.btn-primary.rounded-pill:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%) !important;
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
-    color: #fff !important;
-}
-
-.btn-outline-light.rounded-pill {
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-    background: transparent;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-light.rounded-pill:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    color: #fff !important;
+    transform: none;
 }
 
 /* Stepper Indicator Styles */
@@ -432,30 +347,4 @@
     color: #00d2ff;
 }
 
-/* Action Buttons (Trash, etc.) */
-.action-btn {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none !important;
-}
-
-.action-btn:hover {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-}
-
-.btn-danger.action-btn {
-    background: rgba(255, 107, 107, 0.1);
-    color: #ff6b6b;
-}
-
-.btn-danger.action-btn:hover {
-    background: #ff6b6b;
-    color: #fff;
-}
+/* 아이콘 버튼은 buttons.css 의 .btn-icon 을 씁니다. */

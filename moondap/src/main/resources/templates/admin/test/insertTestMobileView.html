@@ -90,7 +90,7 @@
                                     <span th:text="${test.id != null} ? '테스트 정보 수정' : '새 테스트 등록'"></span>
                                 </h5>
                                 <a th:href="${test.id != null} ? @{/admin/test/{id}/edit(id=${test.id}, force='pc')} : @{/admin/test/insertTestView(force='pc')}" 
-                                   class="btn btn-outline-info btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                                   class="btn btn-outline-info btn-sm">
                                     <i class="bi bi-pc-display me-1"></i> PC 버전으로 편집
                                 </a>
                             </div>
@@ -246,8 +246,8 @@
                                         <h4>기본 정보 입력을 마쳤나요?</h4>
                                         <p>다음은 테스트 결과 유형을 구성할 차례입니다.</p>
                                         <div class="cta-actions">
-                                            <a class="btn btn-outline-light rounded-pill px-5" th:href="@{/test/manage/list}">취소</a>
-                                            <button type="button" class="btn btn-primary rounded-pill px-5" onclick="nextStep(2)">결과 구성하기</button>
+                                            <a class="btn btn-outline-light" th:href="@{/test/manage/list}">취소</a>
+                                            <button type="button" class="btn btn-primary" onclick="nextStep(2)">결과 구성하기</button>
                                         </div>
                                     </div>
                                 </div>
@@ -270,7 +270,7 @@
                                                     결과 유형 #<span class="r-index" th:text="${iter.count}">1</span>
                                                 </h6>
                                                 <button type="button"
-                                                        class="btn btn-danger rounded-pill action-btn"
+                                                        class="btn btn-danger btn-icon"
                                                         onclick="removeResult(this)">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -348,7 +348,7 @@
                                     </div>
                                     
                                     <div class="text-center mt-3 mb-5">
-                                        <button type="button" class="btn btn-primary rounded-pill btn-sm px-3" onclick="addResult()">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addResult()">
                                             <i class="bi bi-plus-lg me-1"></i> 결과 추가
                                         </button>
                                     </div>
@@ -358,8 +358,8 @@
                                             <h4>결과 유형을 모두 만드셨나요?</h4>
                                             <p>마지막으로 테스트 질문을 구성합니다.</p>
                                             <div class="cta-actions">
-                                                <button type="button" class="btn btn-outline-light rounded-pill px-5" onclick="prevStep(1)">이전으로</button>
-                                                <button type="button" class="btn btn-primary rounded-pill px-5" onclick="nextStep(3)">질문 구성하기</button>
+                                                <button type="button" class="btn btn-outline-light" onclick="prevStep(1)">이전으로</button>
+                                                <button type="button" class="btn btn-primary" onclick="nextStep(3)">질문 구성하기</button>
                                             </div>
                                         </div>
                                     </div>
@@ -386,7 +386,7 @@
                                                     질문 #<span class="q-index" th:text="${stat.count}">1</span>
                                                 </h6>
                                                 <button type="button"
-                                                        class="btn btn-danger rounded-pill action-btn"
+                                                        class="btn btn-danger btn-icon"
                                                         onclick="removeQuestion(this)">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -441,7 +441,7 @@
 
                                     <div class="text-center mt-3 mb-5">
                                         <button type="button"
-                                                class="btn btn-primary rounded-pill px-5 shadow"
+                                                class="btn btn-primary"
                                                 onclick="addQuestion()">
                                             <i class="bi bi-plus-lg me-1"></i> 질문 추가하기
                                         </button>
@@ -453,9 +453,9 @@
                                         <h4 th:text="${test.id != null} ? '테스트 수정을 완료할까요?' : '테스트를 등록할까요?'"></h4>
                                         <p>모든 구성이 완료되었습니다!</p>
                                         <div class="cta-actions">
-                                            <button type="button" class="btn btn-outline-light rounded-pill px-5" onclick="prevStep(2)">이전으로</button>
+                                            <button type="button" class="btn btn-outline-light" onclick="prevStep(2)">이전으로</button>
                                             <button type="submit"
-                                                    class="btn btn-primary rounded-pill px-5"
+                                                    class="btn btn-primary"
                                                     th:text="${test.id != null} ? '수정 완료' : '등록 완료'"></button>
                                         </div>
                                     </div>
@@ -483,17 +483,17 @@
                         <img id="cropperImage" src="" style="max-width: 100%;">
                     </div>
                     <div class="d-flex justify-content-center gap-2">
-                        <button type="button" class="btn btn-outline-light rounded-pill btn-sm px-3" onclick="cropperInstance.rotate(-90)">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="cropperInstance.rotate(-90)">
                             <i class="bi bi-arrow-counterclockwise"></i> 회전
                         </button>
-                        <button type="button" class="btn btn-outline-light rounded-pill btn-sm px-3" onclick="cropperInstance.rotate(90)">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="cropperInstance.rotate(90)">
                             <i class="bi bi-arrow-clockwise"></i> 회전
                         </button>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="cropButton">적용하기</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="cropButton">적용하기</button>
                 </div>
             </div>
         </div>
@@ -700,7 +700,7 @@
                 <div class="result-item item-card-dark mb-4 p-3 rounded shadow-sm" style="animation: fadeIn 0.4s ease-out;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="text-white mb-0 small fw-bold">결과 유형 #<span class="r-index"></span></h6>
-                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeResult(this)">
+                        <button type="button" class="btn btn-danger btn-icon" onclick="removeResult(this)">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -845,7 +845,7 @@
                 <div class="question-item item-card-dark mb-4 p-3 rounded" style="animation: fadeIn 0.4s ease-out;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="text-white mb-0 small fw-bold">질문 #<span class="q-index"></span></h6>
-                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeQuestion(this)">
+                        <button type="button" class="btn btn-danger btn-icon" onclick="removeQuestion(this)">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>

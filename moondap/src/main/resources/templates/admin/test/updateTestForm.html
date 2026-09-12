@@ -44,17 +44,17 @@
                             </div>
                         </div>
                         <div class="header-action-group d-flex gap-2">
-                            <a href="/test/manage/list" class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                            <a href="/test/manage/list" class="btn btn-outline-light btn-sm">
                                 <i class="bi bi-arrow-left me-1"></i> 이전
                             </a>
                             <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}" target="_blank" 
-                               class="btn btn-outline-light rounded-pill px-4" style="font-size: 0.85rem; padding: 6px 16px;">
+                               class="btn btn-outline-light btn-sm">
                                 <i class="bi bi-eye me-1"></i> 미리보기
                             </a>
-                            <button type="button" class="btn btn-outline-light rounded-pill px-4" onclick="confirmDelete()" style="font-size: 0.85rem; padding: 6px 16px; color: #ff6b6b; border-color: rgba(255,107,107,0.3);">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDelete()">
                                 <i class="bi bi-trash me-1"></i> 삭제
                             </button>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-check-lg me-1"></i> 수정 완료
                             </button>
                         </div>
@@ -208,7 +208,7 @@
                                             <textarea class="custom-input-inline r-content" rows="3" style="resize: vertical; min-height: 80px;" placeholder="결과 상세 설명 (엔터로 줄바꿈 가능)" th:text="${r.resultContent}"></textarea>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeRow(this, 'result')">
+                                            <button type="button" class="btn btn-danger btn-icon" onclick="removeRow(this, 'result')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -217,7 +217,7 @@
                             </table>
                         </div>
                         <div class="text-center mt-3">
-                            <button type="button" class="btn btn-primary rounded-pill px-5 shadow" onclick="addResultRow()">
+                            <button type="button" class="btn btn-primary" onclick="addResultRow()">
                                 <i class="bi bi-plus-lg me-1"></i> 유형 추가하기
                             </button>
                         </div>
@@ -259,7 +259,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeRow(this, 'question')">
+                                            <button type="button" class="btn btn-danger btn-icon" onclick="removeRow(this, 'question')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -268,7 +268,7 @@
                             </table>
                         </div>
                         <div class="text-center mt-3">
-                            <button type="button" class="btn btn-primary rounded-pill px-5 shadow" onclick="addQuestionRow()">
+                            <button type="button" class="btn btn-primary" onclick="addQuestionRow()">
                                 <i class="bi bi-plus-lg me-1"></i> 질문 추가하기
                             </button>
                         </div>
@@ -283,13 +283,13 @@
                                     <h4>테스트 수정을 완료할까요?</h4>
                                     <p>변경사항을 확인하고 저장해주세요.</p>
                                     <div class="cta-actions">
-                                        <button type="button" class="btn btn-outline-light rounded-pill px-4" onclick="history.back()">취소</button>
+                                        <button type="button" class="btn btn-outline-light" onclick="history.back()">취소</button>
                                         <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}" target="_blank" 
-                                           class="btn btn-outline-light rounded-pill px-4">
+                                           class="btn btn-outline-light">
                                             <i class="bi bi-eye me-1"></i> 미리보기
                                         </a>
-                                        <button type="button" class="btn btn-outline-light rounded-pill px-4" onclick="confirmDelete()" style="color: #ff6b6b; border-color: rgba(255,107,107,0.3);">삭제</button>
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4">수정 완료</button>
+                                        <button type="button" class="btn btn-outline-danger" onclick="confirmDelete()">삭제</button>
+                                        <button type="submit" class="btn btn-primary">수정 완료</button>
                                     </div>
                                 </div>
                             </div>
@@ -317,17 +317,17 @@
                         <img id="cropperImage" src="" style="max-width: 100%;">
                     </div>
                     <div class="d-flex justify-content-center gap-2">
-                        <button type="button" class="btn btn-outline-light rounded-pill btn-sm px-3" onclick="cropperInstance.rotate(-90)">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="cropperInstance.rotate(-90)">
                             <i class="bi bi-arrow-counterclockwise"></i> 회전
                         </button>
-                        <button type="button" class="btn btn-outline-light rounded-pill btn-sm px-3" onclick="cropperInstance.rotate(90)">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="cropperInstance.rotate(90)">
                             <i class="bi bi-arrow-clockwise"></i> 회전
                         </button>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="cropButton">적용하기</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="cropButton">적용하기</button>
                 </div>
             </div>
         </div>
@@ -463,7 +463,7 @@
                         <textarea class="custom-input-inline r-content" rows="3" style="resize: vertical; min-height: 80px;" placeholder="결과 상세 설명 (엔터로 줄바꿈 가능)"></textarea>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeRow(this, 'result')">
+                        <button type="button" class="btn btn-danger btn-icon" onclick="removeRow(this, 'result')">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -496,7 +496,7 @@
                         </div>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger rounded-pill action-btn" onclick="removeRow(this, 'question')">
+                        <button type="button" class="btn btn-danger btn-icon" onclick="removeRow(this, 'question')">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>

@@ -72,7 +72,7 @@
                                 <h5 class="text-white mb-0 fw-bold">
                                     <i class="bi bi-person-gear me-2 text-primary"></i> 회원 정보 수정
                                 </h5>
-                                <a th:href="@{/mypage}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                                <a th:href="@{/mypage}" class="btn btn-outline-light btn-sm">
                                     <i class="bi bi-arrow-left me-1"></i> 돌아가기
                                 </a>
                             </div>
@@ -160,14 +160,14 @@
                                         <h6 class="text-white mb-1 fw-bold"><i class="bi bi-shield-lock me-2 text-primary"></i> 계정 보안</h6>
                                         <p class="text-white-50 small mb-0">비밀번호를 정기적으로 변경하여 계정을 안전하게 보호하세요.</p>
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#passwordModal">
                                         비밀번호 변경
                                     </button>
                                 </div>
                             </div>
 
                             <div class="mt-4">
-                                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill" style="background: #524dd3; border: none;">
+                                <button type="submit" class="btn btn-primary w-100">
                                     <i class="bi bi-check-lg me-2"></i> 프로필 정보 저장
                                 </button>
                             </div>
@@ -179,7 +179,7 @@
                                         <h6 class="text-danger mb-1 fw-bold"><i class="bi bi-person-x-fill me-2"></i> 회원 탈퇴</h6>
                                         <p class="text-white-50 small mb-0">계정을 삭제하면 모든 데이터가 보호 모드로 전환되며 로그인이 제한됩니다.</p>
                                     </div>
-                                    <button type="button" class="btn btn-outline-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#withdrawModal">
                                         회원 탈퇴
                                     </button>
                                 </div>
@@ -219,8 +219,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pb-4 px-4">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="btnUpdatePassword" style="background: #524dd3; border: none;">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="btnUpdatePassword">
                         비밀번호 저장
                     </button>
                 </div>
@@ -246,8 +246,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pb-4 px-4">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4" id="btnWithdrawSubmit">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger" id="btnWithdrawSubmit">
                         탈퇴 완료
                     </button>
                 </div>
@@ -269,8 +269,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="cropButton">적용하기</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="cropButton">적용하기</button>
                 </div>
             </div>
         </div>

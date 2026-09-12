@@ -23,11 +23,6 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .action-btn {
-            padding: 4px 12px;
-            font-size: 0.78rem;
-            border-radius: 20px;
-        }
         .toast-msg {
             position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
             background: #fff; color: #000; padding: 12px 24px;
@@ -55,7 +50,7 @@
                         </p>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="/test/manage/insertTestView" class="btn btn-primary rounded-pill px-4">
+                        <a href="/test/manage/insertTestView" class="btn btn-primary">
                             <i class="bi bi-plus-lg me-1"></i> 새 테스트 추가
                         </a>
                     </div>
@@ -78,7 +73,7 @@
                     <div th:if="${#lists.isEmpty(testList)}" class="text-center py-5 text-white-50">
                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                         <p>등록된 테스트가 없습니다.</p>
-                        <a href="/test/manage/insertTestView" class="btn btn-outline-light rounded-pill mt-1">첫 테스트 만들기</a>
+                        <a href="/test/manage/insertTestView" class="btn btn-outline-light mt-1">첫 테스트 만들기</a>
                     </div>
 
                     <div th:if="${!#lists.isEmpty(testList)}" class="table-responsive">
@@ -132,19 +127,19 @@
                                         <div class="d-flex gap-1 justify-content-center flex-wrap">
                                             <a th:href="@{/test/{key}(key=${test.testKey}, preview=true)}"
                                                target="_blank"
-                                               class="btn btn-outline-info action-btn"
+                                               class="btn btn-outline-info btn-icon"
                                                onclick="event.stopPropagation();"
                                                title="미리보기">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             <a th:href="@{/test/manage/{id}/edit(id=${test.id})}"
-                                               class="btn btn-primary action-btn"
+                                               class="btn btn-primary btn-icon"
                                                onclick="event.stopPropagation();"
                                                title="수정">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <form th:id="'deleteForm' + ${test.id}" th:action="@{/test/manage/{id}/delete(id=${test.id})}" method="post" style="display:inline;">
-                                                <button type="button" class="btn btn-danger action-btn"
+                                                <button type="button" class="btn btn-danger btn-icon"
                                                         th:data-form-id="'deleteForm' + ${test.id}"
                                                         onclick="if(confirm('정말 삭제하시겠습니까?')) document.getElementById(this.getAttribute('data-form-id')).submit(); event.stopPropagation();"
                                                         title="삭제">

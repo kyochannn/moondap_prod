@@ -1,0 +1,381 @@
+/**
+ * 문답 버튼 시스템 (Button System)
+ *
+ * 사이트 전체 버튼의 단일 기준입니다. fragment/link.html 에서 전역 로드되므로
+ * 페이지별 CSS(admin-form.css, test-admin-common.css ...)에 버튼 스타일을 다시
+ * 정의하지 마세요. 새 모양이 필요하면 여기에 변형(variant)을 추가합니다.
+ *
+ * 색은 main.css 의 --accent-color 를 따릅니다. 브랜드 색을 바꾸려면 그 변수 하나만
+ * 수정하면 버튼 전체가 따라옵니다.
+ *
+ * 사용법:
+ *   <button class="btn btn-primary">확인</button>          기본(파선형) CTA
+ *   <button class="btn btn-outline-light btn-sm">취소</button>
+ *   <button class="btn btn-danger btn-icon"><i class="bi bi-trash"></i></button>
+ *
+ * 크기는 .btn-xs / .btn-sm / (기본) / .btn-lg 로만 조절합니다.
+ * px-*, py-*, rounded-pill, fw-bold, shadow 같은 유틸리티를 버튼에 덧붙이면
+ * 통일이 깨지므로 사용하지 않습니다.
+ */
+
+/*--------------------------------------------------------------
+# 토큰
+--------------------------------------------------------------*/
+:root {
+  --btn-radius: 50px;
+  --btn-font-weight: 600;
+  --btn-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --btn-lift: -2px;
+
+  /* 브랜드 색. 보통 main.css 의 --accent-color 를 따르지만, 레이아웃을 쓰지 않는
+     단독 페이지(예: 로그인)에서 main.css 없이 이 파일만 불러도 동작하도록
+     같은 값을 기본값으로 둔다. main.css 가 있으면 그쪽 값이 이긴다. */
+  --btn-accent: var(--accent-color, #865EF4);
+  --btn-on-accent: var(--contrast-color, #ffffff);
+
+  /* Primary — 브랜드 단색 */
+  --btn-primary-bg: var(--btn-accent);
+  --btn-primary-bg-hover: color-mix(in srgb, var(--btn-accent), black 12%);
+  --btn-primary-bg-active: color-mix(in srgb, var(--btn-accent), black 22%);
+  --btn-primary-shadow: 0 4px 15px color-mix(in srgb, var(--btn-accent), transparent 72%);
+  --btn-primary-shadow-hover: 0 8px 24px color-mix(in srgb, var(--btn-accent), transparent 60%);
+
+  /* 어두운 배경 위의 중립(ghost) 버튼 */
+  --btn-ghost-border: rgba(255, 255, 255, 0.2);
+  --btn-ghost-border-hover: rgba(255, 255, 255, 0.4);
+  --btn-ghost-color: rgba(255, 255, 255, 0.8);
+  --btn-ghost-bg-hover: rgba(255, 255, 255, 0.1);
+
+  --btn-focus-ring: 0 0 0 0.2rem color-mix(in srgb, var(--btn-accent), transparent 65%);
+}
+
+/*--------------------------------------------------------------
+# 기본형
+--------------------------------------------------------------*/
+.btn {
+  --bs-btn-padding-y: 0.625rem;
+  --bs-btn-padding-x: 1.5rem;
+  --bs-btn-font-size: 0.9375rem;
+  --bs-btn-font-weight: var(--btn-font-weight);
+  --bs-btn-border-radius: var(--btn-radius);
+  --bs-btn-border-width: 1px;
+  --bs-btn-box-shadow: none;
+  --bs-btn-active-shadow: none;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  transition: var(--btn-transition);
+}
+
+.btn:hover {
+  transform: translateY(var(--btn-lift));
+}
+
+.btn:active,
+.btn:focus-visible {
+  transform: none;
+}
+
+/* 부트스트랩 기본 포커스 링(파란색) 대신 브랜드 색을 씁니다. */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--btn-focus-ring);
+}
+
+.btn:disabled,
+.btn.disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 버튼 안의 아이콘은 글자 크기를 따라갑니다. */
+.btn > i {
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/*--------------------------------------------------------------
+# 크기
+--------------------------------------------------------------*/
+.btn-xs {
+  --bs-btn-padding-y: 0.25rem;
+  --bs-btn-padding-x: 0.75rem;
+  --bs-btn-font-size: 0.75rem;
+}
+
+.btn-sm {
+  --bs-btn-padding-y: 0.375rem;
+  --bs-btn-padding-x: 1rem;
+  --bs-btn-font-size: 0.8125rem;
+}
+
+.btn-lg {
+  --bs-btn-padding-y: 0.875rem;
+  --bs-btn-padding-x: 2rem;
+  --bs-btn-font-size: 1.0625rem;
+}
+
+/*--------------------------------------------------------------
+# 색상 변형
+--------------------------------------------------------------*/
+
+/* Primary — 브랜드 단색. 주요 행동 하나에만 씁니다. */
+.btn-primary {
+  --bs-btn-color: var(--btn-on-accent);
+  --bs-btn-bg: var(--btn-primary-bg);
+  --bs-btn-border-color: var(--btn-primary-bg);
+  --bs-btn-hover-color: var(--btn-on-accent);
+  --bs-btn-hover-bg: var(--btn-primary-bg-hover);
+  --bs-btn-hover-border-color: var(--btn-primary-bg-hover);
+  --bs-btn-active-color: var(--btn-on-accent);
+  --bs-btn-active-bg: var(--btn-primary-bg-active);
+  --bs-btn-active-border-color: var(--btn-primary-bg-active);
+  --bs-btn-disabled-color: var(--btn-on-accent);
+  --bs-btn-disabled-bg: var(--btn-primary-bg);
+  --bs-btn-disabled-border-color: var(--btn-primary-bg);
+  box-shadow: var(--btn-primary-shadow);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--btn-primary-shadow-hover);
+}
+
+/* Secondary / outline-light — 보조 행동. 어두운 배경 위의 중립 버튼입니다. */
+.btn-secondary,
+.btn-outline-light {
+  --bs-btn-color: var(--btn-ghost-color);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--btn-ghost-border);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--btn-ghost-bg-hover);
+  --bs-btn-hover-border-color: var(--btn-ghost-border-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--btn-ghost-bg-hover);
+  --bs-btn-active-border-color: var(--btn-ghost-border-hover);
+  --bs-btn-disabled-color: var(--btn-ghost-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--btn-ghost-border);
+}
+
+/* Outline primary — 브랜드 색 테두리. primary 와 나란히 둘 때 씁니다. */
+.btn-outline-primary {
+  --bs-btn-color: var(--btn-accent);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--btn-accent);
+  --bs-btn-hover-color: var(--btn-on-accent);
+  --bs-btn-hover-bg: var(--btn-accent);
+  --bs-btn-hover-border-color: var(--btn-accent);
+  --bs-btn-active-color: var(--btn-on-accent);
+  --bs-btn-active-bg: var(--btn-primary-bg-active);
+  --bs-btn-active-border-color: var(--btn-primary-bg-active);
+  --bs-btn-disabled-color: var(--btn-accent);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--btn-accent);
+}
+
+/* Info — 미리보기 등 정보성 행동 */
+.btn-outline-info {
+  --bs-btn-color: #4dabf7;
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: color-mix(in srgb, #4dabf7, transparent 50%);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #4dabf7;
+  --bs-btn-hover-border-color: #4dabf7;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: color-mix(in srgb, #4dabf7, black 15%);
+  --bs-btn-active-border-color: color-mix(in srgb, #4dabf7, black 15%);
+  --bs-btn-disabled-color: #4dabf7;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: color-mix(in srgb, #4dabf7, transparent 50%);
+}
+
+/* Danger — 삭제 등 되돌릴 수 없는 행동 */
+.btn-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #e5484d;
+  --bs-btn-border-color: #e5484d;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #cf3a3f;
+  --bs-btn-hover-border-color: #cf3a3f;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #b93035;
+  --bs-btn-active-border-color: #b93035;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #e5484d;
+  --bs-btn-disabled-border-color: #e5484d;
+}
+
+.btn-outline-danger {
+  --bs-btn-color: #ff6b6b;
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: color-mix(in srgb, #ff6b6b, transparent 50%);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #e5484d;
+  --bs-btn-hover-border-color: #e5484d;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #b93035;
+  --bs-btn-active-border-color: #b93035;
+  --bs-btn-disabled-color: #ff6b6b;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: color-mix(in srgb, #ff6b6b, transparent 50%);
+}
+
+/* Warning — 주의가 필요한 행동. 노란 배경이라 글자는 어둡게 둡니다. */
+.btn-warning {
+  --bs-btn-color: #1a1a1a;
+  --bs-btn-bg: #ffc93c;
+  --bs-btn-border-color: #ffc93c;
+  --bs-btn-hover-color: #1a1a1a;
+  --bs-btn-hover-bg: #ffd45f;
+  --bs-btn-hover-border-color: #ffd45f;
+  --bs-btn-active-color: #1a1a1a;
+  --bs-btn-active-bg: #e8b52f;
+  --bs-btn-active-border-color: #e8b52f;
+  --bs-btn-disabled-color: #1a1a1a;
+  --bs-btn-disabled-bg: #ffc93c;
+  --bs-btn-disabled-border-color: #ffc93c;
+}
+
+/* Kakao — 카카오톡 공유 전용. 카카오 브랜드 규정상 색을 바꾸지 않습니다. */
+.btn-kakao {
+  --bs-btn-color: #191600;
+  --bs-btn-bg: #fee500;
+  --bs-btn-border-color: #fee500;
+  --bs-btn-hover-color: #191600;
+  --bs-btn-hover-bg: #ffe94d;
+  --bs-btn-hover-border-color: #ffe94d;
+  --bs-btn-active-color: #191600;
+  --bs-btn-active-bg: #e6ce00;
+  --bs-btn-active-border-color: #e6ce00;
+  --bs-btn-disabled-color: #191600;
+  --bs-btn-disabled-bg: #fee500;
+  --bs-btn-disabled-border-color: #fee500;
+}
+
+/* Link — 버튼 자리에 놓이는 텍스트 행동 */
+.btn-link {
+  --bs-btn-color: var(--btn-accent);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: color-mix(in srgb, var(--btn-accent), white 20%);
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: color-mix(in srgb, var(--btn-accent), white 20%);
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  transform: none;
+  text-decoration: underline;
+}
+
+/* Muted — 테두리 없는 저강조 버튼. 댓글창 아이콘처럼 눈에 띌 필요가 없는 자리에 씁니다. */
+.btn-muted {
+  --bs-btn-color: #8b8aa8;
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.08);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: rgba(255, 255, 255, 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: #8b8aa8;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+/*--------------------------------------------------------------
+# 모양 변형
+--------------------------------------------------------------*/
+
+/* 아이콘 전용 정사각 버튼. 색은 위 변형을 그대로 조합해서 씁니다.
+   예) <button class="btn btn-danger btn-icon"><i class="bi bi-trash"></i></button> */
+.btn-icon {
+  --bs-btn-padding-y: 0;
+  --bs-btn-padding-x: 0;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.btn-icon.btn-sm {
+  width: 30px;
+  height: 30px;
+}
+
+.btn-icon.btn-xs {
+  width: 26px;
+  height: 26px;
+}
+
+.btn-icon.btn-lg {
+  width: 44px;
+  height: 44px;
+}
+
+/* 완전한 원형 아이콘 버튼 (댓글 전송 등) */
+.btn-icon.btn-circle {
+  border-radius: 50%;
+}
+
+/* 너비를 꽉 채우는 버튼 */
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+/*--------------------------------------------------------------
+# 버튼 묶음
+--------------------------------------------------------------*/
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-row.btn-row-center {
+  justify-content: center;
+}
+
+.btn-row.btn-row-end {
+  justify-content: flex-end;
+}
+
+/*--------------------------------------------------------------
+# 터치 기기
+# hover 가 없는 기기에서는 들어올림 효과가 탭 후 잔상으로 남으므로 끕니다.
+--------------------------------------------------------------*/
+@media (hover: none) {
+  .btn:hover {
+    transform: none;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--btn-primary-bg);
+    border-color: var(--btn-primary-bg);
+    box-shadow: var(--btn-primary-shadow);
+  }
+
+  .btn-secondary:hover,
+  .btn-outline-light:hover {
+    background-color: transparent;
+    border-color: var(--btn-ghost-border);
+    color: var(--btn-ghost-color);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn:hover {
+    transition: none;
+    transform: none;
+  }
+}

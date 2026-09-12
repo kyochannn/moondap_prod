@@ -101,6 +101,22 @@ h6 {
   font-family: var(--heading-font);
 }
 
+/* 폼 입력 포커스
+------------------------------
+   부트스트랩 기본값은 파란 테두리(#86b7fe)와 파란 링이라 브랜드 색 버튼과 어긋난다.
+   입력 종류에 상관없이 같은 포커스 표시를 쓰도록 여기서 한 번만 맞춘다. */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color), transparent 85%);
+}
+
+.form-check-input:checked {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
 /* PHP Email Form Messages
 ------------------------------*/
 .php-email-form .error-message {
@@ -189,26 +205,13 @@ h6 {
   color: var(--heading-color);
 }
 
-.header .btn-getstarted,
-.header .btn-getstarted:focus {
-  color: var(--contrast-color);
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  font-size: 14px;
-  padding: 8px 25px;
+/* 헤더 CTA. 색과 모양은 buttons.css 의 .btn.btn-primary 를 따르고,
+   여기서는 헤더 안에서의 자리(여백)와 크기만 잡습니다. */
+.header .btn-getstarted {
+  --bs-btn-padding-y: 8px;
+  --bs-btn-padding-x: 25px;
+  --bs-btn-font-size: 14px;
   margin: 0 0 0 30px;
-  border-radius: 50px;
-  transition: 0.3s;
-  border: none;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-  font-weight: 600;
-}
-
-.header .btn-getstarted:hover,
-.header .btn-getstarted:focus:hover {
-  color: var(--contrast-color);
-  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
-  transform: translateY(-2px);
 }
 
 @media (max-width: 1200px) {
@@ -846,46 +849,6 @@ section,
   line-height: 1.6;
 }
 
-.hero .hero-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
-}
-
-.hero .hero-buttons .btn {
-  padding: 15px 30px;
-  font-weight: 600;
-  border-radius: 50px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-}
-
-.hero .hero-buttons .btn.btn-primary {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  border: 2px solid var(--accent-color);
-}
-
-.hero .hero-buttons .btn.btn-primary:hover {
-  background: color-mix(in srgb, var(--accent-color), black 10%);
-  border-color: color-mix(in srgb, var(--accent-color), black 10%);
-  transform: translateY(-2px);
-}
-
-.hero .hero-buttons .btn.btn-outline {
-  background: transparent;
-  color: var(--accent-color);
-  border: 2px solid var(--accent-color);
-}
-
-.hero .hero-buttons .btn.btn-outline:hover {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  transform: translateY(-2px);
-}
-
 .hero .hero-stats {
   display: flex;
   gap: 2rem;
@@ -1014,9 +977,6 @@ section,
 }
 
 @media (max-width: 768px) {
-  .hero .hero-buttons {
-    justify-content: center;
-  }
 
   .hero .hero-stats .stat-item .stat-number {
     font-size: 1.5rem;
@@ -1062,22 +1022,6 @@ section,
   font-size: 1.25rem;
   color: var(--accent-color);
   margin-right: 0.75rem;
-}
-
-.about .content .btn-primary {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--contrast-color);
-  padding: 0.75rem 2.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.about .content .btn-primary:hover {
-  background-color: color-mix(in srgb, var(--accent-color), black 10%);
-  border-color: color-mix(in srgb, var(--accent-color), black 10%);
-  transform: translateY(-2px);
 }
 
 .about .image-composition {
@@ -1308,26 +1252,6 @@ section,
   max-width: 500px;
   margin-left: auto;
   margin-right: auto;
-}
-
-.services .services-cta .btn {
-  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #8b5cf6 30%));
-  border: none;
-  border-radius: 50px;
-  padding: 14px 32px;
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--contrast-color);
-  text-decoration: none;
-  display: inline-block;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(54, 144, 231, 0.3);
-}
-
-.services .services-cta .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(54, 144, 231, 0.4);
-  color: var(--contrast-color);
 }
 
 @media (max-width: 768px) {
@@ -1669,26 +1593,8 @@ section,
   margin-bottom: 20px;
 }
 
-.filter-toggle-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 10px 25px;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-}
-
-.filter-toggle-btn:hover {
-  background: color-mix(in srgb, var(--accent-color), transparent 80%);
-  border-color: var(--accent-color);
-}
-
+/* 필터 토글. 버튼 모양은 buttons.css 의 .btn.btn-outline-light 를 쓰고,
+   여기서는 열림/닫힘을 나타내는 화살표 회전만 담당합니다. */
 .filter-toggle-btn i {
   transition: transform 0.3s ease;
 }
@@ -1764,32 +1670,6 @@ section,
   visibility: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(2px);
-}
-
-.game-gallery .game-wrapper .game-image .game-hover .game-actions {
-  display: flex;
-  gap: 15px;
-}
-
-.game-gallery .game-wrapper .game-image .game-hover .game-actions .action-btn {
-  width: 50px;
-  height: 50px;
-  background-color: var(--surface-color);
-  color: var(--contrast-color);
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.game-gallery .game-wrapper .game-image .game-hover .game-actions .action-btn:hover {
-  background-color: var(--accent-color);
-  color: var(--contrast-color);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .game-gallery .game-wrapper .game-content {
@@ -1894,50 +1774,6 @@ section,
   font-size: 1rem;
   color: color-mix(in srgb, var(--default-color), transparent 30%);
   margin-bottom: 30px;
-}
-
-.game-gallery .game-cta .cta-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.game-gallery .game-cta .cta-buttons .btn {
-  padding: 14px 28px;
-  font-weight: 600;
-  border-radius: 12px;
-  font-size: 0.925rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-decoration: none;
-}
-
-.game-gallery .game-cta .cta-buttons .btn.btn-primary {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--contrast-color);
-  padding: 0.75rem 2rem;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.game-gallery .game-cta .cta-buttons .btn.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px color-mix(in srgb, var(--accent-color), transparent 60%);
-}
-
-.game-gallery .game-cta .cta-buttons .btn.btn-outline {
-  background-color: transparent;
-  color: var(--accent-color);
-  border: 2px solid var(--accent-color);
-}
-
-.game-gallery .game-cta .cta-buttons .btn.btn-outline:hover {
-  background-color: var(--accent-color);
-  color: var(--contrast-color);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 
 /*--------------------------------------------------------------
@@ -2095,48 +1931,6 @@ section,
   line-height: 1.5;
 }
 
-.why-us .feature-content .cta-wrapper {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.why-us .feature-content .cta-wrapper .btn {
-  padding: 15px 30px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.why-us .feature-content .cta-wrapper .btn.btn-primary {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--contrast-color);
-  padding: 0.75rem 2rem;
-  border-radius: 50px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.why-us .feature-content .cta-wrapper .btn.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent-color), transparent 60%);
-}
-
-.why-us .feature-content .cta-wrapper .btn.btn-outline {
-  background: transparent;
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-
-.why-us .feature-content .cta-wrapper .btn.btn-outline:hover {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  transform: translateY(-2px);
-}
-
 @media (max-width: 991px) {
   .why-us .feature-content {
     padding-left: 0;
@@ -2169,13 +1963,6 @@ section,
 
   .why-us .feature-content h3 {
     font-size: 28px;
-  }
-
-  .why-us .feature-content .cta-wrapper .btn {
-    padding: 12px 25px;
-    font-size: 14px;
-    width: 100%;
-    justify-content: center;
   }
 }
 
@@ -2656,29 +2443,6 @@ section,
   margin-bottom: 20px;
 }
 
-.team .team-carousel-wrapper .leadership-slider .leader-card .leader-info .leader-contact {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.team .team-carousel-wrapper .leadership-slider .leader-card .leader-info .leader-contact .contact-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--accent-color), transparent 90%);
-  color: var(--accent-color);
-  display: grid;
-  place-items: center;
-  transition: all 0.3s ease;
-}
-
-.team .team-carousel-wrapper .leadership-slider .leader-card .leader-info .leader-contact .contact-btn:hover {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  transform: translateY(-2px);
-}
-
 .team .team-carousel-wrapper .leadership-slider .swiper-pagination .swiper-pagination-bullet {
   background: color-mix(in srgb, var(--accent-color), transparent 70%);
   opacity: 1;
@@ -2839,59 +2603,6 @@ section,
   height: 100px;
   resize: vertical;
   font-family: inherit;
-}
-
-.contact .contact-form-card .php-email-form .submit-btn {
-  width: 100%;
-  background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color), #6366f1 30%));
-  color: var(--contrast-color);
-  border: none;
-  padding: 16px 30px;
-  border-radius: 16px;
-  font-weight: 600;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.contact .contact-form-card .php-email-form .submit-btn:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--contrast-color), transparent 85%), transparent);
-  transition: left 0.6s ease;
-}
-
-.contact .contact-form-card .php-email-form .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px color-mix(in srgb, var(--accent-color), transparent 75%);
-}
-
-.contact .contact-form-card .php-email-form .submit-btn:hover:before {
-  left: 100%;
-}
-
-.contact .contact-form-card .php-email-form .submit-btn:hover i {
-  transform: translateX(3px);
-}
-
-.contact .contact-form-card .php-email-form .submit-btn span,
-.contact .contact-form-card .php-email-form .submit-btn i {
-  position: relative;
-  z-index: 1;
-}
-
-.contact .contact-form-card .php-email-form .submit-btn i {
-  font-size: 16px;
-  transition: transform 0.3s ease;
 }
 
 .contact .contact-info-area {
@@ -3366,52 +3077,6 @@ section,
   font-size: 1.1em;
 }
 
-.game-gallery-details .game-gallery-details-content .cta-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: auto;
-}
-
-.game-gallery-details .game-gallery-details-content .cta-buttons .btn-view-project {
-  padding: 12px 28px;
-  background-color: var(--accent-color);
-  color: var(--contrast-color);
-  border-radius: 30px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.game-gallery-details .game-gallery-details-content .cta-buttons .btn-view-project:hover {
-  background-color: color-mix(in srgb, var(--accent-color), black 15%);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project {
-  padding: 12px 28px;
-  background-color: color-mix(in srgb, var(--heading-color), transparent 90%);
-  color: var(--heading-color);
-  border-radius: 30px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project i {
-  transition: transform 0.3s ease;
-}
-
-.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project:hover {
-  background-color: color-mix(in srgb, var(--heading-color), transparent 80%);
-}
-
-.game-gallery-details .game-gallery-details-content .cta-buttons .btn-next-project:hover i {
-  transform: translateX(3px);
-}
-
 @media (max-width: 1199.98px) {
   .game-gallery-details .game-gallery-details-content {
     padding-left: 1rem;
@@ -3421,10 +3086,6 @@ section,
 @media (max-width: 991.98px) {
   .game-gallery-details .game-gallery-details-content {
     padding: 2rem 0 0 0;
-  }
-
-  .game-gallery-details .game-gallery-details-content .cta-buttons {
-    margin-top: 2rem;
   }
 }
 
@@ -3439,16 +3100,6 @@ section,
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.8rem;
-  }
-
-  .game-gallery-details .cta-buttons {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .game-gallery-details .cta-buttons a {
-    width: 100%;
-    text-align: center;
   }
 }
 
@@ -3694,22 +3345,6 @@ section,
 .service-details .inquiry-form input[type=tel]::placeholder,
 .service-details .inquiry-form textarea::placeholder {
   color: color-mix(in srgb, var(--default-color), transparent 70%);
-}
-
-.service-details .inquiry-form .btn-submit {
-  background: var(--accent-color);
-  color: var(--contrast-color);
-  border: none;
-  padding: 0.875rem 2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-}
-
-.service-details .inquiry-form .btn-submit:hover {
-  background: color-mix(in srgb, var(--accent-color), transparent 15%);
-  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
@@ -4300,56 +3935,7 @@ section,
   }
 }
 
-.error-404 .error-actions .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 32px;
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--contrast-color);
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  border: 1px solid var(--accent-color);
-}
-
-.error-404 .error-actions .btn-primary:hover {
-  background-color: transparent;
-  color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
-.error-404 .error-actions .btn-primary i {
-  font-size: 18px;
-}
-
-.error-404 .error-actions .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 32px;
-  background-color: transparent;
-  color: var(--heading-color);
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 400;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  border: 2px solid color-mix(in srgb, var(--default-color), transparent 80%);
-}
-
-.error-404 .error-actions .btn-secondary:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
-.error-404 .error-actions .btn-secondary i {
-  font-size: 18px;
-}
+/* 에러 페이지 버튼도 buttons.css 의 .btn 변형을 그대로 씁니다. */
 
 .error-404 .helpful-links {
   text-align: center;
@@ -4543,21 +4129,7 @@ section,
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
-.btn-cta-primary {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--contrast-color);
-  box-shadow: 0 10px 20px color-mix(in srgb, var(--accent-color), transparent 70%);
-  transition: all 0.3s ease;
-}
-
-.btn-cta-primary:hover {
-  background-color: color-mix(in srgb, var(--accent-color), black 15%);
-  border-color: color-mix(in srgb, var(--accent-color), black 15%);
-  transform: translateY(-2px);
-  box-shadow: 0 15px 25px color-mix(in srgb, var(--accent-color), transparent 60%);
-  color: var(--contrast-color);
-}
+/* .btn-cta-primary 는 buttons.css 의 .btn.btn-primary 로 대체되었습니다. */
 
 /* 컨텐츠 썸네일 공통 스타일 */
 .content-thumbnail-container {
@@ -4584,25 +4156,7 @@ section,
   border-radius: 30px;
 }
 
-.comment-send-btn {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--contrast-color);
-  border-radius: 50% !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.comment-send-btn:hover {
-  background-color: color-mix(in srgb, var(--accent-color), black 15%);
-  border-color: color-mix(in srgb, var(--accent-color), black 15%);
-  color: var(--contrast-color);
-}
+/* 댓글 전송 버튼은 buttons.css 의 .btn.btn-primary.btn-icon.btn-circle 을 씁니다. */
 
 .comment-bubble-left {
   background: #1e213a;
@@ -4630,20 +4184,6 @@ section,
   color: white;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.comment-view-hide-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a1a1a1;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-}
-
-.comment-view-hide-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
 }
 
 .user-verified-check {

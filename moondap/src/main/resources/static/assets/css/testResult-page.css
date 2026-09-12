@@ -72,18 +72,7 @@
     border-radius: 1rem;
 }
 
-/* 액션 버튼 커스텀 */
-.btn-result-action {
-    background: #865EF4 !important;
-    border: none !important;
-    transition: all 0.3s ease;
-}
-
-.btn-result-action:hover {
-    background: #413bbd !important;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(134, 94, 244, 0.4);
-}
+/* 액션 버튼은 buttons.css 의 .btn.btn-primary 를 씁니다. */
 
 /* 유틸리티 및 기존 스타일 유지/보완 */
 .tracking-widest { letter-spacing: 0.1em; }
@@ -233,13 +222,4 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
-.modal-close-btn {
-    margin-top: 0;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-}
-
-.modal-close-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-}
+/* 모달 닫기 버튼은 buttons.css 의 .btn.btn-outline-light 를 씁니다. */

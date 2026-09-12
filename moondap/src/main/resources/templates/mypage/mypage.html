@@ -195,7 +195,7 @@
                             <span th:text="${user.email}">user@example.com</span>
                         </p>
                     </div>
-                    <a th:href="@{/mypage/verify}" class="btn btn-outline-light rounded-pill px-4">
+                    <a th:href="@{/mypage/verify}" class="btn btn-outline-light">
                         <i class="bi bi-gear-fill me-1"></i> 정보 수정
                     </a>
                 </div>
@@ -355,7 +355,7 @@
                                     </div>
                                     <div class="ms-3">
                                          <a href="javascript:void(0);" th:if="${not #lists.isEmpty(myTests)}" 
-                                            class="btn btn-sm btn-outline-light rounded-pill px-3 py-1" 
+                                            class="btn btn-outline-light btn-sm" 
                                             style="font-size: 0.75rem;"
                                             th:onclick="|location.href='@{/test/manage/list}'; event.stopPropagation();|">전체 보기</a>
                                     </div>
@@ -371,15 +371,14 @@
                                                     <small class="text-white-50" style="font-size: 0.75rem;" th:text="${#temporals.format(test.createdAt, 'yyyy-MM-dd')}">2024-01-01</small>
                                                 </div>
                                                 <div class="d-flex gap-1 flex-shrink-0 content-item-actions">
-                                                    <a th:href="@{'/test/' + ${test.testKey} + '?preview=true'}" target="_blank" class="btn btn-xs btn-outline-info rounded-pill px-2 py-1" style="font-size: 0.7rem;" title="미리보기">
+                                                    <a th:href="@{'/test/' + ${test.testKey} + '?preview=true'}" target="_blank" class="btn btn-outline-info btn-xs" title="미리보기">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
-                                                    <a th:href="@{'/test/manage/' + ${test.id} + '/edit'}" class="btn btn-xs btn-primary rounded-pill px-2 py-1" style="font-size: 0.7rem;" title="수정">
+                                                    <a th:href="@{'/test/manage/' + ${test.id} + '/edit'}" class="btn btn-primary btn-xs" title="수정">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </a>
                                                     <form th:id="'deleteFormTest' + ${test.id}" th:action="@{'/test/manage/' + ${test.id} + '/delete'}" method="post" style="display:inline;">
-                                                        <button type="button" class="btn btn-xs btn-danger rounded-pill px-2 py-1" 
-                                                                style="font-size: 0.7rem;"
+                                                        <button type="button" class="btn btn-danger btn-xs"
                                                                 th:data-form-id="'deleteFormTest' + ${test.id}"
                                                                 onclick="if(confirm('정말 삭제하시겠습니까?')) document.getElementById(this.getAttribute('data-form-id')).submit(); event.stopPropagation();"
                                                                 title="삭제">
@@ -416,7 +415,7 @@
                                     </div>
                                     <div class="ms-3">
                                          <a href="javascript:void(0);" th:if="${not #lists.isEmpty(myBalanceGames)}" 
-                                            class="btn btn-sm btn-outline-light rounded-pill px-3 py-1" 
+                                            class="btn btn-outline-light btn-sm" 
                                             style="font-size: 0.75rem;"
                                             th:onclick="|location.href='@{/balanceGame/manage/list}'; event.stopPropagation();|">전체 보기</a>
                                     </div>
@@ -432,17 +431,16 @@
                                                     <small class="text-white-50" style="font-size: 0.75rem;" th:text="${#strings.length(bg.createdAt) >= 10 ? #strings.substring(bg.createdAt, 0, 10) : bg.createdAt}">2024-01-01</small>
                                                 </div>
                                                 <div class="d-flex gap-1 flex-shrink-0 content-item-actions">
-                                                    <a th:href="@{/balanceGame/selectBalanceGameView(id=${bg.id})}" target="_blank" class="btn btn-xs btn-outline-info rounded-pill px-2 py-1" style="font-size: 0.7rem;" title="미리보기">
+                                                    <a th:href="@{/balanceGame/selectBalanceGameView(id=${bg.id})}" target="_blank" class="btn btn-outline-info btn-xs" title="미리보기">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
-                                                    <a th:href="@{'/balanceGame/updateBalanceGameView?id=' + ${bg.id}}" class="btn btn-xs btn-primary rounded-pill px-2 py-1" style="font-size: 0.7rem;" title="수정">
+                                                    <a th:href="@{'/balanceGame/updateBalanceGameView?id=' + ${bg.id}}" class="btn btn-primary btn-xs" title="수정">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </a>
                                                     <form th:id="'deleteFormBg' + ${bg.id}" th:action="@{/balanceGame/manage/{id}/delete(id=${bg.id})}" method="post" style="display:inline;">
                                                         <input type="hidden" name="oldOption1ImagePath" th:value="${bg.option1ImagePath}">
                                                         <input type="hidden" name="oldOption2ImagePath" th:value="${bg.option2ImagePath}">
-                                                        <button type="button" class="btn btn-xs btn-danger rounded-pill px-2 py-1" 
-                                                                style="font-size: 0.7rem;"
+                                                        <button type="button" class="btn btn-danger btn-xs"
                                                                 th:data-form-id="'deleteFormBg' + ${bg.id}"
                                                                 onclick="if(confirm('정말 삭제하시겠습니까?')) document.getElementById(this.getAttribute('data-form-id')).submit(); event.stopPropagation();"
                                                                 title="삭제">

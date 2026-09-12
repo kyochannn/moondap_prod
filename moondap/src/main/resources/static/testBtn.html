@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>문답 버튼 가이드</title>
+
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- 실제 서비스와 똑같은 CSS 를 그대로 불러온다. 상대 경로라 파일을 직접 열어도 동작한다. -->
+<link href="assets/vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
+<link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+<link href="assets/css/main.css" rel="stylesheet">
+<link href="assets/css/buttons.css" rel="stylesheet">
+
+<style>
+  body { padding: 0 0 80px; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  .page-head { padding: 48px 0 28px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 8px; }
+  .page-head h1 { font-size: 28px; margin: 0 0 8px; }
+  .page-head p { color: #8b8aa8; margin: 0; font-size: 14px; line-height: 1.7; }
+
+  h2 { font-size: 19px; margin: 46px 0 6px; }
+  h2 + .hint { color: #8b8aa8; font-size: 13px; margin: 0 0 18px; line-height: 1.7; }
+
+  /* 버튼 + 클래스명 + 설명을 한 줄로 보여주는 표 */
+  .spec { width: 100%; border-collapse: collapse; }
+  .spec td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: middle; }
+  .spec tr:last-child td { border-bottom: none; }
+  .spec td:first-child { width: 210px; }
+  .spec td:nth-child(2) { width: 300px; }
+  .spec .desc { color: #a9a8c0; font-size: 13px; line-height: 1.6; }
+
+  code.cls {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; color: #c7b6ff; background: rgba(134,94,244,.12);
+    border: 1px solid rgba(134,94,244,.22); border-radius: 6px;
+    padding: 4px 8px; cursor: pointer; display: inline-block; transition: .15s;
+  }
+  code.cls:hover { background: rgba(134,94,244,.24); color: #fff; }
+  code.cls.copied { background: #2b8a5a; border-color: #2b8a5a; color: #fff; }
+
+  .demo { background: var(--surface-color); border: 1px solid rgba(255,255,255,.08);
+          border-radius: 14px; padding: 22px; }
+  .swatch { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+  .rule { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px;
+          line-height: 1.65; padding: 9px 0; }
+  .rule i { font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+  .ok i { color: #4ade80; } .no i { color: #f87171; }
+  .rule code { font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+               background: rgba(255,255,255,.07); padding: 2px 6px; border-radius: 4px; color: #ddd; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } .spec td:first-child { width: auto; } }
+
+  .note { background: rgba(134,94,244,.08); border-left: 3px solid var(--accent-color);
+          border-radius: 0 10px 10px 0; padding: 14px 18px; font-size: 13.5px;
+          color: #c8c6e3; line-height: 1.75; }
+  .fake-header { display:flex; align-items:center; justify-content:space-between;
+                 background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
+                 border-radius: 50px; padding: 10px 12px 10px 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-head">
+    <h1>문답 버튼 가이드</h1>
+    <p>
+      사이트의 모든 버튼은 <code style="color:#c7b6ff">assets/css/buttons.css</code> 하나로 정의됩니다.
+      아래 클래스를 조합해서 쓰고, 여기에 없는 모양이 필요하면 개별 페이지에서 만들지 말고 buttons.css 에 변형을 추가하세요.<br>
+      <strong style="color:#e8e7f7">클래스명을 클릭하면 복사됩니다.</strong>
+    </p>
+  </div>
+
+  <!-- ─────────────────────────────── 고르는 법 -->
+  <h2>어떤 버튼을 쓸지 고르는 법</h2>
+  <p class="hint">대부분의 화면은 이 세 가지로 끝납니다.</p>
+  <div class="demo">
+    <table class="spec">
+      <tr>
+        <td><button class="btn btn-primary">저장</button></td>
+        <td><code class="cls">btn btn-primary</code></td>
+        <td class="desc">그 화면에서 <strong>사용자가 하길 바라는 행동 하나</strong>. 저장, 등록, 다음 단계, 시작하기.
+            한 화면에 두 개 이상 두지 않습니다.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-outline-light">취소</button></td>
+        <td><code class="cls">btn btn-outline-light</code></td>
+        <td class="desc">그 옆에 놓이는 <strong>빠져나가는 행동</strong>. 취소, 이전으로, 닫기, 목록으로.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-danger">삭제</button></td>
+        <td><code class="cls">btn btn-danger</code></td>
+        <td class="desc"><strong>되돌릴 수 없는 행동</strong>. 삭제, 탈퇴. 확인 절차와 함께 씁니다.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ─────────────────────────────── 색 변형 전체 -->
+  <h2>색 변형 전체</h2>
+  <p class="hint">위 세 가지로 부족할 때만 아래에서 고릅니다.</p>
+  <div class="demo">
+    <table class="spec">
+      <tr>
+        <td><button class="btn btn-outline-primary">더 알아보기</button></td>
+        <td><code class="cls">btn btn-outline-primary</code></td>
+        <td class="desc">브랜드색 테두리. primary 와 나란히 둬서 둘 다 강조하고 싶을 때.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-outline-info"><i class="bi bi-eye"></i> 미리보기</button></td>
+        <td><code class="cls">btn btn-outline-info</code></td>
+        <td class="desc">화면을 바꾸지 않는 정보성 행동. 미리보기, 상세보기.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-outline-danger">삭제</button></td>
+        <td><code class="cls">btn btn-outline-danger</code></td>
+        <td class="desc">위험하지만 주된 행동은 아닐 때. 폼 구석의 삭제 링크 같은 자리.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-warning">사용 정지</button></td>
+        <td><code class="cls">btn btn-warning</code></td>
+        <td class="desc">주의가 필요하지만 되돌릴 수 있는 행동. 정지, 보류.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-kakao"><i class="bi bi-chat-fill"></i> 카카오톡 공유</button></td>
+        <td><code class="cls">btn btn-kakao</code></td>
+        <td class="desc"><strong>카카오톡 공유 전용.</strong> 카카오 브랜드 규정상 노란색을 유지합니다. 다른 용도로 쓰지 마세요.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-muted">저강조</button></td>
+        <td><code class="cls">btn btn-muted</code></td>
+        <td class="desc">테두리 없는 회색. 눈에 띌 필요가 없는 보조 아이콘·토글.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-link">비밀번호 찾기</button></td>
+        <td><code class="cls">btn btn-link</code></td>
+        <td class="desc">버튼 자리에 놓이는 텍스트 행동. 링크처럼 보이되 버튼으로 동작할 때.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-secondary">Secondary</button></td>
+        <td><code class="cls">btn btn-secondary</code></td>
+        <td class="desc"><span style="color:#f0b45a">호환용.</span> <code style="font-size:11px">btn-outline-light</code> 와 똑같이 보입니다.
+            새로 쓸 때는 <code style="font-size:11px">btn-outline-light</code> 를 쓰세요.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ─────────────────────────────── 크기 -->
+  <h2>크기</h2>
+  <p class="hint">
+    크기는 <strong>반드시 이 네 가지로만</strong> 조절합니다.
+    <code style="font-size:12px">px-4</code>, <code style="font-size:12px">py-2</code> 같은 유틸리티를 덧붙이면 통일이 깨집니다.
+  </p>
+  <div class="demo">
+    <table class="spec">
+      <tr>
+        <td><button class="btn btn-primary btn-xs">확인</button></td>
+        <td><code class="cls">btn btn-primary btn-xs</code></td>
+        <td class="desc">촘촘한 목록 행 안. 12px</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-primary btn-sm">확인</button></td>
+        <td><code class="cls">btn btn-primary btn-sm</code></td>
+        <td class="desc">표·카드 안의 보조 행동. 13px</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-primary">확인</button></td>
+        <td><code class="cls">btn btn-primary</code></td>
+        <td class="desc"><strong>기본값.</strong> 특별한 이유가 없으면 이걸 씁니다. 15px</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-primary btn-lg">확인</button></td>
+        <td><code class="cls">btn btn-primary btn-lg</code></td>
+        <td class="desc">랜딩 페이지의 주요 전환 버튼. 17px</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ─────────────────────────────── 아이콘 버튼 -->
+  <h2>아이콘 버튼</h2>
+  <p class="hint">글자 없이 아이콘만 넣을 때. 색 변형은 위 표에서 그대로 가져다 조합합니다.</p>
+  <div class="demo">
+    <table class="spec">
+      <tr>
+        <td>
+          <button class="btn btn-outline-info btn-icon"><i class="bi bi-eye"></i></button>
+          <button class="btn btn-primary btn-icon"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-danger btn-icon"><i class="bi bi-trash"></i></button>
+        </td>
+        <td><code class="cls">btn btn-danger btn-icon</code></td>
+        <td class="desc">정사각 36px. 관리자 목록의 보기·수정·삭제가 이 조합입니다.
+            글자가 없으니 <code style="font-size:11px">title</code> 속성을 꼭 넣으세요.</td>
+      </tr>
+      <tr>
+        <td>
+          <button class="btn btn-danger btn-icon btn-sm"><i class="bi bi-trash"></i></button>
+          <button class="btn btn-danger btn-icon btn-xs"><i class="bi bi-trash"></i></button>
+        </td>
+        <td><code class="cls">btn btn-danger btn-icon btn-sm</code></td>
+        <td class="desc">30px / 26px. 크기 클래스를 같이 붙이면 됩니다.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-primary btn-icon btn-circle"><i class="bi bi-send-fill"></i></button></td>
+        <td><code class="cls">btn btn-primary btn-icon btn-circle</code></td>
+        <td class="desc">완전한 원형. 댓글 전송처럼 입력창에 붙는 버튼.</td>
+      </tr>
+      <tr>
+        <td><button class="btn btn-muted btn-icon btn-sm"><i class="bi bi-emoji-smile"></i></button></td>
+        <td><code class="cls">btn btn-muted btn-icon btn-sm</code></td>
+        <td class="desc">장식성 토글. 주목도를 낮춰야 하는 자리.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ─────────────────────────────── 배치 -->
+  <h2>배치와 너비</h2>
+  <div class="cols">
+    <div>
+      <div class="demo" style="margin-bottom:10px">
+        <div class="btn-row btn-row-end">
+          <button class="btn btn-outline-light">취소</button>
+          <button class="btn btn-primary">저장</button>
+        </div>
+      </div>
+      <code class="cls">btn-row btn-row-end</code>
+      <p class="desc" style="margin:8px 0 0;font-size:13px;color:#a9a8c0">
+        버튼을 나란히 둘 때 쓰는 감싸는 div. 간격이 자동으로 맞습니다.<br>
+        <code style="font-size:11px">btn-row-center</code> / <code style="font-size:11px">btn-row-end</code> 로 정렬을 바꿉니다.<br>
+        <strong>취소를 왼쪽, 주요 행동을 오른쪽</strong>에 둡니다.
+      </p>
+    </div>
+    <div>
+      <div class="demo" style="margin-bottom:10px">
+        <button class="btn btn-primary w-100" style="margin-bottom:10px">로그인</button>
+        <button class="btn btn-outline-light w-100">회원가입</button>
+      </div>
+      <code class="cls">btn btn-primary w-100</code>
+      <p class="desc" style="margin:8px 0 0;font-size:13px;color:#a9a8c0">
+        모바일 폼처럼 전체 너비가 필요할 때. 부트스트랩 <code style="font-size:11px">w-100</code> 을 그대로 씁니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────── 상태 -->
+  <h2>상태</h2>
+  <div class="demo">
+    <div class="swatch">
+      <button class="btn btn-primary">기본</button>
+      <button class="btn btn-primary" disabled>비활성</button>
+      <button class="btn btn-outline-light" disabled>비활성</button>
+      <button class="btn btn-danger" disabled>비활성</button>
+      <span class="desc" style="margin-left:10px">
+        <code style="font-size:11px">disabled</code> 속성만 넣으면 됩니다. 마우스를 올려보면 hover·focus 도 전 변형이 동일하게 동작합니다.
+      </span>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────── 실제 화면 -->
+  <h2>실제 화면에서의 조합</h2>
+  <div class="cols">
+    <div class="demo">
+      <div style="font-weight:700;margin-bottom:2px">헤더</div>
+      <div class="desc" style="margin-bottom:14px">
+        <code class="cls">btn btn-primary btn-getstarted</code>
+      </div>
+      <div class="fake-header">
+        <span style="font-family:var(--heading-font);font-weight:700">문답</span>
+        <a href="#" class="btn btn-primary btn-getstarted">시작하기</a>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div style="font-weight:700;margin-bottom:2px">관리자 목록 행</div>
+      <div class="desc" style="margin-bottom:14px">아이콘 버튼 3종</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  background:rgba(255,255,255,.03);border-radius:10px;padding:12px 16px">
+        <span style="font-size:14px">연애 성향 테스트</span>
+        <div class="btn-row">
+          <button class="btn btn-outline-info btn-icon" title="미리보기"><i class="bi bi-eye"></i></button>
+          <button class="btn btn-primary btn-icon" title="수정"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-danger btn-icon" title="삭제"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div style="font-weight:700;margin-bottom:2px">결과 페이지 공유</div>
+      <div class="desc" style="margin-bottom:14px">primary + kakao + outline</div>
+      <div class="btn-row">
+        <button class="btn btn-primary"><i class="bi bi-link-45deg"></i> 링크 복사</button>
+        <button class="btn btn-kakao"><i class="bi bi-chat-fill"></i> 카카오톡</button>
+        <button class="btn btn-outline-light">다시 하기</button>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div style="font-weight:700;margin-bottom:2px">단계형 폼</div>
+      <div class="desc" style="margin-bottom:14px">이전은 보조, 다음은 주요</div>
+      <div class="btn-row" style="justify-content:space-between">
+        <button class="btn btn-outline-light"><i class="bi bi-arrow-left"></i> 이전으로</button>
+        <button class="btn btn-primary">다음 단계 <i class="bi bi-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────── 규칙 -->
+  <h2>지켜야 할 것</h2>
+  <div class="cols">
+    <div class="demo">
+      <div class="rule ok"><i class="bi bi-check-circle-fill"></i>
+        <span>크기는 <code>btn-xs</code> <code>btn-sm</code> <code>btn-lg</code> 로만 조절합니다.</span></div>
+      <div class="rule ok"><i class="bi bi-check-circle-fill"></i>
+        <span>한 화면에 <code>btn-primary</code> 는 하나만 둡니다.</span></div>
+      <div class="rule ok"><i class="bi bi-check-circle-fill"></i>
+        <span>새 모양이 필요하면 <code>buttons.css</code> 에 변형을 추가합니다.</span></div>
+      <div class="rule ok"><i class="bi bi-check-circle-fill"></i>
+        <span>아이콘만 있는 버튼에는 <code>title</code> 을 넣습니다.</span></div>
+    </div>
+    <div class="demo">
+      <div class="rule no"><i class="bi bi-x-circle-fill"></i>
+        <span><code>px-4</code> <code>py-2</code> <code>fw-bold</code> <code>shadow</code> <code>rounded-pill</code> 을 버튼에 덧붙이지 않습니다.
+              모양이 제각각이 되는 가장 흔한 원인입니다.</span></div>
+      <div class="rule no"><i class="bi bi-x-circle-fill"></i>
+        <span><code>style="background: #865EF4"</code> 처럼 색을 직접 박지 않습니다.</span></div>
+      <div class="rule no"><i class="bi bi-x-circle-fill"></i>
+        <span>페이지별 CSS 에 <code>.btn</code> 스타일을 다시 정의하지 않습니다.</span></div>
+    </div>
+  </div>
+
+  <h2>색을 통째로 바꾸려면</h2>
+  <div class="note">
+    모든 버튼 색은 <code style="color:#c7b6ff">main.css</code> 의 <code style="color:#c7b6ff">--accent-color</code>
+    (현재 <span style="color:#865EF4;font-weight:700">#865EF4</span>) 에서 파생됩니다.
+    그 변수 <strong>한 줄만</strong> 바꾸면 primary·outline·포커스 링·그림자가 전부 따라옵니다.
+    개별 버튼을 찾아다니며 고칠 필요가 없습니다.
+  </div>
+
+</div>
+
+<script>
+  // 클래스명을 클릭하면 복사된다.
+  document.querySelectorAll('code.cls').forEach(function (el) {
+    el.addEventListener('click', function () {
+      navigator.clipboard.writeText(el.textContent.trim()).then(function () {
+        var prev = el.textContent;
+        el.classList.add('copied');
+        el.textContent = '복사됨';
+        setTimeout(function () {
+          el.classList.remove('copied');
+          el.textContent = prev;
+        }, 900);
+      });
+    });
+  });
+</script>
+</body>
+</html>

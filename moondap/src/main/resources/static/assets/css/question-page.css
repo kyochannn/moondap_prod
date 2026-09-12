@@ -118,7 +118,7 @@
 
 .option-btn i {
     font-size: 1.4rem;
-    color: #3876f2;
+    color: var(--accent-color);
 }
 
 /* 미응답 하이라이트 */

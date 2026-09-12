@@ -211,10 +211,10 @@
 							
 							        <div class="header-action-group d-flex gap-2">
 							            <a th:href="@{/balanceGame/selectBalanceGameView(id=${balanceGame.id})}" target="_blank" 
-							               class="btn btn-outline-info rounded-pill px-3 py-1" style="font-size: 0.85rem;">
+							               class="btn btn-outline-info btn-sm">
 							                <i class="bi bi-eye me-1"></i> 미리보기
 							            </a>
-							            <button onclick="submitDeleteForm()" type="button" class="btn btn-danger rounded-pill px-3 py-1" style="font-size: 0.85rem;">
+							            <button onclick="submitDeleteForm()" type="button" class="btn btn-danger btn-sm">
 							                <i class="bi bi-trash3-fill me-1"></i> 삭제
 							            </button>
 							        </div>
@@ -374,13 +374,13 @@
 							    <p>테스트로 만나는 또 다른 나, 문답!</p>
 							
 							    <div class="cta-actions">
-							        <a class="btn btn-outline-light rounded-pill px-4" onclick="history.back()">취소</a>
+							        <a class="btn btn-outline-light" onclick="history.back()">취소</a>
 							        <a th:href="@{/balanceGame/selectBalanceGameView(id=${balanceGame.id})}" target="_blank" 
-							           class="btn btn-outline-info rounded-pill px-4">
+							           class="btn btn-outline-info">
 							            <i class="bi bi-eye me-1"></i> 미리보기
 							        </a>
-							        <a class="btn btn-danger rounded-pill px-4" onclick="submitDeleteForm()">삭제</a>
-							        <a class="btn btn-primary rounded-pill px-4" onclick="submitUpdateForm()">수정</a>
+							        <a class="btn btn-danger" onclick="submitDeleteForm()">삭제</a>
+							        <a class="btn btn-primary" onclick="submitUpdateForm()">수정</a>
 							    </div>
 							</div>
 			            </div>
