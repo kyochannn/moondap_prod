@@ -112,6 +112,17 @@ class TestHistoryServiceTest {
     }
 
     @Test
+    @DisplayName("[회귀] 조회가 실패해도 오류 페이지 대신 빈 보관함을 보여준다")
+    void listSurvivesDatabaseFailure() {
+        bindRequest("anon-123");
+        when(testHistoryMapper.selectHistory(anyString(), anyString(), anyInt(), anyInt()))
+                .thenThrow(new RuntimeException("Table 'md_test_history' doesn't exist"));
+
+        // 마이그레이션을 아직 적용하지 않은 서버에서 이 페이지가 통째로 500 이 났다.
+        assertThat(service.list(0)).isEmpty();
+    }
+
+    @Test
     @DisplayName("음수 offset 은 0 으로 본다")
     void clampsNegativeOffset() {
         bindRequest("anon-123");

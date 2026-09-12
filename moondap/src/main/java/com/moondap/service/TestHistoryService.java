@@ -88,7 +88,17 @@ public class TestHistoryService {
         if (username == null && anonId == null) {
             return Collections.emptyList();
         }
-        return testHistoryMapper.selectHistory(username, anonId, Math.max(0, offset), PAGE_SIZE + 1);
+
+        try {
+            return testHistoryMapper.selectHistory(username, anonId, Math.max(0, offset), PAGE_SIZE + 1);
+        } catch (Exception e) {
+            // 조회가 실패해도 오류 페이지를 띄우지 않는다. 보관함은 부가 기능인데
+            // 테이블이 아직 없거나(마이그레이션 누락) DB 가 흔들릴 때 방문자에게
+            // 500 을 보여주는 쪽이 더 나쁘다.
+            // 원인은 로그에 남긴다 — 화면이 조용히 비어 있으면 알아챌 방법이 없다.
+            log.error("보관함 조회 실패. 빈 목록으로 대체한다.", e);
+            return Collections.emptyList();
+        }
     }
 
     /**
