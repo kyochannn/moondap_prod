@@ -1,5 +1,6 @@
 package com.moondap.config;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -11,10 +12,13 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.multipart.support.MultipartFilter;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.moondap.config.auth.CustomAuthFailureHandler;
+import com.moondap.config.auth.NotFoundAwareAuthenticationEntryPoint;
 
 import lombok.RequiredArgsConstructor;
 
@@ -71,7 +75,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http,
+                                    ObjectProvider<RequestMappingHandlerMapping> handlerMappingProvider)
+            throws Exception {
 
         http.authorizeHttpRequests(auth -> auth
 
@@ -118,6 +124,15 @@ public class SecurityConfig {
             // 명시적으로 막지 않으면 전부 공개로 열렸다. 기본값을 뒤집는다.
             .anyRequest().authenticated()
         );
+
+        // 기본 거부 정책의 부작용 보정.
+        // 규칙에 걸리지 않는 주소(오타·죽은 링크)까지 "인증 필요"로 취급돼 로그인 화면으로
+        // 넘어갔다. 매핑된 컨트롤러가 없을 때만 404 로 답한다.
+        http.exceptionHandling(ex -> ex.authenticationEntryPoint(
+                new NotFoundAwareAuthenticationEntryPoint(
+                        new LoginUrlAuthenticationEntryPoint("/loginView"),
+                        handlerMappingProvider)
+        ));
 
         http.formLogin(form -> form
             .loginPage("/loginView")
