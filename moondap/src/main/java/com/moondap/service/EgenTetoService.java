@@ -1,6 +1,11 @@
 package com.moondap.service;
 
+import com.moondap.common.exception.UserMessageException;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import com.moondap.config.CacheConfig;
 import com.moondap.dto.EgenTetoDTO;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,11 +50,6 @@ public class EgenTetoService {
 
     private final EgenTetoMapper egenTetoMapper;
 
-    // 통계 캐싱을 위한 필드
-    private Map<String, Object> cachedStats = null;
-    private long lastCacheTime = 0;
-    private static final long CACHE_DURATION = 30 * 60 * 1000; // 30분 (밀리초)
-
     public EgenTetoService(EgenTetoMapper egenTetoMapper) {
         this.egenTetoMapper = egenTetoMapper;
     }
@@ -68,7 +68,7 @@ public class EgenTetoService {
         
         // 데이터 정합성 체크: 질문이 24개인지 확인
         if (answers.size() != 24) {
-            throw new IllegalArgumentException("비정상적인 응답 데이터입니다. (답변 개수 부족)");
+            throw new UserMessageException("비정상적인 응답 데이터입니다. (답변 개수 부족)");
         }
 
         EgenTetoDTO result = new EgenTetoDTO();
@@ -206,22 +206,19 @@ public class EgenTetoService {
     }
 
     /**
-     * 전체 사용자 점수 통계 조회 (캐싱 적용)
+     * 전체 사용자 점수 통계 조회.
+     *
+     * <p>이전에는 인스턴스 필드에 직접 캐싱했는데, 싱글톤 빈을 여러 요청 스레드가
+     * 동시에 읽고 쓰는데도 동기화나 volatile 이 없었다. 표준 캐시로 옮겨 그 문제를
+     * 없앴다. 만료 시간은 CacheConfig 에서 관리한다(30분).
      */
+    @Cacheable(cacheNames = CacheConfig.EGEN_STATS, key = "'scoreStatistics'")
     public Map<String, Object> getScoreStatistics() {
-        long now = System.currentTimeMillis();
-        
-        // 캐시 확인 (30분 이내)
-        if (cachedStats != null && (now - lastCacheTime) < CACHE_DURATION) {
-            return cachedStats;
-        }
-
-        // DB에서 최신 통계 조회
         Map<String, Object> stats = egenTetoMapper.selectScoreStatistics();
         if (stats == null) stats = new HashMap<>();
 
         long totalCount = ((Number) stats.getOrDefault("totalCount", 0)).longValue();
-        
+
         // 데이터가 부족할 경우(10명 미만) 기본값 사용
         if (totalCount < 10) {
             stats.put("avgScore", 50.0);
@@ -231,32 +228,21 @@ public class EgenTetoService {
             stats.put("isDefault", false);
         }
 
-        // 캐시 업데이트
-        this.cachedStats = stats;
-        this.lastCacheTime = now;
-
         return stats;
     }
 
     /**
-     * 성별별 참여 인원수 조회 (30분 캐시 적용)
+     * 성별별 참여 인원수 조회.
      */
-    private Map<String, Long> cachedGenderCounts;
-    private long lastGenderCacheTime = 0;
-
+    @Cacheable(cacheNames = CacheConfig.EGEN_STATS, key = "'genderCounts'")
     public Map<String, Long> getGenderCounts() {
-        long now = System.currentTimeMillis();
-        if (cachedGenderCounts == null || (now - lastGenderCacheTime) > 30 * 60 * 1000) {
-            Map<String, Object> counts = egenTetoMapper.selectGenderCounts();
-            
-            // MyBatis에서 가져온 BigDecimal 또는 Long 처리
-            Map<String, Long> result = new HashMap<>();
-            result.put("maleCount", ((Number) counts.getOrDefault("maleCount", 0L)).longValue());
-            result.put("femaleCount", ((Number) counts.getOrDefault("femaleCount", 0L)).longValue());
-            
-            cachedGenderCounts = result;
-            lastGenderCacheTime = now;
-        }
-        return cachedGenderCounts;
+        Map<String, Object> counts = egenTetoMapper.selectGenderCounts();
+
+        // MyBatis에서 가져온 BigDecimal 또는 Long 처리
+        Map<String, Long> result = new HashMap<>();
+        result.put("maleCount", ((Number) counts.getOrDefault("maleCount", 0L)).longValue());
+        result.put("femaleCount", ((Number) counts.getOrDefault("femaleCount", 0L)).longValue());
+
+        return result;
     }
 }

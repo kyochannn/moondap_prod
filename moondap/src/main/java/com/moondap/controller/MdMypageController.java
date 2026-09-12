@@ -1,7 +1,9 @@
 package com.moondap.controller;
 
 import com.moondap.config.auth.PrincipalDetails;
+import com.moondap.common.exception.UserMessageException;
 import com.moondap.dto.MdUserDTO;
+import com.moondap.dto.request.ProfileUpdateRequest;
 import com.moondap.service.BalanceGameService;
 import com.moondap.service.MdTestAdminService;
 import com.moondap.service.StandardMdUserService;
@@ -13,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -123,51 +127,55 @@ public class MdMypageController {
      */
     @PostMapping("/mypage/edit")
     public String editProfileProc(@AuthenticationPrincipal PrincipalDetails principalDetails,
-                                  MdUserDTO userForm,
+                                  @Valid @ModelAttribute ProfileUpdateRequest form,
                                   @RequestParam(value = "profileFile", required = false) MultipartFile profileFile,
                                   HttpSession session,
                                   RedirectAttributes redirectAttributes) {
         if (principalDetails == null) return "redirect:/loginView";
-        
+
         // 인증 여부 체크
         Boolean isVerified = (Boolean) session.getAttribute("profileVerified");
         if (isVerified == null || !isVerified) {
             return "redirect:/mypage/verify";
         }
-        
+
         MdUserDTO currentUser = principalDetails.getUser();
         try {
-            userForm.setUsername(principalDetails.getUsername());
-            
+            // [보안] 바인딩 대상이 ProfileUpdateRequest 라서 role/status/point 는
+            // 요청에 실어 보내도 애초에 들어오지 않는다.
+            String savedFilename = null;
             if (profileFile != null && !profileFile.isEmpty()) {
-                // 기존 프로필 이미지 삭제 (기본 이미지 아닌 경우에만)
-                if (currentUser.getProfileImage() != null && !currentUser.getProfileImage().equals("default-profile-img.svg")) {
-                    fileService.deleteProfile(currentUser.getProfileImage());
-                }
-                String savedFilename = fileService.uploadProfile(profileFile);
-                userForm.setProfileImage(savedFilename);
+                savedFilename = fileService.uploadProfile(profileFile);
             }
-            
-            // 비밀번호는 여기서 처리하지 않음 (기존 비밀번호 유지)
-            userForm.setPassword(null); // 서비스에서 null 체크 후 기존 비번 유지하도록 처리됨
-            
-            mdUserService.updateUser(userForm);
-            
-            // 세션 갱신
-            currentUser.setNickname(userForm.getNickname());
-            currentUser.setEmail(userForm.getEmail());
-            currentUser.setBio(userForm.getBio());
-            if (userForm.getProfileImage() != null) {
-                currentUser.setProfileImage(userForm.getProfileImage());
+
+            String previousImage = currentUser.getProfileImage();
+            MdUserDTO updated = mdUserService.updateProfile(
+                    principalDetails.getUsername(), form, savedFilename);
+
+            // DB 반영이 끝난 뒤에 기존 파일을 지운다.
+            // 먼저 지우면 수정이 실패했을 때 이미지만 사라진다.
+            if (savedFilename != null && previousImage != null
+                    && !previousImage.equals("default-profile-img.svg")
+                    && !previousImage.equals(savedFilename)) {
+                fileService.deleteProfile(previousImage);
             }
-            
+
+            // 세션 갱신 — 실제 저장된 값을 반영한다.
+            currentUser.setNickname(updated.getNickname());
+            currentUser.setEmail(updated.getEmail());
+            currentUser.setBio(updated.getBio());
+            currentUser.setProfileImage(updated.getProfileImage());
+
             redirectAttributes.addFlashAttribute("successMsg", "회원 정보가 성공적으로 수정되었습니다.");
-        } catch (Exception e) {
-            log.error("회원 정보 수정 오류", e);
+        } catch (UserMessageException e) {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
             return "redirect:/mypage/edit";
+        } catch (Exception e) {
+            log.error("회원 정보 수정 오류", e);
+            redirectAttributes.addFlashAttribute("errorMsg", "처리 중 오류가 발생했습니다.");
+            return "redirect:/mypage/edit";
         }
-        
+
         return "redirect:/mypage";
     }
 

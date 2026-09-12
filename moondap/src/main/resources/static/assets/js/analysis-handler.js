@@ -67,7 +67,7 @@ const AnalysisHandler = {
         submitBtn.onclick = () => {
             submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>이동 중...';
             
-            fetch(verifyUrl, { method: 'POST' })
+            fetch(verifyUrl, { method: 'POST', headers: window.mdCsrf.headers() })
                 .then(() => {
                     document.getElementById(formId).submit();
                 })

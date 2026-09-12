@@ -33,6 +33,16 @@ dependencies {
 	
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// 입력값 검증 (@NotBlank, @Size 등)
+	// starter-web 에 포함되지 않으므로 명시적으로 추가한다.
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// 캐시 (메인 페이지 통합 조회 쿼리 부하 완화)
+	// Caffeine 을 쓰는 이유: 스프링 기본 ConcurrentMapCacheManager 는 TTL 이 없어
+	// 한 번 담긴 값이 영원히 남는다. 캐시별로 다른 만료 시간이 필요하다.
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.fasterxml.jackson.core:jackson-core'
 	implementation 'com.fasterxml.jackson.core:jackson-annotations'

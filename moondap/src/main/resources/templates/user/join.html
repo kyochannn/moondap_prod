@@ -206,7 +206,7 @@
                             <div class="mx-auto" style="width: 40px; height: 4px; background: #524dd3; border-radius: 2px;"></div>
                         </div>
 
-                        <form action="/joinProc" method="POST" name="joinForm" enctype="multipart/form-data">
+                        <form th:action="@{/joinProc}" method="POST" name="joinForm" enctype="multipart/form-data">
                             <input type="hidden" name="role" th:value="${role}">
                             <input type="hidden" name="email" id="email">
                             <input type="hidden" name="adminKey" th:value="${adminKey}">

@@ -31,32 +31,25 @@ public class CommonUtil {
     }
 
     /**
-     * 클라이언트의 실제 IP 주소를 가져옵니다.
-     * 프록시 환경(X-Forwarded-For 등)을 고려합니다.
+     * 클라이언트의 IP 주소를 가져옵니다.
+     *
+     * <p><b>요청 헤더를 직접 읽지 않습니다.</b> 이전 구현은 X-Forwarded-For 등을
+     * 검증 없이 신뢰하고 그중 <i>첫 번째</i> 값을 썼습니다. 그 값은 전적으로 클라이언트가
+     * 정하는 것이라, 헤더 하나만 바꿔 보내면 매 요청이 다른 IP 로 보였습니다.
+     * 투표 중복 방지와 방문자 수 집계가 모두 이 값을 기준으로 하므로 그대로 우회됐습니다.
+     *
+     * <p>대신 {@code request.getRemoteAddr()} 를 씁니다.
+     * {@code server.forward-headers-strategy=framework}(application.properties) 설정으로
+     * 스프링의 ForwardedHeaderFilter 가 이미 등록되어 있어, 프록시 뒤에서도 이 값이
+     * 실제 클라이언트 IP 로 채워집니다.
+     *
+     * <p><b>남은 전제</b> — 프록시가 클라이언트가 보낸 X-Forwarded-For 를 그대로
+     * 통과시키지 않고 <i>덮어써야</i> 합니다. 그렇지 않으면 여전히 위조가 가능합니다.
+     * Cafe24 등 앞단 프록시 설정을 확인하고, 필요하면 Tomcat RemoteIpValve 의
+     * internalProxies 로 신뢰 프록시를 명시해야 합니다. (docs/SECRETS.md 참고)
      */
     public static String getClientIp(jakarta.servlet.http.HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        
-        // 여러 개의 IP가 넘어올 경우 첫 번째 IP가 실제 클라이언트 IP
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        
-        return ip;
+        String ip = request.getRemoteAddr();
+        return (ip == null || ip.isBlank()) ? "unknown" : ip;
     }
 }

@@ -325,6 +325,7 @@
 
             fetch('/admin/user/update', {
                 method: 'POST',
+                headers: window.mdCsrf.headers(),
                 body: formData
             })
             .then(res => res.json())
@@ -358,7 +359,8 @@
             
             if (confirm(msg)) {
                 fetch('/admin/user/suspend/' + username, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: window.mdCsrf.headers()
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -378,7 +380,8 @@
 
         function deleteUser(username) {
             fetch('/admin/user/delete/' + username, {
-                method: 'POST'
+                method: 'POST',
+                headers: window.mdCsrf.headers()
             })
             .then(res => res.json())
             .then(data => {

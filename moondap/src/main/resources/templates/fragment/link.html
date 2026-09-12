@@ -1,5 +1,10 @@
 <th:block th:fragment="link">
 
+  <!-- CSRF 토큰. AJAX 요청이 헤더에 실어 보내기 위해 노출한다.
+       일반 폼은 th:action 이 hidden 필드를 자동 주입하므로 이 값을 쓰지 않는다. -->
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
   <link th:href="@{/assets/img/favicon.png}" rel="icon">
   <link th:href="@{/assets/img/favicon.png}" rel="apple-touch-icon">
 

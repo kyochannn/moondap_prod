@@ -134,7 +134,8 @@
 		        },
 		        error: function(xhr) {
 		            hideLoading();
-		        	alert("밸런스 게임 수정 중에 문제가 발생했어요.");
+		        	const serverMsg = xhr.responseJSON && xhr.responseJSON.message;
+        	alert(serverMsg || "밸런스 게임 수정 중에 문제가 발생했어요.");
 		            console.error(xhr);
 		        }
 		    });
@@ -176,7 +177,8 @@
 		        },
 		        error: function(xhr) {
 		            hideLoading();
-		        	alert("밸런스 게임 삭제 중에 문제가 발생했어요.");
+		        	const serverMsg = xhr.responseJSON && xhr.responseJSON.message;
+        	alert(serverMsg || "밸런스 게임 삭제 중에 문제가 발생했어요.");
 		            console.error(xhr);
 		        }
 		    });

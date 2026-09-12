@@ -40,7 +40,7 @@ public class MdUserAdminController {
                 String savedFilename = fileService.uploadProfile(profileFile);
                 dto.setProfileImage(savedFilename);
             }
-            userService.updateUser(dto);
+            userService.updateUserByAdmin(dto);
             return ResponseEntity.ok(Map.of("success", true, "message", "사용자 정보가 수정되었습니다."));
         } catch (Exception e) {
             log.error("사용자 수정 오류", e);

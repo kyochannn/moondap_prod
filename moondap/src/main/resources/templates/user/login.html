@@ -67,7 +67,7 @@
                 <p class="text-white-50 small">테스트로 만나는 또 다른 나, 문답</p>
             </div>
 
-            <form action="/loginProc" method="POST" name="loginForm">
+            <form th:action="@{/loginProc}" method="POST" name="loginForm">
                 <div class="mb-4">
                     <label class="text-primary small fw-bold mb-2 ms-1">ID</label>
                     <input id="username" type="text" name="username" class="custom-input" 

@@ -1,14 +1,18 @@
 package com.moondap.controller;
 
+import lombok.RequiredArgsConstructor;
+
+import com.moondap.common.exception.UserMessageException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,16 +21,25 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
+import com.moondap.common.AnonymousIdentity;
 import com.moondap.common.CommonUtil;
+import com.moondap.common.SecurityUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
-import com.moondap.service.BalanceGameService;
-import com.moondap.config.auth.PrincipalDetails;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.moondap.dto.request.AdjacentGameRequest;
+import com.moondap.dto.request.BalanceGameForm;
+import com.moondap.dto.request.BalanceGameSearchRequest;
+import com.moondap.dto.request.CommentDeleteRequest;
+import com.moondap.dto.request.CommentLikeRequest;
+import com.moondap.dto.request.GameIdRequest;
+import com.moondap.dto.request.CommentRequest;
+import com.moondap.dto.request.VoteRequest;
 
-import com.moondap.service.StatService;
+import jakarta.validation.Valid;
+import com.moondap.service.BalanceGameService;
+
 import com.moondap.service.MdTestCategoryService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,16 +58,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @RequestMapping("/balanceGame")
+@RequiredArgsConstructor
 public class BalanceGameController {
 
-	@Autowired
-	private BalanceGameService balanceGameService;
+	private final BalanceGameService balanceGameService;
 
-	@Autowired
-	private MdTestCategoryService categoryService;
-
-	@Autowired
-	private StatService statService;
+	private final MdTestCategoryService categoryService;
 
 	/**
 	 * 밸런스 게임 리스트 화면
@@ -66,9 +75,10 @@ public class BalanceGameController {
 	@GetMapping("/selectBalanceGameListView")
 	public String selectBalanceGameListView(Model model) throws Exception {
 
-		Map<String, String> request = new HashMap<String, String>();
-		request.put("isSpicy", "0");
-		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request, 0, 10);
+		// [수정] 이전에는 put("isSpicy", ...) 였으나 서비스는 "spicyFilter" 를 읽어 값이 버려졌고,
+		// status 를 넣지 않아 draft 가 공개 목록에 섞여 나갈 수 있었다.
+		List<BalanceGameDTO> balanceGameList =
+				balanceGameService.selectBalanceGameList(BalanceGameSearchRequest.publicList(10));
 
 		model.addAttribute("balanceGameList", balanceGameList);
 		model.addAttribute("categories", categoryService.getActiveCategories());
@@ -84,20 +94,18 @@ public class BalanceGameController {
 	 * @throws Exception
 	 */
 	@PostMapping("/selectBalanceGameList")
-	public ResponseEntity<List<BalanceGameDTO>> selectBalanceGameList(@RequestBody Map<String, String> request,
-			Model model) {
+	public ResponseEntity<List<BalanceGameDTO>> selectBalanceGameList(
+			@RequestBody BalanceGameSearchRequest request) {
 
 		log.info("조회 요청 데이터: {}", request);
-		
-		// 상태 필터 기본값 설정 (명시적인 요청이 없으면 'active'만 조회)
-		if (!request.containsKey("status")) {
-			request.put("status", "active");
+
+		// 상태를 지정하지 않은 요청은 공개 조회로 간주해 active 만 보여준다.
+		// (null 로 두면 매퍼가 상태 조건을 걸지 않아 draft 까지 나간다)
+		if (request.getStatus() == null) {
+			request.setStatus("active");
 		}
 
-		int offset = Integer.parseInt(request.getOrDefault("offset", "0"));
-		int limit = Integer.parseInt(request.getOrDefault("limit", "10"));
-
-		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request, offset, limit);
+		List<BalanceGameDTO> balanceGameList = balanceGameService.selectBalanceGameList(request);
 
 		// 데이터가 없을 경우 204 No Content 혹은 빈 리스트 반환
 		if (balanceGameList.isEmpty()) {
@@ -138,7 +146,7 @@ public class BalanceGameController {
 
 		// 데이터가 없는 경우(null) 처리
 		if (balanceGame == null) {
-			throw new RuntimeException("해당 게임을 찾을 수 없습니다.");
+			throw new UserMessageException("해당 게임을 찾을 수 없습니다.");
 		}
 
 		model.addAttribute("balanceGame", balanceGame);
@@ -146,12 +154,12 @@ public class BalanceGameController {
 		// 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
 		if (!"active".equals(balanceGame.getStatus())) {
 			if (!balanceGameService.CheckMyTest(balanceGame.getId())) {
-				throw new RuntimeException("해당 게임에 접근할 권한이 없습니다.");
+				throw new UserMessageException("해당 게임에 접근할 권한이 없습니다.");
 			}
 		}
 		
-		model.addAttribute("currentUserId", getCurrentUserId());
-		model.addAttribute("isAnonymous", SecurityContextHolder.getContext().getAuthentication() instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
+		model.addAttribute("currentUserId", SecurityUtil.getCurrentUsername());
+		model.addAttribute("isAnonymous", !SecurityUtil.isAuthenticated());
 		model.addAttribute("categories", categoryService.getActiveCategories());
 		return "balanceGame/selectBalanceGame";
 	}
@@ -164,17 +172,10 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/nextOrPrevBalanceGameIdSelect")
 	@ResponseBody
-	public String nextOrPrevBalanceGameIdSelect(@RequestBody Map<String, String> request) {
-
-		try {
-			String balanceGameId = balanceGameService.nextOrPrevBalanceGameIdSelect(request);
-
-			return balanceGameId;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	public String nextOrPrevBalanceGameIdSelect(@Valid @RequestBody AdjacentGameRequest request) throws Exception {
+		// 예외를 삼키지 않는다. GlobalExceptionHandler 가 500 JSON 으로 응답하고
+		// 화면의 error 콜백이 사용자에게 알린다.
+		return balanceGameService.nextOrPrevBalanceGameIdSelect(request);
 	}
 
 	/**
@@ -185,15 +186,8 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/getVoteStatus")
 	@ResponseBody
-	public BalanceGameDTO getVoteStatus(@RequestBody Map<String, String> request) {
-		try {
-			String id = request.get("id");
-			BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
-			return balanceGame;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	public BalanceGameDTO getVoteStatus(@Valid @RequestBody GameIdRequest request) throws Exception {
+		return balanceGameService.selectBalanceGame(request.getId(), null, null);
 	}
 
 	/**
@@ -204,20 +198,27 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/vote")
 	@ResponseBody
-	public BalanceGameDTO voteBalanceGame(@RequestBody Map<String, String> request) {
+	public BalanceGameDTO voteBalanceGame(@Valid @RequestBody VoteRequest request,
+			HttpServletRequest servletRequest) throws Exception {
 		log.info("voteBalanceGame ::::::::: ");
 
-		try {
-			BalanceGameDTO balanceGame = balanceGameService.vote(request);
-			
-			// 오늘 콘텐츠 참여 수 증가
-			statService.incrementParticipationCount();
+		// 참여수 증가는 서비스가 실제 집계된 투표에 대해서만 수행한다.
+		return balanceGameService.vote(request, resolveVoterKey(servletRequest));
+	}
 
-			return balanceGame;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+	/**
+	 * 투표자 식별자를 만든다.
+	 *
+	 * 로그인 사용자는 계정 기준이라 기기를 바꿔도 한 번만 투표할 수 있다.
+	 * 비로그인 사용자는 IP 로 묶는다. 공유 IP(회사·학교) 환경에서는 과차단될 수 있으나,
+	 * 투표수가 인기 순위를 결정하므로 과차단 쪽을 택했다.
+	 */
+	private String resolveVoterKey(HttpServletRequest servletRequest) {
+		String username = SecurityUtil.getCurrentUsername();
+		if (username != null) {
+			return "u:" + username;
 		}
+		return "ip:" + CommonUtil.getClientIp(servletRequest);
 	}
 
 	/**
@@ -229,20 +230,13 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/selectBalanceGameComment")
 	@ResponseBody
-	public List<BalanceGameCommentDTO> selectBalanceGameComment(@RequestBody Map<String, String> request) {
+	public List<BalanceGameCommentDTO> selectBalanceGameComment(@Valid @RequestBody GameIdRequest request,
+			HttpServletRequest servletRequest) throws Exception {
 
-		String id = request.get("id");
-		log.info("selectBalanceGameComment ::::::::::: {}", id);
+		log.info("selectBalanceGameComment ::::::::::: {}", request.getId());
 
-		try {
-			List<BalanceGameCommentDTO> balanceGameCommentList = balanceGameService.selectBalanceGameComment(id);
-
-			return balanceGameCommentList;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+		// 요청자 기준으로 likedByMe / deletable 을 채워 내려준다.
+		return balanceGameService.selectBalanceGameComment(request.getId(), resolveVoterKey(servletRequest));
 	}
 
 	/**
@@ -254,67 +248,51 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/insertBalanceGameComment")
 	@ResponseBody
-	public List<BalanceGameCommentDTO> insertBalanceGameComment(@RequestBody Map<String, String> request) {
+	public BalanceGameCommentDTO insertBalanceGameComment(@Valid @RequestBody CommentRequest request,
+			HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
 		log.info("insertBalanceGameMessage ::::::::: ");
 
-		if (IsLoggedIn()) {
-			request.put("userId", getCurrentUserId());
-			request.put("nickname", getCurrentUserId());
+		// [보안] 작성자는 서버가 결정한다. CommentRequest 에 userId 를 바인딩하지 않으므로
+		// 요청 본문에 userId 를 실어 보내도 무시된다.
+		String currentUsername = SecurityUtil.getCurrentUsername();
+		if (currentUsername != null) {
+			request.setUserId(currentUsername);
+			request.setNickname(currentUsername);
+			request.setAnonId(null);
+		} else {
+			// 익명 댓글: 계정은 없지만 "같은 브라우저"는 식별할 수 있어야
+			// 본인이 자기 댓글을 지울 수 있다. 작성 시점에만 토큰을 발급한다.
+			request.setUserId(null);
+			request.setAnonId(AnonymousIdentity.getOrCreate(servletResponse));
 		}
 
-		try {
-			List<BalanceGameCommentDTO> balanceGameCommenList = balanceGameService.insertBalanceGameComment(request);
-
-			return balanceGameCommenList;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+		// 금칙어 위반은 UserMessageException 으로 올라가 400 과 함께
+		// 사용자에게 보여줄 메시지가 전달된다.
+		return balanceGameService.insertBalanceGameComment(request, resolveVoterKey(servletRequest));
 	}
 
 	@PostMapping("/updateBalanceGameCommentLikeCount")
 	@ResponseBody
-	public List<BalanceGameCommentDTO> updateBalanceGameCommentLikeCount(@RequestBody Map<String, String> request) {
+	public BalanceGameCommentDTO updateBalanceGameCommentLikeCount(
+			@Valid @RequestBody CommentLikeRequest request,
+			HttpServletRequest servletRequest) throws Exception {
 		log.info("updateBalanceGameCommentLikeCount ::::::::: ");
 
-		try {
-			List<BalanceGameCommentDTO> balanceGameCommenList = balanceGameService
-					.updateBalanceGameCommentLikeCount(request);
-
-			return balanceGameCommenList;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+		// 누를지 취소할지는 서버의 기록이 결정한다. 요청의 setting 값은 쓰지 않는다.
+		return balanceGameService.toggleCommentLike(request, resolveVoterKey(servletRequest));
 	}
 
 	@PostMapping("/deleteBalanceGameComment")
 	@ResponseBody
-	public Map<String, Object> deleteBalanceGameComment(@RequestBody Map<String, Object> request) {
+	public Map<String, Object> deleteBalanceGameComment(@Valid @RequestBody CommentDeleteRequest request)
+			throws Exception {
 		log.info("deleteBalanceGameComment ::::::::: ");
-		Map<String, Object> rtnMap = new HashMap<>();
-		
-		// [보안] 관리자 권한 확인
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		boolean isAdmin = authentication.getAuthorities().stream()
-				.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-				
-		if (!isAdmin) {
-			rtnMap.put("flag", "fail");
-			rtnMap.put("message", "관리자만 삭제 가능합니다.");
-			return rtnMap;
-		}
 
-		try {
-			int no = Integer.parseInt(request.get("no").toString());
-			String result = balanceGameService.deleteSingleComment(no);
-			rtnMap.put("flag", result.toLowerCase());
-			return rtnMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-			rtnMap.put("flag", "fail");
-			return rtnMap;
-		}
+		Map<String, Object> rtnMap = new HashMap<>();
+		// 권한 판정(관리자 · 로그인 작성자 · 익명 토큰 소유자)은 서비스가 한다.
+		String result = balanceGameService.deleteSingleComment(request.getNo());
+		rtnMap.put("flag", result.toLowerCase());
+		return rtnMap;
 	}
 
 	/**
@@ -325,7 +303,7 @@ public class BalanceGameController {
 	@GetMapping("/insertBalanceGameView")
 	public String insertBalanceGameView(Model model) {
 		// [보안] 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
-		if (!IsLoggedIn()) {
+		if (!SecurityUtil.isAuthenticated()) {
 			return "redirect:/loginView";
 		}
 		model.addAttribute("categories", categoryService.getActiveCategories());
@@ -339,38 +317,26 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/insertBalanceGame")
 	@ResponseBody
-	public Map<String, Object> insertBalanceGame(@RequestParam Map<String, String> params,
-			@RequestParam("option1Image") MultipartFile option1Image, @RequestParam("option2Image") MultipartFile option2Image) {
+	public Map<String, Object> insertBalanceGame(@Valid @ModelAttribute BalanceGameForm form,
+			@RequestParam("option1Image") MultipartFile option1Image,
+			@RequestParam("option2Image") MultipartFile option2Image) throws Exception {
 
-		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
 
 		// [보안] 로그인하지 않은 사용자는 저장 불가
-		if (!IsLoggedIn()) {
+		if (!SecurityUtil.isAuthenticated()) {
 			rtnMap.put("flag", "fail");
 			rtnMap.put("message", "로그인 후 이용 가능합니다.");
 			return rtnMap;
 		}
 
-		try {
-			String balanceGameId = balanceGameService.insertBalanceGame(params, option1Image, option2Image);
+		// 검증 실패(금칙어·길이 초과 등)는 UserMessageException 으로 올라가
+		// 400 과 함께 구체적인 사유가 전달된다. 여기서 삼키면 사유가 사라진다.
+		String balanceGameId = balanceGameService.insertBalanceGame(form, option1Image, option2Image);
 
-			if (CommonUtil.isNotNull(balanceGameId)) {
-				rtnMap.put("balanceGameId", balanceGameId);
-			} else {
-				flag = "fail";
-			}
-			rtnMap.put("flag", flag);
-
-			return rtnMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-
-			flag = "fail";
-			rtnMap.put("flag", flag);
-
-			return rtnMap;
-		}
+		rtnMap.put("flag", CommonUtil.isNotNull(balanceGameId) ? "success" : "fail");
+		rtnMap.put("balanceGameId", balanceGameId);
+		return rtnMap;
 	}
 
 	/**
@@ -384,13 +350,15 @@ public class BalanceGameController {
 		
 		// [보안] 권한 확인
 		if (!balanceGameService.CheckMyTest(id)) {
-			return "redirect:/history.back()"; // 또는 에러 페이지
+			// 이전에는 "redirect:/history.back()" 을 반환해 존재하지 않는 경로로 보냈다.
+			// 사용자는 404 를 보게 되고 실제 원인(권한 없음)은 알 수 없었다.
+			throw new UserMessageException("해당 게임을 수정할 권한이 없습니다.");
 		}
 
 		BalanceGameDTO balanceGame = balanceGameService.selectBalanceGame(id, null, null);
 		// 데이터가 없는 경우(null) 처리
 		if (balanceGame == null) {
-			throw new RuntimeException("수정할 게임을 찾을 수 없습니다.");
+			throw new UserMessageException("수정할 게임을 찾을 수 없습니다.");
 		}
 
 		model.addAttribute("balanceGame", balanceGame);
@@ -408,33 +376,19 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/updateBalanceGame")
 	@ResponseBody
-	public Map<String, Object> updateBalanceGame(@RequestParam Map<String, String> params,
+	public Map<String, Object> updateBalanceGame(@Valid @ModelAttribute BalanceGameForm form,
 			@RequestParam(value = "option1Image", required = false) MultipartFile option1Image,
-			@RequestParam(value = "option2Image", required = false) MultipartFile option2Image) {
+			@RequestParam(value = "option2Image", required = false) MultipartFile option2Image) throws Exception {
 		log.info("updateBalanceGame controller :::::::::::");
 
-		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
 
-		try {
-			String balanceGameId = balanceGameService.updateBalanceGame(params, option1Image, option2Image);
+		// 권한 없음·검증 실패는 UserMessageException 으로 올라간다.
+		String balanceGameId = balanceGameService.updateBalanceGame(form, option1Image, option2Image);
 
-			if (CommonUtil.isNotNull(balanceGameId)) {
-				rtnMap.put("balanceGameId", balanceGameId);
-			} else {
-				flag = "fail";
-			}
-			rtnMap.put("flag", flag);
-
-			return rtnMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-
-			flag = "fail";
-			rtnMap.put("flag", flag);
-
-			return rtnMap;
-		}
+		rtnMap.put("flag", CommonUtil.isNotNull(balanceGameId) ? "success" : "fail");
+		rtnMap.put("balanceGameId", balanceGameId);
+		return rtnMap;
 	}
 
 	/**
@@ -445,102 +399,17 @@ public class BalanceGameController {
 	 */
 	@PostMapping("/deleteBalanceGame")
 	@ResponseBody
-	public Map<String, Object> deleteBalanceGame(@RequestParam Map<String, String> params) {
+	public Map<String, Object> deleteBalanceGame(@ModelAttribute BalanceGameForm form) throws Exception {
 		log.info("deleteBalanceGame controller :::::::::::");
 
-		String flag = "success";
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
 
-		try {
-			String balanceGameId = balanceGameService.deleteBalanceGame(params);
+		String balanceGameId = balanceGameService.deleteBalanceGame(form);
+		log.info("balanceGame: {}", balanceGameId);
 
-			log.info("balanceGame: {}", balanceGameId);
-
-			if (CommonUtil.isNotNull(balanceGameId)) {
-				rtnMap.put("balanceGameId", balanceGameId);
-			} else {
-				flag = "fail";
-			}
-			rtnMap.put("flag", flag);
-
-			return rtnMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-
-			flag = "fail";
-			rtnMap.put("flag", flag);
-
-			return rtnMap;
-		}
+		rtnMap.put("flag", CommonUtil.isNotNull(balanceGameId) ? "success" : "fail");
+		rtnMap.put("balanceGameId", balanceGameId);
+		return rtnMap;
 	}
 
-	/**
-	 * 여기부터 개발 시작!
-	 * 
-	 */
-
-	// 오류 페이지 TEST
-
-	/**
-	 * 401 TEST
-	 * 
-	 * @return
-	 */
-	@GetMapping("/401")
-	public String get401() {
-		return "error/401";
-	}
-
-	/**
-	 * 403 TEST
-	 * 
-	 * @return
-	 */
-	@GetMapping("/403")
-	public String get403() {
-		return "error/403";
-	}
-
-	/**
-	 * 404 TEST
-	 * 
-	 * @return
-	 */
-	@GetMapping("/404")
-	public String get404() {
-		return "error/404";
-	}
-
-	/**
-	 * 500 TEST
-	 * 
-	 * @return
-	 */
-	@GetMapping("/500")
-	public String get500() {
-		return "error/500";
-	}
-
-	/**
-	 * 현재 사용자가 로그인 상태인지 확인
-	 */
-	private boolean IsLoggedIn() {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		return auth != null && auth.isAuthenticated() && 
-			  !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
-	}
-
-	/**
-	 * 현재 로그인한 사용자의 ID를 가져오는 유틸리티 메서드
-	 */
-	private String getCurrentUserId() {
-		if (!IsLoggedIn()) {
-			return "mdadmin";
-		}
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		if (principal instanceof PrincipalDetails) {
-			return ((PrincipalDetails) principal).getUsername();
-		}
-		return SecurityContextHolder.getContext().getAuthentication().getName();
-	}
 }

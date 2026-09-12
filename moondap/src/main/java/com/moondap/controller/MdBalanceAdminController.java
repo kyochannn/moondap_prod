@@ -2,33 +2,31 @@ package com.moondap.controller;
 
 import com.moondap.service.BalanceGameService;
 import com.moondap.dto.BalanceGameDTO;
+import com.moondap.dto.request.BalanceGameForm;
+import com.moondap.dto.request.BalanceGameSearchRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Controller
 @RequestMapping("/admin/balance")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class MdBalanceAdminController {
 
     private final BalanceGameService balanceGameService;
 
     @GetMapping("/list")
     public String balanceList(Model model) {
-        Map<String, String> request = new HashMap<>();
-        // spicyFilter를 "1"로 설정하여 매운맛 여부에 상관없이 모두 조회 (0이 아니면 필터링 건너뜀)
-        request.put("spicyFilter", "1");
-        // status를 명시하지 않거나 빈 값으로 두어 모든 상태 조회 (BalanceGameMapper.xml 대응)
-        request.put("status", ""); 
-        
-        model.addAttribute("balanceList", balanceGameService.selectBalanceGameList(request, 0, 1000));
+        // 관리 화면이므로 상태·매운맛을 가리지 않고 전부 조회한다.
+        model.addAttribute("balanceList",
+                balanceGameService.selectBalanceGameList(BalanceGameSearchRequest.manageList(null, 1000)));
         return "admin/balance/balanceList";
     }
 
@@ -38,12 +36,12 @@ public class MdBalanceAdminController {
                                @RequestParam(value = "oldOption2ImagePath", required = false) String oldOption2ImagePath,
                                RedirectAttributes redirectAttributes) {
         try {
-            Map<String, String> params = new HashMap<>();
-            params.put("id", id);
-            params.put("oldOption1ImagePath", oldOption1ImagePath);
-            params.put("oldOption2ImagePath", oldOption2ImagePath);
-            
-            balanceGameService.deleteBalanceGame(params);
+            BalanceGameForm form = new BalanceGameForm();
+            form.setId(id);
+            form.setOldOption1ImagePath(oldOption1ImagePath);
+            form.setOldOption2ImagePath(oldOption2ImagePath);
+
+            balanceGameService.deleteBalanceGame(form);
             redirectAttributes.addFlashAttribute("successMsg", "밸런스 게임이 삭제되었습니다.");
         } catch (Exception e) {
             log.error("밸런스 게임 삭제 오류", e);

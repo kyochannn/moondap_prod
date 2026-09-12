@@ -197,6 +197,7 @@
 
             fetch(url, {
                 method: 'POST',
+                headers: window.mdCsrf.headers(),
                 body: formData
             })
             .then(res => res.json())
@@ -216,7 +217,8 @@
 
         function deleteCategory(id) {
             fetch('/admin/category/delete/' + id, {
-                method: 'POST'
+                method: 'POST',
+                headers: window.mdCsrf.headers()
             })
             .then(res => res.json())
             .then(data => {

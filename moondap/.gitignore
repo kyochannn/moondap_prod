@@ -35,3 +35,30 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Secrets / 로컬 설정 ###
+# 추적 중인 application*.properties 에는 ${ENV_VAR} 플레이스홀더만 존재해야 한다.
+# 실제 비밀값은 환경변수로 주입하며, 아래 파일들은 절대 커밋하지 않는다.
+.env
+.env.*
+*.env
+setenv.sh
+src/main/resources/application-local.properties
+src/main/resources/application-secret.properties
+src/main/resources/**/*secret*
+src/main/resources/**/*credentials*
+
+# 로컬 개발용 설정 디렉터리.
+# Spring Boot 가 ./config/ 를 자동으로 읽고 classpath 설정보다 우선 적용한다.
+# 실제 값이 담기므로 통째로 무시하되, 템플릿(*.example)만 추적한다.
+config/*
+!config/*.example
+
+### 배포 산출물 ###
+*.war
+!src/main/**/*.war
+deploy/
+
+### OS ###
+.DS_Store
+**/.DS_Store

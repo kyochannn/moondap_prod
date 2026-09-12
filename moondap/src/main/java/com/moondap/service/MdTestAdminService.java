@@ -1,12 +1,18 @@
 package com.moondap.service;
 
+import com.moondap.common.exception.UserMessageException;
+
 import com.moondap.common.FileService;
 import com.moondap.dto.MdTestDTO;
 import com.moondap.dto.MdTestQuestionDTO;
 import com.moondap.dto.MdTestResultDTO;
 import com.moondap.mapper.MdTestMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import com.moondap.config.CacheConfig;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -51,6 +57,7 @@ public class MdTestAdminService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = CacheConfig.CONTENT_LIST, allEntries = true)
     public void createTest(MdTestDTO dto, MultipartFile thumbnail, List<MultipartFile> resultFiles, String createdBy) throws Exception {
         // 테스트 키 자동 생성
         String datePrefix = "T-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
@@ -60,7 +67,7 @@ public class MdTestAdminService {
         dto.setTestKey(testKey);
 
         if (mdTestMapper.countByTestKey(dto.getTestKey()) > 0) {
-            throw new IllegalArgumentException("이미 사용 중인 테스트 키입니다: " + dto.getTestKey());
+            throw new UserMessageException("이미 사용 중인 테스트 키입니다: " + dto.getTestKey());
         }
 
         // 대표 썸네일 업로드
@@ -93,28 +100,56 @@ public class MdTestAdminService {
 
         // 3. 결과들 저장 (다중 이미지 포함)
         if (dto.getResults() != null && !dto.getResults().isEmpty()) {
-            for (int i = 0; i < dto.getResults().size(); i++) {
-                MdTestResultDTO r = dto.getResults().get(i);
-                if (r.getResultTitle() == null || r.getResultTitle().isBlank()) continue;
+            applyResultImages(dto.getResults(), resultFiles);
 
-                // 해당 순서의 파일이 전달되었다면 업로드 수행
-                if (resultFiles != null && i < resultFiles.size()) {
-                    MultipartFile file = resultFiles.get(i);
-                    if (file != null && !file.isEmpty()) {
-                        String savedFilename = fileService.upload(file);
-                        r.setResultImage(savedFilename);
-                    }
-                }
+            for (MdTestResultDTO r : dto.getResults()) {
+                if (r.getResultTitle() == null || r.getResultTitle().isBlank()) continue;
                 r.setTestId(dto.getId());
                 mdTestMapper.insertResult(r);
             }
         }
     }
 
+    /**
+     * 결과 목록에 업로드된 이미지를 매칭한다.
+     *
+     * <p><b>resultFiles 는 결과 인덱스와 1:1 이 아니다.</b> 화면은 새 이미지를 고른
+     * 결과에 대해서만 {@code formData.append('resultFiles', ...)} 를 호출하므로,
+     * 이 리스트는 "새 이미지가 있는 결과들"의 순서를 따르는 압축된 목록이다.
+     *
+     * <p>등록 경로는 이 규약을 어기고 {@code resultFiles.get(결과인덱스)} 로 접근했다.
+     * 결과가 3개인데 세 번째에만 이미지를 넣으면 리스트 크기는 1이므로,
+     * 그 이미지가 <b>첫 번째 결과에 붙고</b> 나머지는 이미지가 없는 상태로 저장됐다.
+     *
+     * <p>제목이 빈 행은 저장하지 않지만, 화면이 그 행에 대해서도 파일을 보냈다면
+     * 커서는 함께 넘겨야 이후 결과들의 짝이 어긋나지 않는다.
+     */
+    private void applyResultImages(List<MdTestResultDTO> results, List<MultipartFile> resultFiles) throws Exception {
+        int cursor = 0;
+
+        for (MdTestResultDTO r : results) {
+            MultipartFile file = null;
+            if (Boolean.TRUE.equals(r.getHasNewImage())
+                    && resultFiles != null && cursor < resultFiles.size()) {
+                file = resultFiles.get(cursor++);
+            }
+
+            // 저장 대상이 아니어도 위에서 커서는 이미 넘겼다.
+            if (r.getResultTitle() == null || r.getResultTitle().isBlank()) {
+                continue;
+            }
+
+            if (file != null && !file.isEmpty()) {
+                r.setResultImage(fileService.upload(file));
+            }
+        }
+    }
+
     @Transactional
+    @CacheEvict(cacheNames = CacheConfig.CONTENT_LIST, allEntries = true)
     public void updateTest(MdTestDTO dto, MultipartFile thumbnail, List<MultipartFile> resultFiles) throws Exception {
         MdTestDTO existing = mdTestMapper.selectTest(dto.getId());
-        if (existing == null) throw new IllegalArgumentException("존재하지 않는 테스트입니다.");
+        if (existing == null) throw new UserMessageException("존재하지 않는 테스트입니다.");
 
         // 썸네일 교체 로직
         if (thumbnail != null && !thumbnail.isEmpty()) {
@@ -161,24 +196,17 @@ public class MdTestAdminService {
         java.util.Set<String> newImageFiles = new java.util.HashSet<>();
 
         if (dto.getResults() != null && !dto.getResults().isEmpty()) {
-            int fileIdx = 0;
+            // 등록 경로와 동일한 규약으로 이미지를 매칭한다.
+            applyResultImages(dto.getResults(), resultFiles);
+
             for (MdTestResultDTO r : dto.getResults()) {
                 if (r.getResultTitle() == null || r.getResultTitle().isBlank()) continue;
 
-                // 새로운 이미지 업로드 여부 체크
-                if (Boolean.TRUE.equals(r.getHasNewImage()) && resultFiles != null && fileIdx < resultFiles.size()) {
-                    MultipartFile file = resultFiles.get(fileIdx++);
-                    if (file != null && !file.isEmpty()) {
-                        String savedFilename = fileService.upload(file);
-                        r.setResultImage(savedFilename);
-                    }
-                }
-                
                 if (r.getResultImage() != null && !r.getResultImage().isBlank()) {
                     newImageFiles.add(r.getResultImage());
                 }
 
-                // (파일이 없다면 JSON에 담겨온 기존 파일명 유지됨)
+                // (새 파일이 없다면 JSON에 담겨온 기존 파일명이 그대로 유지된다)
                 r.setTestId(dto.getId());
                 mdTestMapper.insertResult(r);
             }
@@ -193,6 +221,7 @@ public class MdTestAdminService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = CacheConfig.CONTENT_LIST, allEntries = true)
     public void deleteTest(Long id) {
         MdTestDTO existing = mdTestMapper.selectTest(id);
         if (existing != null) {
@@ -242,7 +271,7 @@ public class MdTestAdminService {
     public void updateQuestion(MdTestQuestionDTO dto) {
         MdTestQuestionDTO existing = mdTestMapper.selectQuestion(dto.getId());
         if (existing == null) {
-            throw new IllegalArgumentException("존재하지 않는 질문입니다.");
+            throw new UserMessageException("존재하지 않는 질문입니다.");
         }
         
         // Null 체크: 체크박스 선택 안 할 경우 대응
@@ -258,6 +287,8 @@ public class MdTestAdminService {
         mdTestMapper.softDeleteQuestion(id);
     }
 
+    /** 누적 참여수. 큰 숫자를 보여주는 용도라 몇 분 지연은 무방하다. */
+    @Cacheable(cacheNames = CacheConfig.PARTICIPANT_COUNT, key = "'normalTestPlayCount'")
     public long getTotalPlayCount() {
         return mdTestMapper.selectTotalPlayCount();
     }

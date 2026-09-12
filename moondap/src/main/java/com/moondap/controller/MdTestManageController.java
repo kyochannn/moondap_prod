@@ -1,5 +1,6 @@
 package com.moondap.controller;
 
+import com.moondap.common.SecurityUtil;
 import com.moondap.config.auth.PrincipalDetails;
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.dto.MdTestDTO;
@@ -36,8 +37,7 @@ public class MdTestManageController {
 
     @GetMapping("/list")
     public String testList(@AuthenticationPrincipal PrincipalDetails principalDetails, Model model) {
-        boolean isAdmin = principalDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = SecurityUtil.isAdmin();
         
         if (isAdmin) {
             model.addAttribute("testList", mdTestAdminService.getTestList());
@@ -107,8 +107,7 @@ public class MdTestManageController {
     public String testEditForm(@PathVariable("id") Long id, 
                               @AuthenticationPrincipal PrincipalDetails principalDetails,
                               Model model) {
-        boolean isAdmin = principalDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = SecurityUtil.isAdmin();
         
         if (!mdTestAdminService.checkOwnership(id, principalDetails.getUsername(), isAdmin)) {
             return "redirect:/test/manage/list";
@@ -132,8 +131,7 @@ public class MdTestManageController {
             @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnail,
             @RequestParam(value = "resultFiles", required = false) List<MultipartFile> resultFiles) {
         
-        boolean isAdmin = principalDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = SecurityUtil.isAdmin();
         
         if (!mdTestAdminService.checkOwnership(id, principalDetails.getUsername(), isAdmin)) {
             return ResponseEntity.status(403).body(Map.of("success", false, "message", "수정 권한이 없습니다."));
@@ -168,8 +166,7 @@ public class MdTestManageController {
                             @AuthenticationPrincipal PrincipalDetails principalDetails,
                             @RequestHeader(value = "Referer", required = false) String referer,
                             RedirectAttributes redirectAttributes) {
-        boolean isAdmin = principalDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = SecurityUtil.isAdmin();
         
         if (!mdTestAdminService.checkOwnership(id, principalDetails.getUsername(), isAdmin)) {
             redirectAttributes.addFlashAttribute("errorMsg", "삭제 권한이 없습니다.");
@@ -183,7 +180,41 @@ public class MdTestManageController {
             log.error("테스트 삭제 오류", e);
             redirectAttributes.addFlashAttribute("errorMsg", "테스트 삭제 중 오류가 발생했습니다.");
         }
-        return "redirect:" + (referer != null ? referer : "/test/manage/list");
+        return "redirect:" + safeReferer(referer);
+    }
+
+    /**
+     * Referer 를 리다이렉트 대상으로 쓸 때의 안전 검사.
+     *
+     * <p>Referer 는 요청 헤더라 값이 통제되지 않는다. 그대로 "redirect:" 에 붙이면
+     * 외부 사이트로 보내는 오픈 리다이렉트가 된다.
+     * 같은 사이트 내부 경로("/..." 로 시작하되 "//" 는 제외)만 허용한다.
+     */
+    private String safeReferer(String referer) {
+        String fallback = "/test/manage/list";
+        if (referer == null || referer.isBlank()) {
+            return fallback;
+        }
+
+        // 절대 URL 이면 우리 호스트의 경로만 남긴다.
+        String path = referer;
+        try {
+            java.net.URI uri = java.net.URI.create(referer);
+            if (uri.isAbsolute()) {
+                path = uri.getRawPath() == null ? "" : uri.getRawPath();
+                if (uri.getRawQuery() != null) {
+                    path += "?" + uri.getRawQuery();
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            return fallback;
+        }
+
+        // "//evil.com" 같은 프로토콜 상대 URL 차단
+        if (!path.startsWith("/") || path.startsWith("//")) {
+            return fallback;
+        }
+        return path;
     }
 
     // ─── 질문 목록 ───────────────────────────────────────────
@@ -192,8 +223,7 @@ public class MdTestManageController {
     public String questionList(@PathVariable("testId") Long testId, 
                               @AuthenticationPrincipal PrincipalDetails principalDetails,
                               Model model) {
-        boolean isAdmin = principalDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = SecurityUtil.isAdmin();
         
         if (!mdTestAdminService.checkOwnership(testId, principalDetails.getUsername(), isAdmin)) {
             return "redirect:/test/manage/list";

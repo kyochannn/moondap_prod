@@ -17,7 +17,13 @@
   
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  
+
+  <!-- CSRF 전역 설정. jQuery 직후, 다른 사용자 스크립트보다 먼저 로드해야 한다. -->
+  <script th:src="@{/assets/js/csrf.js}"></script>
+
+  <!-- HTML 이스케이프 전역 유틸. 클라이언트에서 문자열로 DOM 을 조립하는 화면이 사용한다. -->
+  <script th:src="@{/assets/js/html-escape.js}"></script>
+
   <!-- 폭중 효과를 위한 cdn -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   

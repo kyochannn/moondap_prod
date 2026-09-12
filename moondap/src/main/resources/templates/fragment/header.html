@@ -41,7 +41,12 @@
               </span>
             </a>
           </li>
-          <li sec:authorize="isAuthenticated()" class="dropdown"><a href="/logout"><span>로그아웃</span></a></li>
+          <!-- CSRF 활성화 이후 로그아웃은 POST 여야 한다.
+               링크 모양은 유지하되 실제 전송은 숨긴 폼이 담당한다. -->
+          <li sec:authorize="isAuthenticated()" class="dropdown">
+            <a href="#" onclick="document.getElementById('logoutForm').submit(); return false;"><span>로그아웃</span></a>
+            <form id="logoutForm" th:action="@{/logout}" method="post" style="display: none;"></form>
+          </li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>

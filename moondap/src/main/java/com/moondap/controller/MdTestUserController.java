@@ -1,20 +1,20 @@
 package com.moondap.controller;
 
+import com.moondap.common.exception.UserMessageException;
+
 import com.moondap.dto.MdContentItemDTO;
 import com.moondap.dto.MdTestCategoryDTO;
 import com.moondap.dto.MdTestDTO;
 import com.moondap.service.MdTestCategoryService;
 import com.moondap.service.MdTestUserService;
 import com.moondap.service.StatService;
-import com.moondap.config.auth.PrincipalDetails;
+import com.moondap.common.SecurityUtil;
 import com.moondap.dto.MdTestResultDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -86,12 +86,13 @@ public class MdTestUserController {
         // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
         if (!"active".equals(test.getStatus())) {
             if (!isAdminOrAuthor(test.getCreatedBy())) {
-                throw new RuntimeException("해당 테스트에 접근할 권한이 없습니다.");
+                throw new UserMessageException("해당 테스트에 접근할 권한이 없습니다.");
             }
         }
-        
+
         model.addAttribute("test", test);
-        model.addAttribute("isPreview", preview);
+        // preview 는 요청 파라미터라 누구나 붙일 수 있다. 권한이 있을 때만 인정한다.
+        model.addAttribute("isPreview", preview && isAdminOrAuthor(test.getCreatedBy()));
         return "test/intro";
     }
 
@@ -109,12 +110,13 @@ public class MdTestUserController {
         // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
         if (!"active".equals(test.getStatus())) {
             if (!isAdminOrAuthor(test.getCreatedBy())) {
-                throw new RuntimeException("해당 테스트에 접근할 권한이 없습니다.");
+                throw new UserMessageException("해당 테스트에 접근할 권한이 없습니다.");
             }
         }
         
         model.addAttribute("test", test);
-        model.addAttribute("isPreview", preview);
+        // 이 값이 결과 폼의 preview 파라미터로 전달되므로 여기서도 권한을 확인한다.
+        model.addAttribute("isPreview", preview && isAdminOrAuthor(test.getCreatedBy()));
         return "test/questions";
     }
 
@@ -131,6 +133,14 @@ public class MdTestUserController {
                              jakarta.servlet.http.HttpSession session,
                              Model model) throws Exception {
         
+        MdTestDTO test = mdTestUserService.getFullTestData(testKey);
+        if (test == null) return "redirect:/";
+
+        // [보안] preview 는 요청 파라미터라 누구나 붙일 수 있다.
+        // 관리자·작성자가 아니면 무시한다. 이전에는 ?preview=true 만 붙이면
+        // 광고 단계 검증과 참여수 집계를 모두 건너뛸 수 있었다.
+        preview = preview && isAdminOrAuthor(test.getCreatedBy());
+
         // [광고 검증] POST 요청(테스트 완료) 시 세션 체크
         if ("POST".equalsIgnoreCase(request.getMethod()) && !preview) {
             Boolean adVerified = (Boolean) session.getAttribute("AD_VERIFIED");
@@ -141,10 +151,7 @@ public class MdTestUserController {
             // 검증 완료 후 세션에서 제거 (일회성)
             session.removeAttribute("AD_VERIFIED");
         }
-        
-        MdTestDTO test = mdTestUserService.getFullTestData(testKey);
-        if (test == null) return "redirect:/";
-        
+
         MdTestResultDTO matchedResult = null;
 
         // 1. POST 방식: 방금 테스트를 마친 경우 (계산 수행)
@@ -174,12 +181,14 @@ public class MdTestUserController {
             if (test.getResults() != null) {
                 String finalResultCode = resultCode;
                 matchedResult = test.getResults().stream()
+                        // 결과의 id/제목이 null 인 데이터가 하나만 있어도
+                        // 예전에는 결과 페이지 전체가 500 으로 떨어졌다.
                         .filter(r -> {
                             try {
                                 Long id = Long.parseLong(finalResultCode);
-                                if (r.getId().equals(id)) return true;
+                                if (java.util.Objects.equals(r.getId(), id)) return true;
                             } catch (NumberFormatException e) {}
-                            return r.getResultTitle().equals(finalResultCode);
+                            return java.util.Objects.equals(r.getResultTitle(), finalResultCode);
                         })
                         .findFirst()
                         .orElse(test.getResults().isEmpty() ? null : test.getResults().get(0));
@@ -195,7 +204,7 @@ public class MdTestUserController {
         // 결과 조회 시에도 권한 체크 (공유된 링크 등을 통한 우회 방지)
         if (!"active".equals(test.getStatus())) {
             if (!isAdminOrAuthor(test.getCreatedBy())) {
-                throw new RuntimeException("해당 테스트의 결과에 접근할 권한이 없습니다.");
+                throw new UserMessageException("해당 테스트의 결과에 접근할 권한이 없습니다.");
             }
         }
 
@@ -232,21 +241,6 @@ public class MdTestUserController {
     }
 
     private boolean isAdminOrAuthor(String createdBy) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || 
-            auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
-            return false;
-        }
-        
-        if (auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            return true;
-        }
-        
-        Object principal = auth.getPrincipal();
-        if (principal instanceof PrincipalDetails) {
-            String username = ((PrincipalDetails) principal).getUsername();
-            return username.equals(createdBy);
-        }
-        return auth.getName().equals(createdBy);
+        return SecurityUtil.isAdminOrOwner(createdBy);
     }
 }

@@ -1,6 +1,7 @@
 package com.moondap.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @Controller
+@RequiredArgsConstructor
 public class MdUserController {
 
-	@Autowired
-	private StandardMdUserService standardMdUserService; 
+	private final StandardMdUserService standardMdUserService; 
 	
-	@Autowired
-	private com.moondap.common.FileService fileService;	
+	private final com.moondap.common.FileService fileService;	
 	/**
 	 * 로그인 화면 접근
 	 */

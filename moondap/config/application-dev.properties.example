@@ -1,0 +1,13 @@
+# 로컬 개발용 비밀값 (이 파일을 복사해서 사용)
+#
+#   cp config/application-dev.properties.example config/application-dev.properties
+#   # 복사본에 실제 값을 채운다
+#
+# Spring Boot 는 ./config/ 디렉터리를 자동으로 읽으며 classpath 설정보다 우선한다.
+# 따라서 IntelliJ 실행 구성이나 gradlew bootRun 어느 쪽이든 별도 설정 없이 동작한다.
+#
+# 복사본(config/application-dev.properties)은 .gitignore 대상이라 커밋되지 않는다.
+
+DB_USERNAME=
+DB_PASSWORD=
+ADMIN_SECRET_KEY=local-dev-key

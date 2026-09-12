@@ -1,67 +1,75 @@
 package com.moondap.service;
 
+import lombok.RequiredArgsConstructor;
+
+import com.moondap.common.exception.UserMessageException;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.Authentication;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import com.moondap.config.CacheConfig;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.moondap.common.AnonymousIdentity;
 import com.moondap.common.CommonUtil;
 import com.moondap.common.FileService;
 import com.moondap.common.ProfanityUtil;
-import com.moondap.config.auth.PrincipalDetails;
+import com.moondap.common.SecurityUtil;
 import com.moondap.dto.BalanceGameCommentDTO;
 import com.moondap.dto.BalanceGameDTO;
+import com.moondap.dto.request.AdjacentGameRequest;
+import com.moondap.dto.request.BalanceGameForm;
+import com.moondap.dto.request.BalanceGameSearchRequest;
+import com.moondap.dto.request.CommentLikeRequest;
+import com.moondap.dto.request.CommentRequest;
+import com.moondap.dto.request.VoteRequest;
 import com.moondap.mapper.BalanceGameMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class StandardBalanceGameService implements BalanceGameService {
 
     private static final String DEFAULT_IMAGE = "default-content-img.png";
 
-	@Autowired
-	private BalanceGameMapper balanceGameMapper;
-	@Autowired
-	private FileService fileService;
+	private final BalanceGameMapper balanceGameMapper;
+	private final FileService fileService;
+	private final StatService statService;
 	
     // 밸런스 게임 목록
 	@Override
-	public List<BalanceGameDTO> selectBalanceGameList(Map<String, String> request, int offset, int limit) {
+	public List<BalanceGameDTO> selectBalanceGameList(BalanceGameSearchRequest request) {
 		log.info("========== 밸런스 게임 리스트 조회 시작 ==========");
-		
-		try {
-            String isSpicy = request.get("spicyFilter");
-            String category = request.get("category");
-            String status = request.get("status");
-            String userId = request.get("userId"); // 신규 추가
-            
-            if (CommonUtil.isNull(isSpicy)) {
-            	isSpicy = "0";
-            }
 
-            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(isSpicy, category, status, userId, offset, limit);
+		try {
+            String isSpicy = request.getSpicyFilterOrDefault();
+
+            List<BalanceGameDTO> balanceGameList = balanceGameMapper.selectBalanceGameList(
+                    isSpicy, request.getCategory(), request.getStatus(), request.getUserId(),
+                    request.getOffsetOrDefault(), request.getLimitOrDefault());
 
             if (balanceGameList == null || balanceGameList.isEmpty()) {
-                log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}, 사용자: {}", isSpicy, category, userId);
+                log.info("조회된 데이터가 없습니다. 필터: {}, 카테고리: {}, 상태: {}, 사용자: {}",
+                        isSpicy, request.getCategory(), request.getStatus(), request.getUserId());
                 return Collections.emptyList();
             }
 
             return balanceGameList;
         } catch (DataAccessException e) {
             log.error("데이터베이스 접근 중 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("데이터베이스 조회를 실패했습니다.", e);
+            throw new UserMessageException("데이터베이스 조회를 실패했습니다.", e);
         } catch (Exception e) {
             log.error("서버 내부 에러 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("시스템 오류가 발생했습니다.");
+            throw new UserMessageException("시스템 오류가 발생했습니다.");
         }
 	}
 
@@ -112,86 +120,156 @@ public class StandardBalanceGameService implements BalanceGameService {
     
     // 다음 밸런스 게임 ID 조회
     @Override
-    public String nextOrPrevBalanceGameIdSelect(Map<String, String> request) throws Exception {
+    public String nextOrPrevBalanceGameIdSelect(AdjacentGameRequest request) throws Exception {
     	log.info("========== 다음 밸런스 게임 ID select ==========");
-    	
-    	String id = request.get("id");
-    	String direction = request.get("direction");
-    	String spicyFilter = request.get("spicyFilter");
-    	String category = request.get("category");
-    	
-    	return balanceGameMapper.nextOrPrevBalanceGameIdSelect(id, direction, spicyFilter, category);
+
+    	return balanceGameMapper.nextOrPrevBalanceGameIdSelect(
+    			request.getId(), request.getDirection(), request.getSpicyFilter(), request.getCategory());
     }
     
     // 밸런스 게임 투표
     @Override
     @Transactional
-    public BalanceGameDTO vote(Map<String, String> request) throws Exception {
+    public BalanceGameDTO vote(VoteRequest request, String voterKey) throws Exception {
     	log.info("========== 밸런스 게임 vote ==========");
-    	
-    	String id = request.get("id");
-    	String side = request.get("side");
-    	
-    	int option1Count = "left".equals(side) ? 1 : 0;
-    	int option2Count = "right".equals(side) ? 1 : 0;
-    	
+
+    	String id = request.getId();
+    	String side = request.getSide();
+
+    	if (CommonUtil.isNull(id) || CommonUtil.isNull(voterKey)) {
+    		return null;
+    	}
+
+    	// 컨트롤러의 @Valid 가 1차로 막지만 여기서도 확인한다.
+    	// 검증 애노테이션에만 의존하면, 이 서비스를 다른 경로에서 호출하거나
+    	// @Valid 가 빠졌을 때 잘못된 값이 조용히 집계된다.
+    	// (실제로 @Pattern 단독으로는 null 이 통과해 right 투표로 집계됐다)
+    	if (!"left".equals(side) && !"right".equals(side)) {
+    		log.warn("잘못된 투표 값: {}", side);
+    		return null;
+    	}
+
+    	// [중복 방지] 투표 로그를 먼저 남긴다.
+    	// UNIQUE(question_id, voter_key) + INSERT IGNORE 이므로,
+    	// 이미 투표한 경우 affected rows 가 0 이 된다.
+    	// 집계 UPDATE 와 같은 트랜잭션이라 둘이 어긋날 일이 없다.
+    	int logged = balanceGameMapper.insertVoteLog(id, voterKey, side);
+    	if (logged == 0) {
+    		log.info("중복 투표 차단: id={}", id);
+    		// 오류로 처리하지 않고 현재 집계를 그대로 돌려준다.
+    		// 화면은 응답의 퍼센트를 그리기만 하므로 사용자는 정상적으로 결과를 본다.
+    		// 참여수도 증가시키지 않는다.
+    		return selectBalanceGame(id, null, null);
+    	}
+
+    	int option1Count = request.isLeft() ? 1 : 0;
+    	int option2Count = request.isLeft() ? 0 : 1;
+
     	int updatedRows = balanceGameMapper.vote(id, option1Count, option2Count);
 
     	if (updatedRows == 1) {
+    		// 실제로 집계된 투표만 참여수에 반영한다.
+    		// 컨트롤러에서 호출하면 중복 투표도 참여수를 올려 통계가 부풀려진다.
+    		statService.incrementParticipationCount();
     		return selectBalanceGame(id, null, null);
-    	} else {
-    		log.warn("업데이트 실패");
-    		
-    		return null;
-    	}	
+    	}
+
+    	// 집계 대상이 없는데 로그만 남는 상황을 막기 위해 롤백시킨다.
+    	throw new IllegalStateException("투표 대상 게임을 찾을 수 없습니다: " + id);
     }
     
 	// 밸런스 게임 댓글 조회
     @Override
-    public List<BalanceGameCommentDTO> selectBalanceGameComment(String id) throws Exception {
+    public List<BalanceGameCommentDTO> selectBalanceGameComment(String id, String voterKey) throws Exception {
     	log.info("========== 밸런스 게임 댓글 select ==========");
-    	
-    	List<BalanceGameCommentDTO> balanceGameCommentList = balanceGameMapper.selectBalanceGameComment(id);
-    	
-    	if (balanceGameCommentList.isEmpty()) {
-    		log.info("밸런스 게임 댓글이 존재하지 않습니다.");
-    	} else {
-    		log.info("밸런스 게임 댓글이 {}개 존재합니다.", balanceGameCommentList.size());
+
+    	List<BalanceGameCommentDTO> comments = balanceGameMapper.selectBalanceGameComment(id);
+    	if (comments.isEmpty()) {
+    		return comments;
     	}
-    	
-        return balanceGameCommentList;
+
+    	// 이 요청자가 좋아요를 누른 댓글 번호들을 한 번에 읽어 표시한다.
+    	// 예전에는 화면이 localStorage 로 판단해서 기기를 바꾸면 하트가 전부 풀렸다.
+    	java.util.Set<Integer> liked = CommonUtil.isNull(voterKey)
+    			? java.util.Collections.emptySet()
+    			: new java.util.HashSet<>(balanceGameMapper.selectLikedCommentNos(id, voterKey));
+
+    	for (BalanceGameCommentDTO comment : comments) {
+    		comment.setLikedByMe(liked.contains(comment.getNo()));
+    		comment.setDeletable(canDeleteComment(comment));
+    	}
+
+    	log.info("밸런스 게임 댓글 {}개", comments.size());
+        return comments;
     }
     
     // 밸런스 게임 댓글 달기
     @Override
     @Transactional
-    public List<BalanceGameCommentDTO> insertBalanceGameComment(Map<String, String> request) throws Exception {
+    public BalanceGameCommentDTO insertBalanceGameComment(CommentRequest request, String voterKey) throws Exception {
     	log.info("========== 밸런스 게임 댓글 추가 ==========");
-    	
-    	String id = request.get("id");
-    	String nickname = request.get("nickname");
-    	String side = request.get("side");
-    	String content = request.get("content");
-    	String userId = request.get("userId");
-    	
-    	if (CommonUtil.isNull(id) || CommonUtil.isNull(nickname) || CommonUtil.isNull(side) || CommonUtil.isNull(content)) {
-            return null;
+
+    	String id = request.getId();
+    	String nickname = request.getNickname();
+    	String content = request.getContent();
+
+    	// 필수값과 길이 제한은 CommentRequest 의 검증 애노테이션이 처리한다.
+    	// 금칙어는 형식이 아니라 도메인 규칙이라 여기 남긴다.
+    	if (ProfanityUtil.containsProfanity(nickname) || ProfanityUtil.containsProfanity(content)) {
+    		throw new UserMessageException("금칙어가 포함된 내용을 입력할 수 없습니다.");
+    	}
+
+    	// [신뢰 경계] 댓글의 진영은 요청이 아니라 서버의 투표 기록이 결정한다.
+    	// 예전에는 화면의 localStorage 값을 그대로 저장해서,
+    	// 투표하지 않았거나 반대편에 투표한 사람도 원하는 진영으로 댓글을 달 수 있었다.
+    	String side = resolveVotedSide(id, voterKey, request.getSide());
+
+    	BalanceGameCommentDTO comment = new BalanceGameCommentDTO();
+    	comment.setQuestionId(id);
+    	comment.setNickname(nickname);
+    	comment.setSelectedSide(side);
+    	comment.setContent(content);
+    	comment.setUserId(request.getUserId());
+    	comment.setAnonId(request.getAnonId());
+
+    	if (balanceGameMapper.insertBalanceGameComment(comment) != 1) {
+    		return null;
+    	}
+
+    	// useGeneratedKeys 로 no 가 채워졌으므로 방금 만든 댓글만 다시 읽어 돌려준다.
+    	// 전체 목록을 반환하면 화면이 통째로 다시 그려져 입력 중이던 내용과 스크롤이 날아간다.
+    	BalanceGameCommentDTO created = balanceGameMapper.selectCommentByNo(comment.getNo());
+    	if (created != null) {
+    		created.setLikedByMe(false);
+    		created.setDeletable(true); // 방금 본인이 작성한 댓글
+    	}
+    	return created;
+    }
+
+    /**
+     * 댓글에 표시할 진영을 결정한다.
+     *
+     * <p>원칙은 "서버의 투표 기록을 따른다" 이다. 다만 selected_side 컬럼을 추가하기 전에
+     * 투표한 사용자는 기록에 진영이 비어 있다. 그 경우에 한해 화면이 보낸 값을 한 번만
+     * 받아들이고 기록을 보정한다(자가 복구). 투표 자체가 없으면 거절한다.
+     */
+    private String resolveVotedSide(String questionId, String voterKey, String clientSide) {
+        String recorded = balanceGameMapper.selectVotedSide(questionId, voterKey);
+        if (recorded != null && !recorded.isBlank()) {
+            return recorded;
         }
 
-    	if (ProfanityUtil.containsProfanity(nickname) || ProfanityUtil.containsProfanity(content)) {
-    		throw new RuntimeException("금칙어가 포함된 내용을 입력할 수 없습니다.");
-    	}
-    	
-    	// 글자 수 체크 (50자 제한)
-    	if (content.length() > 50) {
-    		throw new RuntimeException("댓글은 50자 이내로 입력 가능합니다.");
-    	}
-    	
-    	int updatedRows = balanceGameMapper.insertBalanceGameComment(id, nickname, side, content, userId);
-    	if (updatedRows == 1) {
-    		return selectBalanceGameComment(id);
-    	}
-    	return null;
+        if (balanceGameMapper.countVoteLog(questionId, voterKey) == 0) {
+            throw new UserMessageException("투표 후 댓글을 남길 수 있습니다.");
+        }
+
+        // 진영 미기록 행: 화면 값을 받아들이되 형식은 확인하고, 기록을 채워 둔다.
+        if (!"left".equals(clientSide) && !"right".equals(clientSide)) {
+            throw new UserMessageException("투표 후 댓글을 남길 수 있습니다.");
+        }
+        balanceGameMapper.updateVoteLogSide(questionId, voterKey, clientSide);
+        log.info("진영 미기록 투표 보정: questionId={}, side={}", questionId, clientSide);
+        return clientSide;
     }
     
     // 밸런스 게임 관련 댓글 삭제
@@ -200,14 +278,8 @@ public class StandardBalanceGameService implements BalanceGameService {
     public String deleteBalanceGameComment(String id) throws Exception {
     	log.info("========== 밸런스 게임 댓글 삭제 ==========");
     	
-    	List<BalanceGameCommentDTO> list = selectBalanceGameComment(id);
-    	if (list != null && !list.isEmpty()) {
-    		int updatedRows = balanceGameMapper.deleteBalanceGameComment(id);
-    		if (updatedRows >= 1) {
-    			return id;
-    		}
-    		return null;
-    	} 
+    	// 게임 삭제에 딸린 정리 작업이라 권한/표시용 플래그 계산이 필요 없다.
+    	balanceGameMapper.deleteBalanceGameComment(id);
     	return id;
     }
 
@@ -216,71 +288,109 @@ public class StandardBalanceGameService implements BalanceGameService {
     @Transactional
     public String deleteSingleComment(int no) throws Exception {
         log.info("========== 밸런스 게임 단일 댓글 삭제: {} ==========", no);
-        int updatedRows = balanceGameMapper.deleteSingleComment(no);
-        if (updatedRows == 1) {
-            return "SUCCESS";
+
+        BalanceGameCommentDTO comment = balanceGameMapper.selectCommentByNo(no);
+        if (comment == null) {
+            return "FAIL";
         }
-        return "FAIL";
+
+        // 예전에는 관리자만 지울 수 있어서, 익명 작성자는 자기 오타 하나도 고칠 수 없었다.
+        if (!canDeleteComment(comment)) {
+            throw new UserMessageException("본인이 작성한 댓글만 삭제할 수 있습니다.");
+        }
+
+        return balanceGameMapper.deleteSingleComment(no) == 1 ? "SUCCESS" : "FAIL";
     }
     
     // 밸런스 게임 좋아요 등록
     @Override
     @Transactional
-    public List<BalanceGameCommentDTO> updateBalanceGameCommentLikeCount(Map<String, String> request) throws Exception {
-    	log.info("========== 밸런스 게임 댓글 좋아요 추가 ==========");
-    	
-    	String id = request.get("id");
-    	int no = Integer.parseInt(request.get("no"));
-    	String setting = request.get("setting");
-    	
-    	int updatedRows;
-    	if ("UP".equals(setting)) { 		
-    		updatedRows = balanceGameMapper.updateBalanceGameCommentLikeCount(no, id, 1);
-    	} else {
-    		updatedRows = balanceGameMapper.updateBalanceGameCommentLikeCount(no, id, -1);    		
+    public BalanceGameCommentDTO toggleCommentLike(CommentLikeRequest request, String voterKey) throws Exception {
+    	log.info("========== 댓글 좋아요 토글 ==========");
+
+    	String id = request.getId();
+    	int commentNo = request.getNo();
+
+    	if (CommonUtil.isNull(id) || CommonUtil.isNull(voterKey)) {
+    		return null;
     	}
 
-    	if (updatedRows == 1) {
-    		return selectBalanceGameComment(id);
+    	// [중복 방지] 누를지 취소할지는 요청이 아니라 기록이 결정한다.
+    	// 예전에는 화면이 보낸 setting('UP'/'DOWN') 을 그대로 믿고 ±1 해서,
+    	// localStorage 를 지우거나 API 를 직접 호출하면 무한히 올릴 수 있었다.
+    	boolean liked;
+    	if (balanceGameMapper.insertCommentLike(commentNo, voterKey) == 1) {
+    		// 처음 누른 경우
+    		balanceGameMapper.updateBalanceGameCommentLikeCount(commentNo, id, 1);
+    		liked = true;
+    	} else {
+    		// 이미 눌러둔 경우 → 취소
+    		if (balanceGameMapper.deleteCommentLike(commentNo, voterKey) == 1) {
+    			balanceGameMapper.updateBalanceGameCommentLikeCount(commentNo, id, -1);
+    		}
+    		liked = false;
     	}
-    	return null;
+
+    	// 전체 목록이 아니라 바뀐 댓글 하나만 돌려준다.
+    	BalanceGameCommentDTO updated = balanceGameMapper.selectCommentByNo(commentNo);
+    	if (updated == null) {
+    		return null;
+    	}
+    	updated.setLikedByMe(liked);
+    	updated.setDeletable(canDeleteComment(updated));
+    	return updated;
+    }
+
+    /**
+     * 이 요청자가 해당 댓글을 지울 수 있는지 판단한다.
+     *
+     * <p>관리자 / 로그인 작성자 본인 / 익명이라도 작성 당시의 토큰을 가진 브라우저.
+     */
+    private boolean canDeleteComment(BalanceGameCommentDTO comment) {
+        if (SecurityUtil.isAdmin()) {
+            return true;
+        }
+        String username = SecurityUtil.getCurrentUsername();
+        if (username != null) {
+            return username.equals(comment.getUserId());
+        }
+        String anonId = AnonymousIdentity.current();
+        return anonId != null && anonId.equals(comment.getAnonId());
     }
 	
     // 밸런스 게임 등록
     @Override
     @Transactional
-    public String insertBalanceGame(Map<String, String> params, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
-    	String title = params.get("title");
-    	String spicyFilter = params.get("spicyFilter");
-    	String category = params.get("category");
-    	String status = params.getOrDefault("status", "draft");
-    	String option1Text = params.get("option1Text");
-    	String option2Text = params.get("option2Text");
+    @CacheEvict(cacheNames = CacheConfig.CONTENT_LIST, allEntries = true)
+    public String insertBalanceGame(BalanceGameForm form, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
 
-        // 입력값 검증
-        validateBalanceGame(title, option1Text, option2Text);
+        // 필수값·길이 제한은 BalanceGameForm 의 검증 애노테이션이 처리한다.
+        // 금칙어는 형식이 아니라 도메인 규칙이라 여기 남긴다.
+        validateProfanity(form);
 
     	String option1ImagePath = fileService.upload(option1Image);
     	String option2ImagePath = fileService.upload(option2Image);
-    	String lastId = generateNextId(balanceGameMapper.selectMaxBalanceGameId(null, null));
-    	
-    	if (CommonUtil.isNull(title) || CommonUtil.isNull(spicyFilter) || CommonUtil.isNull(category) || 
-            CommonUtil.isNull(option1Text) || CommonUtil.isNull(option2Text) || 
-            CommonUtil.isNull(option1ImagePath) || CommonUtil.isNull(option2ImagePath)) {
+
+    	if (CommonUtil.isNull(option1ImagePath) || CommonUtil.isNull(option2ImagePath)) {
             return null;
         }
 
+    	// 검증을 모두 통과한 뒤에 채번한다. 먼저 뽑으면 중간에 반환될 때마다 번호가 버려진다.
+    	String lastId = nextBalanceGameId();
+
     	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
-    	balanceGameDto.setTitle(title);
-        balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
-        balanceGameDto.setCategory(category);
-        balanceGameDto.setStatus(status);
-        balanceGameDto.setOption1Text(option1Text);
-        balanceGameDto.setOption2Text(option2Text);
+    	balanceGameDto.setTitle(form.getTitle());
+        balanceGameDto.setIsSpicy(form.isSpicy());
+        balanceGameDto.setCategory(form.getCategory());
+        balanceGameDto.setStatus(form.getStatusOrDefault());
+        balanceGameDto.setOption1Text(form.getOption1Text());
+        balanceGameDto.setOption2Text(form.getOption2Text());
         balanceGameDto.setOption1ImagePath(option1ImagePath);
         balanceGameDto.setOption2ImagePath(option2ImagePath);
     	balanceGameDto.setId(lastId);
-    	balanceGameDto.setUserId(getCurrentUserId());
+    	// 등록은 로그인 사용자만 가능하다(컨트롤러 + SecurityConfig 에서 차단).
+    	// 여기서 한 번 더 확인해 소유자 없는 레코드가 생기지 않게 한다.
+    	balanceGameDto.setUserId(SecurityUtil.requireCurrentUsername());
     	
     	// 신규 등록 시 카운트 초기화 (0) - NULL 방지
     	balanceGameDto.setOption1Count(0);
@@ -297,46 +407,39 @@ public class StandardBalanceGameService implements BalanceGameService {
     // 밸런스 게임 수정
     @Override
     @Transactional
-	public String updateBalanceGame(Map<String, String> params, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
-    	String id = params.get("id");
-        
-        // [보안] 권한 확인
-        if (!CheckMyTest(id)) {
-            throw new RuntimeException("해당 게임을 수정할 권한이 없습니다.");
-        }
+    @CacheEvict(cacheNames = CacheConfig.CONTENT_LIST, allEntries = true)
+	public String updateBalanceGame(BalanceGameForm form, MultipartFile option1Image, MultipartFile option2Image) throws Exception {
+    	String id = form.getId();
 
-    	String title = params.get("title");
-    	String spicyFilter = params.get("spicyFilter");
-    	String category = params.get("category");
-    	String status = params.get("status");
-    	String option1Text = params.get("option1Text");
-    	String option2Text = params.get("option2Text");
-    	String oldOption1ImagePath = params.get("oldOption1ImagePath");
-    	String oldOption2ImagePath = params.get("oldOption2ImagePath");
-    	
         if (CommonUtil.isNull(id)) return null;
 
-        // 입력값 검증
-        validateBalanceGame(title, option1Text, option2Text);
+        // [보안] 권한 확인
+        if (!CheckMyTest(id)) {
+            throw new UserMessageException("해당 게임을 수정할 권한이 없습니다.");
+        }
+
+    	String oldOption1ImagePath = form.getOldOption1ImagePath();
+    	String oldOption2ImagePath = form.getOldOption2ImagePath();
+
+        validateProfanity(form);
 
         String option1ImagePath = fileService.upload(option1Image);
     	String option2ImagePath = fileService.upload(option2Image);
-    	
-    	if (CommonUtil.isNull(title) || CommonUtil.isNull(spicyFilter) || CommonUtil.isNull(category) || 
-            CommonUtil.isNull(option1Text) || CommonUtil.isNull(option2Text) || 
-            CommonUtil.isNull(option1ImagePath) || CommonUtil.isNull(option2ImagePath)) {
+
+    	if (CommonUtil.isNull(option1ImagePath) || CommonUtil.isNull(option2ImagePath)) {
             return null;
         }
 
     	BalanceGameDTO balanceGameDto = new BalanceGameDTO();
         balanceGameDto.setId(id);
-    	balanceGameDto.setTitle(title);
-        balanceGameDto.setIsSpicy(Boolean.parseBoolean(spicyFilter));
-        balanceGameDto.setCategory(category);
-        balanceGameDto.setStatus(status);
-        balanceGameDto.setOption1Text(option1Text);
-        balanceGameDto.setOption2Text(option2Text);
-    	balanceGameDto.setUserId(getCurrentUserId());
+    	balanceGameDto.setTitle(form.getTitle());
+        balanceGameDto.setIsSpicy(form.isSpicy());
+        balanceGameDto.setCategory(form.getCategory());
+        balanceGameDto.setStatus(form.getStatus());
+        balanceGameDto.setOption1Text(form.getOption1Text());
+        balanceGameDto.setOption2Text(form.getOption2Text());
+        // 수정 시 소유자는 바꾸지 않는다. updateBalanceGame 쿼리에 user_id 가 없어
+        // 원래도 반영되지 않던 값이라, 관리자가 남의 글을 고쳐도 소유권은 유지된다.
 
         if (DEFAULT_IMAGE.equals(option1ImagePath)) {
             option1ImagePath = oldOption1ImagePath;
@@ -365,21 +468,26 @@ public class StandardBalanceGameService implements BalanceGameService {
     // 밸런스 게임 삭제
     @Override
     @Transactional
-	public String deleteBalanceGame(Map<String, String> params) throws Exception {
-    	String id = params.get("id");
-        
+    @CacheEvict(cacheNames = CacheConfig.CONTENT_LIST, allEntries = true)
+	public String deleteBalanceGame(BalanceGameForm form) throws Exception {
+    	String id = form.getId();
+
+    	if (CommonUtil.isNull(id)) return null;
+
         // [보안] 권한 확인
         if (!CheckMyTest(id)) {
-            throw new RuntimeException("해당 게임을 삭제할 권한이 없습니다.");
+            throw new UserMessageException("해당 게임을 삭제할 권한이 없습니다.");
         }
 
-    	String oldOption1ImagePath = params.get("oldOption1ImagePath");
-    	String oldOption2ImagePath = params.get("oldOption2ImagePath");
-    	
-    	if (CommonUtil.isNull(id)) return null;
+    	String oldOption1ImagePath = form.getOldOption1ImagePath();
+    	String oldOption2ImagePath = form.getOldOption2ImagePath();
 
         // 관련 댓글 먼저 삭제 (트랜잭션 보장)
         deleteBalanceGameComment(id);
+
+        // 투표 로그도 함께 정리한다. 남겨두면 같은 ID 가 재사용될 때
+        // 새 게임에 투표하지 않은 사람이 중복 투표자로 오판된다.
+        balanceGameMapper.deleteVoteLogByQuestionId(id);
     	
     	int updatedRows = balanceGameMapper.deleteBalanceGame(id);
     	if (updatedRows == 1) {
@@ -395,65 +503,43 @@ public class StandardBalanceGameService implements BalanceGameService {
     	return null;
     }
     
-    private void validateBalanceGame(String title, String option1Text, String option2Text) {
-        if (title != null && title.length() > 30) {
-            throw new RuntimeException("제목의 길이가 30자를 초과했습니다.");
+    /**
+     * 금칙어 검사.
+     *
+     * 길이·필수값 검증은 BalanceGameForm 의 애노테이션으로 옮겼다.
+     * 금칙어는 서비스가 아는 도메인 규칙이라 여기 남긴다.
+     */
+    private void validateProfanity(BalanceGameForm form) {
+        if (ProfanityUtil.containsProfanity(form.getTitle())
+                || ProfanityUtil.containsProfanity(form.getOption1Text())
+                || ProfanityUtil.containsProfanity(form.getOption2Text())) {
+            throw new UserMessageException("금칙어가 포함된 내용을 입력할 수 없습니다.");
         }
-        if (option1Text != null && option1Text.length() > 20) {
-            throw new RuntimeException("왼쪽 선택지의 길이가 20자를 초과했습니다.");
-        }
-        if (option2Text != null && option2Text.length() > 20) {
-            throw new RuntimeException("오른쪽 선택지의 길이가 20자를 초과했습니다.");
-        }
-
-        if (ProfanityUtil.containsProfanity(title) || 
-            ProfanityUtil.containsProfanity(option1Text) || 
-            ProfanityUtil.containsProfanity(option2Text)) {
-            throw new RuntimeException("금칙어가 포함된 내용을 입력할 수 없습니다.");
-        }
-    }
-
-    private boolean IsLoggedIn() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.isAuthenticated() && 
-              !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
-    }
-
-    private String getCurrentUserId() {
-        if (!IsLoggedIn()) {
-            return "mdadmin"; 
-        }
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof PrincipalDetails) {
-            return ((PrincipalDetails) principal).getUsername();
-        }
-        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     @Override
     public boolean CheckMyTest(String id) {
         log.info("========== 권한 확인 시작: {} ==========", id);
-        
+
         // 1. 로그인 상태가 아니면 무조건 권한 없음
-        if (!IsLoggedIn()) {
+        if (!SecurityUtil.isAuthenticated()) {
             log.warn("- 비로그인 사용자 접근 차단");
             return false;
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        // 2. 관리자 권한 확인 (ROLE_ADMIN 권한이 있다면 아이디 상관없이 허용)
-        if (authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+        // 2. 관리자 권한 확인 (ROLE_ADMIN 이면 아이디 상관없이 허용)
+        if (SecurityUtil.isAdmin()) {
             log.info("- 관리자 권한 확인됨");
             return true;
         }
 
         // 3. 작성자 확인
-        String currentUserId = getCurrentUserId();
+        String currentUserId = SecurityUtil.getCurrentUsername();
         try {
             BalanceGameDTO balanceGame = balanceGameMapper.selectBalanceGame(id, null, null);
-            if (balanceGame != null && currentUserId.equals(balanceGame.getUserId())) {
+            // 작성자가 없는(익명) 콘텐츠는 관리자만 다룰 수 있으므로 여기서 false 다.
+            if (balanceGame != null && balanceGame.getUserId() != null
+                    && balanceGame.getUserId().equals(currentUserId)) {
                 log.info("- 작성자 본인 확인됨: {}", currentUserId);
                 return true;
             }
@@ -465,21 +551,48 @@ public class StandardBalanceGameService implements BalanceGameService {
         return false;
     }
 
-    public static String generateNextId(String lastId) {
-        String prefix = "BG";
-        int nextNumber = 1;
-        if (lastId != null && lastId.startsWith(prefix)) {
-            try {
-                String numericPart = lastId.substring(2); 
-                nextNumber = Integer.parseInt(numericPart) + 1;
-            } catch (NumberFormatException e) {
-                nextNumber = 1;
-            }
+    /** 서비스용 ID 접두사 */
+    private static final String ID_PREFIX = "BG";
+
+    /**
+     * 다음 밸런스 게임 ID 를 채번한다.
+     *
+     * <p>이전 구현은 {@code SELECT MAX(id)} 에 +1 을 했는데, 그 조회에 status='active'
+     * 필터가 걸려 있어서 가장 큰 ID 를 가진 게임이 draft 이면 이미 존재하는 ID 를 다시
+     * 발급했다(UNIQUE 위반으로 등록 실패). 동시 등록 시 두 요청이 같은 MAX 를 읽는
+     * 경쟁 조건도 있었다.
+     *
+     * <p>이제는 id_sequence 테이블의 행 락으로 직렬화되므로 두 문제가 모두 사라진다.
+     * 호출부가 @Transactional 이어야 한다(LAST_INSERT_ID 는 커넥션 단위 상태).
+     */
+    private String nextBalanceGameId() {
+        Map<String, Object> param = new java.util.HashMap<>();
+        balanceGameMapper.nextBalanceGameSequence(param);
+
+        Object value = param.get("value");
+        if (value == null) {
+            // id_sequence 에 'balance_game' 행이 없으면 UPDATE 가 0건이라 값이 없다.
+            // 조용히 1번부터 발급하면 기존 ID 와 충돌하므로 명시적으로 실패시킨다.
+            throw new IllegalStateException(
+                    "ID 시퀀스가 초기화되지 않았습니다. 'SQL 쿼리 모음/id_sequence.sql' 을 실행하세요.");
         }
-        return String.format("%s%05d", prefix, nextNumber);
+
+        return formatId(((Number) value).longValue());
+    }
+
+    /**
+     * 번호를 서비스용 ID 문자열로 변환한다.
+     *
+     * <p>5자리 zero padding 을 유지하는 이유: 이전/다음 게임 조회가 id 문자열 비교
+     * (ORDER BY id)로 순서를 정하기 때문에, 자릿수가 같아야 사전순과 숫자순이 일치한다.
+     * 99999 를 넘으면 이 성질이 깨지므로 그때는 조회 쿼리도 함께 손봐야 한다.
+     */
+    static String formatId(long number) {
+        return String.format("%s%05d", ID_PREFIX, number);
     }
 
 	@Override
+	@Cacheable(cacheNames = CacheConfig.PARTICIPANT_COUNT, key = "'balanceGameParticipantCount'")
 	public long getTotalParticipantCount() {
 		return balanceGameMapper.selectTotalParticipantCount();
 	}

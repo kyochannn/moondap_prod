@@ -111,17 +111,24 @@
 
 			balanceGameList.forEach(balanceGame => {
 
-				let id = balanceGame.id;
-				let totalCnt = balanceGame.totalCount;
-				let commnetCnt = balanceGame.commentCnt;
+				// [보안] 아래 값들은 문자열로 조립돼 append() 로 DOM 에 들어간다.
+				// 제목은 사용자가 자유롭게 입력하는 값이므로 반드시 이스케이프한다.
+				// (이 처리가 없어서 제목에 <img onerror=...> 를 넣으면 목록을 여는
+				//  모든 방문자에게 스크립트가 실행됐다)
+				let id = escapeHtml(balanceGame.id);
+				let title = escapeHtml(balanceGame.title);
+				let totalCnt = Number(balanceGame.totalCount) || 0;
+				let commnetCnt = Number(balanceGame.commentCnt) || 0;
 				let category = balanceGame.category;
 				let spicyFilter = balanceGame.isSpicy === true ? 1 : 0;
 				let teg = '';
 				let link = '/balanceGame/selectBalanceGameView?id=' + id + '&spicyFilter=' + listSpicyFilter + '&category=' + listCategory;
 
 				let catInfo = categoryMap[category] || { displayName: '기타/랜덤', icon: 'bi-stack' };
-				let displayCatName = catInfo.displayName;
-				let iconClass = catInfo.icon;
+				// 카테고리 이름·아이콘은 관리자가 등록하는 값이라 위험도는 낮지만,
+				// 같은 방식으로 DOM 에 들어가므로 동일하게 처리한다.
+				let displayCatName = escapeHtml(catInfo.displayName);
+				let iconClass = escapeHtml(catInfo.icon);
 				teg = `<i class="bi ${iconClass}"></i>`;
 				category = displayCatName;
 
@@ -137,7 +144,7 @@
 		                    	` + teg + `
 		                  	</div>
 		                  	<div class="card-content">
-		                    	<h4 class="mt-1">${spicyBadge} ${balanceGame.title}</h4>
+		                    	<h4 class="mt-1">${spicyBadge} ${title}</h4>
 								<p class="fw-light"><i class="bi bi-tags-fill"></i> ` + category + `</p>
 		                    	<span class="response-time">
 									<span class="me-2">

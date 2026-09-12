@@ -1,6 +1,7 @@
 package com.moondap.config.auth;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,10 +11,10 @@ import com.moondap.dto.MdUserDTO;
 import com.moondap.mapper.MdUserMapper;
 
 @Service
+@RequiredArgsConstructor
 public class PrincipalDetailsService implements UserDetailsService {
 
-	@Autowired
-	private MdUserMapper mdUserMapper;
+	private final MdUserMapper mdUserMapper;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

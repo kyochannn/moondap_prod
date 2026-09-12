@@ -1,18 +1,19 @@
 package com.moondap.service;
 
+import lombok.RequiredArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.moondap.mapper.SiteStatMapper;
 
 @Service
+@RequiredArgsConstructor
 public class MdStatService implements StatService {
 
-    @Autowired
-    private SiteStatMapper siteStatMapper;
+    private final SiteStatMapper siteStatMapper;
 
     @Override
     public void incrementVisitCount(String ipAddress) {

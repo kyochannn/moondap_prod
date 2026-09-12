@@ -1,5 +1,7 @@
 package com.moondap.service;
 
+import com.moondap.common.exception.UserMessageException;
+
 import com.moondap.dto.MdTestDTO;
 import com.moondap.dto.MdTestQuestionDTO;
 import com.moondap.dto.MdTestResultDTO;
@@ -7,7 +9,10 @@ import com.moondap.dto.MdContentItemDTO;
 import com.moondap.mapper.MdTestMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import com.moondap.config.CacheConfig;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +50,7 @@ public class MdTestUserService {
 
         if (questions.size() != answers.size()) {
             log.error("질문 수({})와 답변 수({})가 일치하지 않습니다.", questions.size(), answers.size());
-            throw new IllegalArgumentException("답변 데이터가 올바르지 않습니다.");
+            throw new UserMessageException("답변 데이터가 올바르지 않습니다.");
         }
 
         // 1. 점수 합산 (모든 유형 공통)
@@ -94,7 +99,15 @@ public class MdTestUserService {
                     .filter(r -> r.getMinScore() != null && r.getMaxScore() != null)
                     .filter(r -> percentage >= r.getMinScore() && percentage <= r.getMaxScore())
                     .findFirst()
-                    .orElse(results.isEmpty() ? null : results.get(0));
+                    .orElse(null);
+
+            if (matchedResult == null) {
+                // 어떤 결과 구간에도 속하지 않았다. 결과들의 min/max 범위가 0~100 을
+                // 다 덮지 못하거나 서로 어긋난 것이므로 설정 오류다.
+                // 사용자에게는 첫 번째 결과라도 보여주되, 반드시 추적 가능하게 남긴다.
+                logUnmatchedResult(testId, "SCORE", "점수 " + percentage + "% 에 해당하는 구간 없음", results);
+                matchedResult = results.isEmpty() ? null : results.get(0);
+            }
 
             if (matchedResult != null) {
                 matchedResult.setCalculatedScore(percentage);
@@ -126,9 +139,16 @@ public class MdTestUserService {
 
             final String targetDomain = bestDomain;
             MdTestResultDTO matchedResult = results.stream()
-                    .filter(r -> r.getResultTitle().equals(targetDomain))
+                    .filter(r -> java.util.Objects.equals(r.getResultTitle(), targetDomain))
                     .findFirst()
-                    .orElse(results.isEmpty() ? null : results.get(0));
+                    .orElse(null);
+
+            if (matchedResult == null) {
+                // 질문의 domain 값과 결과의 result_title 이 정확히 일치해야 매칭되는 구조다.
+                // 오타 하나로도 전원이 엉뚱한 결과를 받게 되므로 반드시 추적 가능하게 남긴다.
+                logUnmatchedResult(testId, "TYPE", "도메인 '" + targetDomain + "' 과 같은 제목의 결과 없음", results);
+                matchedResult = results.isEmpty() ? null : results.get(0);
+            }
 
             if (matchedResult != null) {
                 matchedResult.setBreakdown(breakdown);
@@ -139,6 +159,25 @@ public class MdTestUserService {
     }
 
     /**
+     * 결과 매칭 실패를 기록한다.
+     *
+     * <p>매칭에 실패해도 첫 번째 결과를 돌려주기 때문에 사용자 화면은 정상으로 보인다.
+     * 즉 관리자가 결과 설정을 잘못해도 아무도 알아채지 못한다. 그래서 조용히 넘어가지 않고
+     * 어떤 테스트의 어떤 설정이 문제인지 로그로 남긴다.
+     */
+    private void logUnmatchedResult(Long testId, String testType, String reason,
+                                    List<MdTestResultDTO> results) {
+        String candidates = results.stream()
+                .map(MdTestResultDTO::getResultTitle)
+                .map(t -> t == null ? "(제목없음)" : t)
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        log.warn("결과 매칭 실패 [testId={}, type={}] {} / 등록된 결과: [{}] "
+                        + "→ 첫 번째 결과로 대체함. 테스트 결과 설정을 확인하세요.",
+                testId, testType, reason, candidates);
+    }
+
+    /**
      * 테스트 참여자 수를 1 증가시킵니다.
      */
     public void incrementPlayCount(Long testId) {
@@ -146,15 +185,13 @@ public class MdTestUserService {
     }
 
     /**
-     * 메인 페이지용 인기 콘텐츠 리스트를 조회합니다.
-     */
-    public List<MdContentItemDTO> getPopularContent(int limit) {
-        return mdTestMapper.selectPopularContent(limit);
-    }
-
-    /**
      * 전체 리스트 페이지용 콘텐츠 리스트를 조회합니다.
+     *
+     * <p>md_tests 와 balance_questions 를 통째로 UNION 한 뒤 정렬·LIMIT 하는 쿼리라
+     * 인덱스를 타지 못한다. 메인 페이지 한 번에 이 조회가 3번 일어나므로 캐시한다.
+     * 콘텐츠가 등록·수정·삭제되면 캐시를 비운다(MdTestAdminService, StandardBalanceGameService).
      */
+    @Cacheable(cacheNames = CacheConfig.CONTENT_LIST)
     public List<MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit) {
         return mdTestMapper.selectAllContentList(category, sort, type, offset, limit);
     }

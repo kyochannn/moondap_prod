@@ -64,12 +64,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
     
-    <!-- 밸런스 게임 최솟값 조회 -->
-    <select id="selectMinBalanceGameId" resultType="string">
-        SELECT MIN(id)
-        FROM moondap.balance_questions
-        WHERE status = 'active'
-    </select>
+    <!--
+      밸런스 게임 ID 채번.
+
+      UPDATE 가 해당 행에 배타 락을 잡으므로, 동시에 들어온 다른 트랜잭션은
+      커밋 때까지 대기한다. 따라서 같은 번호가 두 번 발급되지 않는다.
+
+      LAST_INSERT_ID(expr) 는 값을 세팅하면서 그대로 돌려주는 MySQL 관용구다.
+      커넥션 단위 상태라서 반드시 같은 트랜잭션(=같은 커넥션) 안에서 읽어야 한다.
+      호출부(StandardBalanceGameService.insertBalanceGame)는 @Transactional 이다.
+    -->
+    <update id="nextBalanceGameSequence" parameterType="map">
+        <selectKey keyProperty="value" resultType="long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        UPDATE moondap.id_sequence
+           SET next_val = LAST_INSERT_ID(next_val + 1)
+         WHERE seq_name = 'balance_game'
+    </update>
+
     
     <!-- 이전 / 다음 밸런스 게임 개별 조회 -->
 	<select id="nextOrPrevBalanceGameIdSelect" resultType="string">
@@ -111,26 +124,65 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</sql>
 
 	<!-- 밸런스 게임 투표 -->
+    <!--
+      total_count 를 두 카운트의 합으로 다시 계산하지 않고 증가분만 더한다.
+
+      이전 구문은 SET 절 안에서 option_1_count 를 참조했는데, 그 값이 "갱신 전"인지
+      "갱신 후"인지는 MySQL 의 좌→우 평가 순서에 의존한다. 지금은 맞게 동작하지만
+      DB 를 바꾸거나 절 순서를 손대면 조용히 틀어진다.
+    -->
     <update id="vote">
         UPDATE moondap.balance_questions
            SET option_1_count = option_1_count + #{option1Count}
               ,option_2_count = option_2_count + #{option2Count}
-              ,total_count = option_1_count + option_2_count 
+              ,total_count    = total_count + #{option1Count} + #{option2Count}
         WHERE id = #{id}
     </update>
 	
+	<!-- 투표 로그 기록 (중복이면 affected rows = 0) -->
+    <insert id="insertVoteLog">
+        INSERT IGNORE INTO moondap.balance_vote_log (question_id, voter_key, selected_side)
+        VALUES (#{questionId}, #{voterKey}, #{side})
+    </insert>
+
+    <!-- 이 사용자가 투표한 진영. 기록이 없거나 진영 미기록이면 null -->
+    <select id="selectVotedSide" resultType="string">
+        SELECT selected_side
+        FROM moondap.balance_vote_log
+        WHERE question_id = #{questionId} AND voter_key = #{voterKey}
+    </select>
+
+    <!-- 투표 기록 존재 여부 -->
+    <select id="countVoteLog" resultType="int">
+        SELECT COUNT(*)
+        FROM moondap.balance_vote_log
+        WHERE question_id = #{questionId} AND voter_key = #{voterKey}
+    </select>
+
+    <!-- 진영이 비어 있는 예전 행 보정 (컬럼 추가 이전에 투표한 사용자) -->
+    <update id="updateVoteLogSide">
+        UPDATE moondap.balance_vote_log
+           SET selected_side = #{side}
+         WHERE question_id = #{questionId} AND voter_key = #{voterKey}
+           AND selected_side IS NULL
+    </update>
+
+    <!-- 게임 삭제 시 투표 로그 정리 -->
+    <delete id="deleteVoteLogByQuestionId">
+        DELETE FROM moondap.balance_vote_log
+        WHERE question_id = #{questionId}
+    </delete>
+
 	<!-- 밸런스 게임 댓글 -->
-    <insert id="insertBalanceGameComment">
-        INSERT INTO moondap.balance_comments(question_id, nickname, selected_side ,content, user_id)
-        VALUES (#{id}, #{nickname}, #{side}, #{content}, #{userId})
+    <!-- 생성된 no 를 DTO 에 돌려받아, 방금 만든 댓글 하나만 응답할 수 있게 한다. -->
+    <insert id="insertBalanceGameComment" parameterType="BalanceGameCommentDTO"
+            useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO moondap.balance_comments
+            (question_id, nickname, selected_side, content, user_id, anon_id)
+        VALUES
+            (#{questionId}, #{nickname}, #{selectedSide}, #{content}, #{userId}, #{anonId})
     </insert>
     
-	<!-- 밸런스 게임 댓글 개수 -->
-    <select id="selectBalanceGameCount" resultType="int">
-        SELECT COUNT(*)
-        FROM moondap.balance_comments
-		WHERE question_id = #{id}
-    </select>
     
     <!-- 밸런스 게임 댓글 조회 -->
     <select id="selectBalanceGameComment" resultType="BalanceGameCommentDTO">
@@ -151,6 +203,37 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         DELETE FROM moondap.balance_comments
         WHERE no = #{no}
     </delete>
+
+    <!-- 댓글 단건 조회 -->
+    <select id="selectCommentByNo" resultType="BalanceGameCommentDTO">
+        SELECT *
+        FROM moondap.balance_comments
+        WHERE no = #{no}
+    </select>
+
+    <!--
+      좋아요 기록.
+      PK(comment_no, voter_key) 덕분에 중복이면 affected rows 가 0 이 된다.
+      이 값이 곧 "새로 눌렀는지 / 이미 눌렀는지" 의 판정 기준이다.
+    -->
+    <insert id="insertCommentLike">
+        INSERT IGNORE INTO moondap.balance_comment_like (comment_no, voter_key)
+        VALUES (#{commentNo}, #{voterKey})
+    </insert>
+
+    <delete id="deleteCommentLike">
+        DELETE FROM moondap.balance_comment_like
+        WHERE comment_no = #{commentNo} AND voter_key = #{voterKey}
+    </delete>
+
+    <!-- 해당 게임의 댓글 중 이 사용자가 좋아요를 누른 것들 -->
+    <select id="selectLikedCommentNos" resultType="int">
+        SELECT l.comment_no
+        FROM moondap.balance_comment_like l
+        JOIN moondap.balance_comments c ON c.no = l.comment_no
+        WHERE c.question_id = #{questionId}
+          AND l.voter_key = #{voterKey}
+    </select>
 
 	<!-- 밸런스 게임 좋아요 -->
     <update id="updateBalanceGameCommentLikeCount">
@@ -189,10 +272,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE id = #{id}
     </delete>
 
-    <!-- 게시글 번호 최댓값 -->
-<!--     <select id="maxPk" resultType="int"> -->
-<!--         SELECT MAX(no) -->
-<!--         FROM MdBoard -->
     <!-- 전체 참여자 수 합계 -->
     <select id="selectTotalParticipantCount" resultType="long">
         SELECT COALESCE(SUM(total_count), 0)
