@@ -43,6 +43,58 @@
 		@keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 50px; opacity: 1; } }
 		@-webkit-keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 		@keyframes fadeout { from { bottom: 50px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+		/* ── 추천 테스트 (가로형 리스트) ────────────────────────
+		   댓글을 지나온 뒤 위치라 세로 카드로는 너무 길어진다.
+		   한 항목을 90px 안팎으로 유지해 3개가 한눈에 들어오게 한다. */
+		.rec-list { display: flex; flex-direction: column; gap: 10px; }
+
+		.rec-item {
+			display: flex; align-items: center; gap: 12px;
+			padding: 10px; text-decoration: none;
+			background: rgba(255, 255, 255, 0.04);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			border-radius: 14px;
+			transition: background .2s ease, transform .2s ease;
+		}
+		.rec-item:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+
+		.rec-thumb {
+			position: relative; flex: 0 0 72px;
+			width: 72px; height: 72px; border-radius: 10px; overflow: hidden;
+			background: linear-gradient(135deg, #2a2550, #1b1b3a);
+			display: flex; align-items: center; justify-content: center;
+		}
+		.rec-thumb img { width: 100%; height: 100%; object-fit: cover; }
+		.rec-thumb-fallback { color: rgba(255, 255, 255, 0.35); font-size: 1.6rem; }
+
+		.rec-new {
+			position: absolute; top: 4px; left: 4px;
+			background: #ff4d6d; color: #fff;
+			font-size: 0.55rem; font-weight: 700;
+			padding: 1px 5px; border-radius: 6px;
+		}
+
+		.rec-body { flex: 1 1 auto; min-width: 0; }
+		.rec-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+		.rec-cat {
+			font-size: 0.68rem; color: #b9b4ff;
+			background: rgba(124, 117, 255, 0.15);
+			padding: 1px 7px; border-radius: 20px;
+		}
+		.rec-play { font-size: 0.68rem; color: #ffc107; }
+
+		/* 제목·설명이 길어도 한 줄로 잘라 높이를 고정한다 */
+		.rec-title {
+			color: #fff; font-weight: 700; font-size: 0.92rem;
+			white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+		}
+		.rec-desc {
+			color: rgba(255, 255, 255, 0.5); font-size: 0.75rem;
+			white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+		}
+
+		.rec-arrow { color: rgba(255, 255, 255, 0.3); flex: 0 0 auto; }
     </style> 
     <script th:inline="javascript"> 
         // 서버에서 넘겨준 현재 게임 ID
@@ -90,6 +142,10 @@
     			
     			// 채팅창 활성화
     			$('#balance-game-chat-container').fadeIn();
+
+    			// 추천 테스트도 투표 후에만 보여준다.
+    			// 투표 전에 노출하면 참여하기도 전에 나갈 길을 먼저 주는 셈이다.
+    			$('#recommend-tests').fadeIn();
     			
     			// 댓글 그리기
     	        selectBalanceGameComment();
@@ -105,6 +161,7 @@
 	        	
     			// 채팅창 비활성화
     			$('#balance-game-chat-container').hide();
+	        	$('#recommend-tests').hide();
 	        }
 	        
 			// 엔터키 지원
@@ -203,6 +260,7 @@
 	    			$('#balance-game-progressbar-container').show();
 					
 	    			// 7. 투표 성공 시 채팅창과 결과 바를 부드럽게 보여줌
+					$('#recommend-tests').fadeIn(500);
 					$('#balance-game-chat-container').fadeIn(500, function() {
 					    // 1. 첫 번째 댓글 요소 선택 (renderCommentList가 실행된 후여야 함)
 					    const $firstComment = $('.comment-list > div').first();
@@ -754,12 +812,12 @@
 								<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 									<div>
 									<button type="button"
-										class="btn btn-outline-light d px-3 bord-radius-20"
+										class="btn btn-outline-light"
 										onclick="balanceGameListView()" >
 										<i class="bi bi-list-task"></i> 리스트로 이동
 									</button>
 									<button type="button"
-										class="btn btn-outline-light d px-3 bord-radius-20"
+										class="btn btn-outline-light"
 										onclick="updateBalanceGameView()" 
 										th:if="${(!isAnonymous and currentUserId == balanceGame.userId) or #authorization.expression('hasRole(''ADMIN'')')}">
 										<i class="bi bi-pencil-fill"></i> 편집하기
@@ -767,7 +825,7 @@
 									</div>
 									<div class="btn-group dropdown">
 										<button type="button"
-											class="btn btn-outline-light d px-3 bord-radius-20 dropdown-toggle"
+											class="btn btn-outline-light dropdown-toggle"
 											data-bs-toggle="dropdown" aria-expanded="false">
 											<i class="bi bi-share-fill"></i>
 										</button>
@@ -835,18 +893,18 @@
 		<section id="share-container" class="py-1 my-1 position-relative z-2 overflow-visible">
 			<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 				<button type="button"
-					class="btn btn-outline-light d px-3 bord-radius-20"
+					class="btn btn-outline-light"
 					onclick="goToNextOrPrevGame('PREV')">
 					<i class="bi bi-arrow-left-circle-fill"></i> 이전 질문
 				</button>
 
 				<button type="button"
-					class="btn btn-outline-light d bord-radius-20" id="resetVoteBtn"
+					class="btn btn-outline-light" id="resetVoteBtn"
 					onclick="resetVote()">
 					<i class="bi bi-arrow-counterclockwise"></i>
 				</button>
 				<button type="button"
-					class="btn btn-outline-light d px-3 bord-radius-20"
+					class="btn btn-outline-light"
 					onclick="goToNextOrPrevGame('NEXT')">
 					다음 질문 <i class="bi bi-arrow-right-circle-fill"></i>
 				</button>
@@ -877,8 +935,7 @@
 				<div class="chat-input-wrapper p-2">
 					<div class="d-flex align-items-center">
 	
-						<button type="button" class="btn p-1 ms-2"
-							style="color: #6c757d; border: none;">
+						<button type="button" class="btn btn-muted btn-icon btn-sm ms-2">
 							<i class="bi bi-chat-dots-fill"></i>
 						</button>
 	
@@ -889,7 +946,7 @@
 	
 						<button type="button"
 							onclick="insertBalanceGameComment()"
-							class="comment-send-btn">
+							class="btn btn-primary btn-icon btn-circle">
 							<i class="bi bi-send-fill"></i>
 						</button>
 					</div>
@@ -900,6 +957,71 @@
 			<div class="comment-list"></div>
 		</section>
 		<!-- /Chat Section -->
+
+		<!--
+		  추천 테스트 섹션
+
+		  투표 직후가 관여도가 가장 높은 순간인데, 이 화면에서 나갈 길이
+		  '이전/다음 질문'과 '리스트로 이동' 뿐이라 밸런스 게임 안에서만 돌게 됐다.
+		  테스트 결과·에겐테토 화면에는 이미 있던 패턴을 여기에도 둔다.
+
+		  밸런스 게임은 일부러 추천하지 않는다. '다음 질문' 버튼이 그 역할을 한다.
+
+		  [레이아웃] 다른 화면의 큰 세로 카드 대신 가로형으로 만든다.
+		  여기는 댓글을 모두 지나온 뒤에 나오는 위치라, 세로 카드 3개를 쓰면
+		  모바일에서 2천 픽셀이 넘어 끝까지 보지 않는다. 썸네일이 없는 콘텐츠가
+		  거대한 빈 박스로 보이는 문제도 함께 없앤다.
+		-->
+		<section id="recommend-tests" class="py-4" style="display: none;"
+				 th:if="${popularNormalTests != null and !#lists.isEmpty(popularNormalTests)}">
+			<div class="text-center mb-3">
+				<h5 class="fw-bold text-white mb-1">
+					<i class="bi bi-journal-check me-2 style-color-primary"></i>이런 테스트는 어때요?
+				</h5>
+				<p class="text-white-50 small mb-0">선택은 끝났으니, 이번엔 나를 알아볼 차례예요</p>
+			</div>
+
+			<div class="rec-list">
+				<a th:each="t : ${popularNormalTests}"
+				   th:href="${t.type == 'EGEN'}
+							? @{/egenTeto/selectEgenTetoGame}
+							: @{/test/{key}(key=${t.key})}"
+				   class="rec-item">
+					<div class="rec-thumb">
+						<img th:if="${t.thumbnail != null and t.thumbnail != ''}"
+							 th:src="${#strings.startsWith(t.thumbnail, '/assets/')}
+									 ? ${t.thumbnail}
+									 : (@{/uploads/} + ${t.thumbnail})"
+							 th:alt="${t.title}" loading="lazy">
+						<!-- 썸네일이 없으면 빈 박스 대신 아이콘을 둔다 -->
+						<span th:unless="${t.thumbnail != null and t.thumbnail != ''}" class="rec-thumb-fallback">
+							<i class="bi bi-journal-text"></i>
+						</span>
+						<span th:if="${t.isNew}" class="rec-new">NEW</span>
+					</div>
+
+					<div class="rec-body">
+						<div class="rec-meta">
+							<span class="rec-cat" th:text="${t.categoryName}">카테고리</span>
+							<span class="rec-play">
+								<i class="bi bi-controller"></i>
+								<span th:text="${#numbers.formatInteger(t.playCount, 0, 'COMMA')}">0</span>
+							</span>
+						</div>
+						<div class="rec-title" th:text="${t.title}">테스트 제목</div>
+						<div class="rec-desc" th:text="${t.description}">설명</div>
+					</div>
+
+					<i class="bi bi-chevron-right rec-arrow"></i>
+				</a>
+			</div>
+
+			<div class="text-center mt-3">
+				<a href="/test/list?type=NORMAL" class="btn btn-primary btn-sm px-4">
+					테스트 전체보기 <i class="bi bi-arrow-right ms-1"></i>
+				</a>
+			</div>
+		</section>
 	</div>
 
 	<div class="modal fade" id="nicknameModal" tabindex="-1"
@@ -913,8 +1035,7 @@
 				<div class="modal-body py-0">
 					<div class="chat-input-wrapper p-2">
 						<div class="d-flex align-items-center">
-							<button type="button" class="btn p-1 ms-2"
-								style="color: #6c757d; border: none;">
+							<button type="button" class="btn btn-muted btn-icon btn-sm ms-2">
 								<i class="bi bi-person-circle"></i>
 							</button>
 							<input type="text"
@@ -925,11 +1046,9 @@
 					</div>
 				</div>
 				<div class="modal-footer border-0 justify-content-center gap-2">
-				    <button type="button" class="btn px-4 bord-radius-20"
-				        style="background-color: transparent; border: 1px solid #4a4d6d; color: #a1a1a1; font-size: 0.9rem;"
+				    <button type="button" class="btn btn-outline-light"
 				        onclick="cancelNickname()">취소</button>
-				    <button type="button" class="btn px-4 bord-radius-20"
-				        style="background-color: var(--accent-color); border-color: var(--accent-color); color: var(--contrast-color); font-size: 0.9rem; font-weight: 600;"
+				    <button type="button" class="btn btn-primary"
 				        onclick="saveNickname()">등록</button>
 				</div>
 			</div>
