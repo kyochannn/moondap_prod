@@ -31,7 +31,10 @@ CREATE TABLE IF NOT EXISTS md_tests (
     category        VARCHAR(50)           DEFAULT NULL,
     test_type       VARCHAR(20)           DEFAULT 'TYPE',
     estimated_time  INT                   DEFAULT NULL,
-    status          VARCHAR(20)           DEFAULT 'ACTIVE',
+    -- 소문자 'active' 다. 애플리케이션이 "active".equals(...) 로 비교하므로
+    -- 'ACTIVE' 로 넣으면 목록에는 뜨지만(MySQL 비교는 대소문자 구분 안 함)
+    -- 상세 페이지에서 비공개로 판정돼 오류가 난다.
+    status          VARCHAR(20)           DEFAULT 'active',
     created_by      VARCHAR(50)           DEFAULT NULL,
     play_count      INT                   DEFAULT 0,
     created_at      DATETIME              DEFAULT CURRENT_TIMESTAMP,

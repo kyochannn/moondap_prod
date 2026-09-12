@@ -160,8 +160,10 @@ public class BalanceGameController {
 
 		model.addAttribute("balanceGame", balanceGame);
 		
-		// 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
-		if (!"active".equals(balanceGame.getStatus())) {
+		// 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능.
+		// 대소문자를 구분하지 않는다 — 매퍼의 WHERE status = 'active' 는 MySQL 콜레이션상
+		// 'ACTIVE' 도 통과시키므로, 여기서만 구분하면 목록에는 보이는데 상세만 막힌다.
+		if (!"active".equalsIgnoreCase(balanceGame.getStatus())) {
 			if (!balanceGameService.CheckMyTest(balanceGame.getId())) {
 				throw new UserMessageException("해당 게임에 접근할 권한이 없습니다.");
 			}

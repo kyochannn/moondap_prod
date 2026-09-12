@@ -91,7 +91,7 @@ public class MdTestUserController {
         if (test == null) return "redirect:/";
         
         // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
-        if (!"active".equals(test.getStatus())) {
+        if (!isPublished(test.getStatus())) {
             if (!isAdminOrAuthor(test.getCreatedBy())) {
                 throw new UserMessageException("해당 테스트에 접근할 권한이 없습니다.");
             }
@@ -108,6 +108,18 @@ public class MdTestUserController {
         model.addAttribute("seo", seo);
 
         return "test/intro";
+    }
+
+    /**
+     * 공개 상태인지 여부.
+     *
+     * <p>대소문자를 구분하지 않는다. 매퍼의 {@code WHERE status = 'active'} 는 MySQL
+     * 콜레이션상 'ACTIVE' 도 통과시키므로, 여기서만 구분하면 목록에는 보이는데 상세만
+     * 막히는 상태가 된다. 실제로 status 가 'ACTIVE' 로 들어간 행 때문에 목록의 카드를
+     * 눌렀을 때 오류 페이지가 떴다.
+     */
+    private boolean isPublished(String status) {
+        return "active".equalsIgnoreCase(status);
     }
 
     /** 업로드 썸네일의 공개 경로. 없거나 기본 이미지면 공통 대체 이미지를 쓴다. */
@@ -131,7 +143,7 @@ public class MdTestUserController {
         if (test == null) return "redirect:/";
 
         // 비공개/초안 상태일 경우 관리자나 작성자만 접근 가능
-        if (!"active".equals(test.getStatus())) {
+        if (!isPublished(test.getStatus())) {
             if (!isAdminOrAuthor(test.getCreatedBy())) {
                 throw new UserMessageException("해당 테스트에 접근할 권한이 없습니다.");
             }
@@ -225,7 +237,7 @@ public class MdTestUserController {
         if (matchedResult == null) return "redirect:/test/" + testKey;
 
         // 결과 조회 시에도 권한 체크 (공유된 링크 등을 통한 우회 방지)
-        if (!"active".equals(test.getStatus())) {
+        if (!isPublished(test.getStatus())) {
             if (!isAdminOrAuthor(test.getCreatedBy())) {
                 throw new UserMessageException("해당 테스트의 결과에 접근할 권한이 없습니다.");
             }
