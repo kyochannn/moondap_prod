@@ -4236,6 +4236,12 @@ section,
   margin-bottom: 12px;
 }
 
+/* 서비스 이름만 노란색으로 띄운다. 로고의 달 색과 같은 계열이라
+   화면 위쪽의 로고와 제목이 하나로 읽힌다. */
+#hero-intro .hero-brand {
+  color: #ffc107;
+}
+
 #hero-intro .hero-sub {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.95rem;
