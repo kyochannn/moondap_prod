@@ -8,6 +8,20 @@
     -webkit-backdrop-filter: blur(20px);
 }
 
+/*
+  추천 목록은 결과 카드와 같은 폭·같은 중심선에 둔다.
+
+  이전에는 컨테이너 폭을 그대로 써서, 넓은 화면에서 결과 카드(700px)만 가운데
+  좁게 있고 그 아래 추천만 1300px 넘게 퍼졌다. 한 화면 안에서 기준선이 두 개가
+  되어 추천이 다른 페이지의 일부처럼 보였고, 설명 한 줄이 화면 끝까지 늘어져
+  읽기도 어려웠다.
+*/
+.result-recommend {
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .report-accent-bar {
     height: 10px;
     background: linear-gradient(90deg, #865EF4, #a166ff);

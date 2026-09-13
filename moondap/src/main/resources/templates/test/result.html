@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <title th:text="'테스트 결과 - ' + ${test.title}">테스트 결과</title>
     <link th:href="@{/assets/css/testResult-page.css(v=1.1)}" rel="stylesheet">
+    <script th:src="@{/assets/js/test-progress.js(v=1.0)}"></script>
     <style>
         .table-info-highlight {
             background: rgba(13, 202, 240, 0.1) !important;
@@ -70,8 +71,12 @@
                             <h3 class="fw-bold text-white" th:text="${result.resultTitle}">결과 타이틀</h3>
                         </div>
 
-                        <!-- 점수형일 때 전용 게이지 섹션 -->
-                        <div th:if="${test.testType == 'SCORE'}" class="score-visualization mb-5">
+                        <!-- 점수형일 때 전용 게이지 섹션.
+                             calculatedScore 는 응시 직후(POST)에만 계산된다. 공유 링크나
+                             검색 유입처럼 ?resultCode= 만 있는 GET 으로 들어오면 null 이라
+                             "종합 점수  점" 에 숫자가 비고 게이지가 0% 로 멈춘 채 보였다.
+                             점수가 없으면 섹션 자체를 내린다. 아래 상세 분석 블록도 같은 조건이다. -->
+                        <div th:if="${test.testType == 'SCORE' and result.calculatedScore != null}" class="score-visualization mb-5">
                             <div class="d-flex justify-content-between align-items-end mb-2">
                                 <span class="text-white-50 small"><i class="bi bi-graph-up-arrow me-1"></i> 종합 점수</span>
                                 <span class="fw-bold text-primary fs-3"><span th:text="${result.calculatedScore}">0</span>점</span>
@@ -259,7 +264,7 @@
                 </div>
 
                 <!-- 추천 테스트 섹션 (DB 연동 및 가로 배치) -->
-                <div class="mt-0 game-gallery" data-aos="fade-up">
+                <div class="mt-0 game-gallery result-recommend" data-aos="fade-up">
                     
                     <!-- 추천 목록.
                          밸런스 게임 상세와 같은 가로형(.rec-*)을 쓴다. 세로 카드로 두면
@@ -561,6 +566,17 @@
                 document.body.style.overflow = 'auto';
             }, 300);
         }
+    </script>
+
+    <!-- 결과를 봤으니 브라우저에 남은 진행 기록을 지운다.
+         질문 화면은 광고 대기 중 이탈에 대비해 다 푼 답변을 남겨 두므로,
+         여기서 지우지 않으면 메인에 "이어하기"가 계속 떠 있게 된다. -->
+    <script th:inline="javascript" th:if="${justCompleted}">
+        /*<![CDATA[*/
+        if (window.TestProgress) {
+            TestProgress.clear(/*[[${test.testKey}]]*/ '');
+        }
+        /*]]>*/
     </script>
 </body>
 </html>

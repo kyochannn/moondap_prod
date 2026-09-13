@@ -7,6 +7,7 @@
     <title>에겐/테토 테스트 결과</title>
     <!-- 결과 페이지 전용 CSS -->
     <link th:href="@{/assets/css/testResult-page.css(v=1.1)}" rel="stylesheet">
+    <script th:src="@{/assets/js/test-progress.js(v=1.0)}"></script>
     <!-- html2canvas 라이브러리 (이미지 저장용) -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- Highcharts -->
@@ -424,7 +425,7 @@
                 </div>
 
                 <!-- 추천 테스트 섹션 (실제 DB 연동 및 가로 배치) -->
-                <div class="mt-0 game-gallery" data-aos="fade-up">
+                <div class="mt-0 game-gallery result-recommend" data-aos="fade-up">
                     
                     <!-- 추천 목록.
                          밸런스 게임 상세와 같은 가로형(.rec-*)을 쓴다. 세로 카드로 두면
@@ -722,6 +723,18 @@
                 modal.style.display = 'none';
                 document.body.style.overflow = 'auto';
             }, 300);
+        }
+        /*]]>*/
+    </script>
+
+    <!-- 결과를 봤으니 브라우저에 남은 진행 기록을 지운다.
+         질문 화면은 광고 대기 중 이탈에 대비해 다 푼 답변을 남겨 두므로,
+         여기서 지우지 않으면 메인에 "이어하기"가 계속 떠 있게 된다.
+         저장 구분자는 questions.html 과 같은 규칙('egenTeto:<성별>')을 써야 한다. -->
+    <script th:inline="javascript" th:if="${justCompleted}">
+        /*<![CDATA[*/
+        if (window.TestProgress) {
+            TestProgress.clear('egenTeto:' + (/*[[${userBroker.gender}]]*/ 'M'));
         }
         /*]]>*/
     </script>
