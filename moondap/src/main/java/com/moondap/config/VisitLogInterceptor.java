@@ -46,7 +46,10 @@ public class VisitLogInterceptor implements HandlerInterceptor {
     private static final String[] BOT_MARKERS = {
             "bot", "crawl", "spider", "slurp", "scrapy", "curl", "wget",
             "python-requests", "okhttp", "headlesschrome", "facebookexternalhit",
-            "embedly", "quora link preview", "bitlybot", "yeti", "daum"
+            "embedly", "quora link preview", "bitlybot", "yeti",
+            // 다음 크롤러. "daum" 만으로 거르면 다음 앱 인앱 브라우저(DaumApps/6.9.x)까지
+            // 봇으로 걸러져 실제 방문자가 통째로 누락된다.
+            "daumoa", "daum/"
     };
 
     @Override

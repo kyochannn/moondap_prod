@@ -54,6 +54,29 @@ class VisitLogInterceptorTest {
     }
 
     @Test
+    @DisplayName("[회귀] 국내 인앱 브라우저는 사람으로 센다")
+    void countsKoreanInAppBrowsers() {
+        // "daum" 으로 거르면 다음 앱(DaumApps/6.9.x)까지 봇이 되어 실제 방문자가 빠진다.
+        handle(request("GET", "/", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+                + "AppleWebKit/605.1.15 DaumApps/6.9.41 DaumDevice/mobile", null));
+        handle(request("GET", "/", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 "
+                + "KAKAOTALK/10.4.0", null));
+        handle(request("GET", "/", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+                + "NAVER(inapp; search; 2000; 12.9.0)", null));
+
+        verify(statService, org.mockito.Mockito.times(3)).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("다음 크롤러는 여전히 거른다")
+    void stillSkipsDaumCrawler() {
+        handle(request("GET", "/", "Mozilla/5.0 (compatible; Daum/4.1; +http://cs.daum.net/)", null));
+        handle(request("GET", "/", "Daumoa/3.0", null));
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
     @DisplayName("User-Agent 가 없으면 세지 않는다")
     void skipsMissingUserAgent() {
         handle(request("GET", "/", null, null));
