@@ -78,4 +78,14 @@ public interface SiteStatMapper {
      * @return 지워진 행 수
      */
     int deleteVisitLogsBefore(@Param("cutoffDate") String cutoffDate);
+
+    // ── 접속 기록 열람 ────────────────────────────────────────
+
+    /** 특정 날짜의 접속 IP 목록. */
+    List<String> selectVisitLogIps(@Param("visitDate") String visitDate,
+                                   @Param("offset") int offset,
+                                   @Param("limit") int limit);
+
+    /** 특정 날짜의 접속 IP 수. */
+    long countVisitLogsOn(@Param("visitDate") String visitDate);
 }

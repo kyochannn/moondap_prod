@@ -1,6 +1,7 @@
 package com.moondap.controller;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moondap.dto.DailyStatDTO;
@@ -17,6 +19,7 @@ import com.moondap.service.SiteStatsQueryService;
 import com.moondap.service.VisitLogRetentionService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 관리자 접속 통계.
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
  * {@code @PreAuthorize} 를 함께 둔다. URL 규칙은 경로를 바꾸는 순간 조용히 풀리는데,
  * 메서드에 붙은 것은 같이 따라온다.
  */
+@Slf4j
 @Controller
 @RequestMapping("/admin/stats")
 @PreAuthorize("hasRole('ADMIN')")
@@ -77,6 +81,41 @@ public class MdStatsAdminController {
         model.addAttribute("canPurge", PURGE_ALLOWED_USER.equals(currentUsername()));
 
         return "admin/stats/visitStats";
+    }
+
+    /**
+     * 접속 기록(IP) 열람.
+     *
+     * <p>통계 화면과 분리했다. 같은 화면에 두면 통계를 보러 들어갈 때마다 개인정보가
+     * 함께 노출된다. 따로 두면 열람이 명시적인 행동이 되고, 누가 언제 열었는지
+     * 기록을 남길 수 있다.
+     */
+    @GetMapping("/logs")
+    public String logs(@RequestParam(value = "date", required = false) String date,
+                       @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                       Model model) {
+
+        String targetDate = (date == null || date.isBlank())
+                ? LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : date.trim();
+
+        int safePage = Math.max(0, page);
+        long total = visitLogRetentionService.countOn(targetDate);
+        List<String> ips = visitLogRetentionService.ipsOn(targetDate, safePage);
+
+        // 개인정보 열람 기록. 나중에 "누가 언제 봤나"를 확인할 근거가 된다.
+        log.info("접속 기록 열람: 조회자={}, 대상일={}, {}건 중 {}건 표시",
+                currentUsername(), targetDate, total, ips.size());
+
+        int pageSize = VisitLogRetentionService.PAGE_SIZE;
+        model.addAttribute("ips", ips);
+        model.addAttribute("logDate", targetDate);
+        model.addAttribute("logTotal", total);
+        model.addAttribute("logPage", safePage);
+        model.addAttribute("logHasMore", (long) (safePage + 1) * pageSize < total);
+        model.addAttribute("retentionDays", VisitLogRetentionService.RETENTION_DAYS);
+
+        return "admin/stats/visitLogs";
     }
 
     /**

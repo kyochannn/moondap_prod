@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>접속 기록 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+
+    <style>
+        .log-notice {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        /* IP 는 자릿수를 맞춰 세로로 훑기 쉽게 고정폭으로 둔다. */
+        .ip-cell {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            color: #fff;
+            font-size: 0.88rem;
+        }
+
+        .log-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 8px;
+        }
+
+        .log-item {
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <h4 class="fw-bold text-white mb-1">🗂 접속 기록</h4>
+                        <p class="text-white-50 mb-0 small">하루에 같은 IP 는 한 번만 기록됩니다.</p>
+                    </div>
+                    <a th:href="@{/admin/stats}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>통계로
+                    </a>
+                </div>
+
+                <!-- 개인정보를 열람하는 화면이라는 것을 명시한다. -->
+                <div class="log-notice">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    IP 주소는 개인정보입니다. 방문 통계 확인과 부정 이용 조사 목적으로만 사용하세요.
+                    이 화면의 열람 기록은 서버 로그에 남습니다.
+                    보관 기간은 <strong th:text="${retentionDays}">90</strong>일이며, 지난 기록은 파기됩니다.
+                </div>
+
+                <!-- 날짜 선택 -->
+                <form th:action="@{/admin/stats/logs}" method="get" class="d-flex align-items-center gap-2 mb-4 flex-wrap">
+                    <input type="date" name="date" th:value="${logDate}" class="form-control" style="max-width: 200px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-search me-1"></i>조회
+                    </button>
+                    <span class="text-white-50 small ms-1">
+                        <strong class="text-white" th:text="${logDate}">-</strong> ·
+                        <strong class="text-white" th:text="${#numbers.formatInteger(logTotal, 0, 'COMMA')}">0</strong>건
+                    </span>
+                </form>
+
+                <div th:if="${#lists.isEmpty(ips)}" class="text-center py-5 text-white-50">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    <p class="mb-0">이 날짜의 접속 기록이 없습니다.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(ips)}">
+                    <div class="log-grid">
+                        <div th:each="ip : ${ips}" class="log-item">
+                            <span class="ip-cell" th:text="${ip}">0.0.0.0</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2 mt-4">
+                        <a th:if="${logPage > 0}"
+                           th:href="@{/admin/stats/logs(date=${logDate}, page=${logPage - 1})}"
+                           class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-chevron-left me-1"></i>이전
+                        </a>
+                        <span class="text-white-50 small align-self-center"
+                              th:text="${logPage + 1} + ' 페이지'">1 페이지</span>
+                        <a th:if="${logHasMore}"
+                           th:href="@{/admin/stats/logs(date=${logDate}, page=${logPage + 1})}"
+                           class="btn btn-outline-light btn-sm">
+                            다음 <i class="bi bi-chevron-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+</body>
+</html>

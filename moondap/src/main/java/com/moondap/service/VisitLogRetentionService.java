@@ -2,6 +2,7 @@ package com.moondap.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,9 @@ public class VisitLogRetentionService {
 
     /** 처리방침에 고지한 보유기간. 이 값을 바꾸면 privacy.html 도 함께 고쳐야 한다. */
     public static final int RETENTION_DAYS = 90;
+
+    /** 하나의 화면에 보여줄 IP 수. */
+    public static final int PAGE_SIZE = 50;
 
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -60,6 +64,21 @@ public class VisitLogRetentionService {
         // 개인정보 파기는 되돌릴 수 없다. 언제 몇 건을 지웠는지 로그로 남겨 둔다.
         log.info("접속 기록 파기: 기준일 {} 이전 {}건 삭제", cutoffDate, deleted);
         return deleted;
+    }
+
+    /**
+     * 특정 날짜의 접속 IP 목록.
+     *
+     * <p>개인정보 열람이므로 호출한 쪽(컨트롤러)에서 누가 언제 열었는지 로그를 남긴다.
+     */
+    public List<String> ipsOn(String visitDate, int page) {
+        int offset = Math.max(0, page) * PAGE_SIZE;
+        return siteStatMapper.selectVisitLogIps(visitDate, offset, PAGE_SIZE);
+    }
+
+    /** 특정 날짜의 접속 IP 수. */
+    public long countOn(String visitDate) {
+        return siteStatMapper.countVisitLogsOn(visitDate);
     }
 
     /** 이 날짜보다 앞선 기록이 파기 대상이다. */

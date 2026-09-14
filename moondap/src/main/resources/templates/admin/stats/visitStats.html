@@ -153,6 +153,10 @@
                         <span class="retention-figure" th:text="${#numbers.formatInteger(logExpired, 0, 'COMMA')}">0</span>건입니다.
                     </p>
 
+                    <a th:href="@{/admin/stats/logs}" class="btn btn-outline-light btn-sm mb-2">
+                        <i class="bi bi-list-ul me-1"></i>접속 기록(IP) 보기
+                    </a>
+
                     <!-- 되돌릴 수 없는 작업이라 계정 하나로 제한한다. 서버에서도 같은 검사를 한다. -->
                     <form th:if="${canPurge}" th:action="@{/admin/stats/purge-logs}" method="post"
                           onsubmit="return confirm('보유기간이 지난 접속 기록을 파기합니다. 되돌릴 수 없습니다. 진행할까요?');">

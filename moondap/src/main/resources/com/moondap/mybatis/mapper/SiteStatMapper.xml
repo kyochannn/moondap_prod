@@ -90,4 +90,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         DELETE FROM moondap.site_visit_log
         WHERE visit_date &lt; #{cutoffDate}
     </delete>
+
+    <!-- ── 접속 기록 열람 ──────────────────────────────────── -->
+
+    <!--
+      정렬을 ip_address 로 고정한다. PK 가 (visit_date, ip_address) 라
+      정렬 비용이 없고, 같은 대역이 붙어 나와 몰린 구간이 눈에 띈다.
+    -->
+    <select id="selectVisitLogIps" resultType="string">
+        SELECT ip_address
+        FROM moondap.site_visit_log
+        WHERE visit_date = #{visitDate}
+        ORDER BY ip_address ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countVisitLogsOn" resultType="long">
+        SELECT COUNT(*) FROM moondap.site_visit_log
+        WHERE visit_date = #{visitDate}
+    </select>
 </mapper>
