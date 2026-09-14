@@ -1,6 +1,9 @@
 package com.moondap.config;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -39,7 +42,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/test/love-style", BROWSER, null));
 
         // 이 한 줄이 빠져 있어서 검색 유입이 통째로 누락됐다.
-        verify(statService).recordVisit(anyString());
+        verify(statService).recordVisit(anyString(), eq("/test/love-style"), any());
     }
 
     @Test
@@ -50,7 +53,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", "python-requests/2.31.0", null));
 
         // 사이트맵을 보고 들어오는 크롤러가 사람 수를 덮어버리면 지표가 무의미해진다.
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -64,7 +67,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
                 + "NAVER(inapp; search; 2000; 12.9.0)", null));
 
-        verify(statService, org.mockito.Mockito.times(3)).recordVisit(anyString());
+        verify(statService, org.mockito.Mockito.times(3)).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -73,7 +76,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", "Mozilla/5.0 (compatible; Daum/4.1; +http://cs.daum.net/)", null));
         handle(request("GET", "/", "Daumoa/3.0", null));
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -82,7 +85,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", null, null));
         handle(request("GET", "/", "", null));
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -91,7 +94,7 @@ class VisitLogInterceptorTest {
         // 한 화면에서 여러 번 나가므로 방문으로 치면 같은 사람이 여러 번 잡힌다.
         handle(request("GET", "/balanceGame/selectBalanceGameList", BROWSER, "XMLHttpRequest"));
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -99,7 +102,7 @@ class VisitLogInterceptorTest {
     void skipsNonGet() {
         handle(request("POST", "/balanceGame/vote", BROWSER, null));
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -113,7 +116,7 @@ class VisitLogInterceptorTest {
                 request("GET", "/assets/js/main.js", BROWSER, null),
                 new MockHttpServletResponse(), resourceHandler);
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -124,7 +127,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/favicon.png", BROWSER, null));
         handle(request("GET", "/sitemap.xml", BROWSER, null));
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
@@ -133,19 +136,66 @@ class VisitLogInterceptorTest {
         // 운영자가 통계를 보러 들어온 것이 그 통계에 섞이면 안 된다.
         handle(request("GET", "/admin/stats", BROWSER, null));
 
-        verify(statService, never()).recordVisit(anyString());
+        verify(statService, never()).recordVisit(anyString(), anyString(), any());
     }
 
     @Test
     @DisplayName("집계가 실패해도 화면 요청은 계속 진행된다")
     void survivesFailure() {
         org.mockito.Mockito.doThrow(new RuntimeException("DB 장애"))
-                .when(statService).recordVisit(anyString());
+                .when(statService).recordVisit(anyString(), anyString(), any());
 
         // 예외가 밖으로 나가면 통계 한 건 때문에 페이지 전체가 오류가 된다.
         boolean proceeded = handle(request("GET", "/", BROWSER, null));
 
         org.assertj.core.api.Assertions.assertThat(proceeded).isTrue();
+    }
+
+    @Test
+    @DisplayName("같은 화면이 여러 경로로 갈리지 않는다")
+    void normalizesPath() {
+        // 뒤 슬래시와 ;jsessionid 가 붙으면 같은 화면이 별개의 행으로 쌓여,
+        // 실제로 가장 많이 열린 화면이 상위 목록에서 사라진다.
+        handle(request("GET", "/test/love-style/", BROWSER, null));
+        verify(statService).recordVisit(anyString(), eq("/test/love-style"), any());
+
+        handle(request("GET", "/test/love-style;jsessionid=ABC123", BROWSER, null));
+        verify(statService, org.mockito.Mockito.times(2))
+                .recordVisit(anyString(), eq("/test/love-style"), any());
+    }
+
+    @Test
+    @DisplayName("사이트 안에서의 이동은 유입으로 세지 않는다")
+    void internalNavigationIsNotEntry() {
+        // 메인에서 테스트로 넘어간 클릭까지 유입으로 세면 '직접 유입'이 실제의 몇 배로
+        // 부풀어, 검색·SNS 가 실제로 데려오는 사람 수가 묻힌다.
+        MockHttpServletRequest request = request("GET", "/test/love-style", BROWSER, null);
+        request.setServerName("moondap.com");
+        request.addHeader("Referer", "https://www.moondap.com/");
+
+        handle(request);
+
+        verify(statService).recordVisit(anyString(), eq("/test/love-style"), isNull());
+    }
+
+    @Test
+    @DisplayName("검색으로 들어오면 출처가 남는다")
+    void recordsSearchEntry() {
+        MockHttpServletRequest request = request("GET", "/test/love-style", BROWSER, null);
+        request.setServerName("moondap.com");
+        request.addHeader("Referer", "https://m.search.naver.com/search.naver?query=%EC%97%B0%EC%95%A0");
+
+        handle(request);
+
+        verify(statService).recordVisit(anyString(), eq("/test/love-style"), eq("네이버"));
+    }
+
+    @Test
+    @DisplayName("Referer 가 없으면 직접 유입으로 남는다")
+    void recordsDirectEntry() {
+        handle(request("GET", "/", BROWSER, null));
+
+        verify(statService).recordVisit(anyString(), eq("/"), eq(com.moondap.common.TrafficSource.DIRECT));
     }
 
     private boolean handle(MockHttpServletRequest request) {

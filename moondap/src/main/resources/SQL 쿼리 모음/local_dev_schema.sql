@@ -116,6 +116,22 @@ CREATE TABLE IF NOT EXISTS md_visit_daily (
     PRIMARY KEY (visit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 경로별 조회수와 유입 출처. (설명은 pageview_path.sql 참고)
+CREATE TABLE IF NOT EXISTS md_pageview_path (
+    visit_date  DATE         NOT NULL,
+    path        VARCHAR(191) NOT NULL,
+    view_count  BIGINT       NOT NULL DEFAULT 0,
+    entry_count BIGINT       NOT NULL DEFAULT 0,
+    PRIMARY KEY (visit_date, path)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS md_referrer_daily (
+    visit_date  DATE         NOT NULL,
+    source      VARCHAR(100) NOT NULL,
+    visit_count BIGINT       NOT NULL DEFAULT 0,
+    PRIMARY KEY (visit_date, source)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 로컬 md_balance_game 가 구버전이라 현재 매퍼가 쓰는 컬럼이 빠져 있다.
 -- (MySQL 8 은 ADD COLUMN IF NOT EXISTS 를 지원하지 않아 존재 확인 후 실행한다.)
 SET @sql := IF(

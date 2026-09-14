@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.moondap.dto.DailyStatDTO;
 import com.moondap.dto.HourlyStatDTO;
+import com.moondap.dto.PagePathStatDTO;
+import com.moondap.dto.ReferrerStatDTO;
 import com.moondap.mapper.SiteStatMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -78,6 +80,21 @@ public class SiteStatsQueryService {
         return filled;
     }
 
+    /** 최근 {@code days} 일 조회수 상위 경로. */
+    public List<PagePathStatDTO> topPages(int days, int limit) {
+        return siteStatMapper.selectTopPaths(from(days), today(), limit);
+    }
+
+    /** 최근 {@code days} 일 유입 수 상위 경로. 바깥에서 이 화면으로 바로 들어온 횟수 기준. */
+    public List<PagePathStatDTO> topEntryPages(int days, int limit) {
+        return siteStatMapper.selectTopEntryPaths(from(days), today(), limit);
+    }
+
+    /** 최근 {@code days} 일 유입 출처. */
+    public List<ReferrerStatDTO> topReferrers(int days, int limit) {
+        return siteStatMapper.selectTopReferrers(from(days), today(), limit);
+    }
+
     /** 특정 날짜의 순 방문자 수. */
     public long visitorsOn(LocalDate date) {
         return siteStatMapper.selectVisitCount(date.format(DAY));
@@ -87,6 +104,15 @@ public class SiteStatsQueryService {
     public long visitorsInLastDays(int days) {
         LocalDate today = LocalDate.now();
         return siteStatMapper.selectVisitSum(today.minusDays(days - 1L).format(DAY), today.format(DAY));
+    }
+
+    private String today() {
+        return LocalDate.now().format(DAY);
+    }
+
+    /** 오늘을 포함해 {@code days} 일을 보므로 하루를 뺀다. */
+    private String from(int days) {
+        return LocalDate.now().minusDays(days - 1L).format(DAY);
     }
 
     private DailyStatDTO emptyDay(String date) {

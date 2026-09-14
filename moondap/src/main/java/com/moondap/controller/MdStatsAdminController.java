@@ -43,6 +43,17 @@ public class MdStatsAdminController {
     private static final int HOURLY_DAYS = 7;
 
     /**
+     * 경로·유입 집계 기간.
+     *
+     * <p>추이(30일)보다 짧게 잡는다. 이 표는 "지금 무엇을 고칠까"를 보려는 것이라
+     * 한 달 전에 잘 나가던 화면이 섞이면 판단이 흐려진다.
+     */
+    private static final int PATH_DAYS = 7;
+
+    /** 표 한 개에 보여줄 줄 수. 더 늘리면 꼬리만 길어지고 읽히지 않는다. */
+    private static final int TOP_LIMIT = 15;
+
+    /**
      * 접속 기록을 파기할 수 있는 계정.
      *
      * <p>ADMIN 권한만으로는 부족하다고 보고 계정 하나로 좁혔다. 개인정보 파기는
@@ -73,6 +84,13 @@ public class MdStatsAdminController {
         model.addAttribute("last30", siteStatsQueryService.visitorsInLastDays(TREND_DAYS));
         model.addAttribute("trendDays", TREND_DAYS);
         model.addAttribute("hourlyDays", HOURLY_DAYS);
+
+        // 무엇을 보고 어디서 오는가. 방문자 수만으로는 "왜 참여로 이어지지 않는가"를
+        // 알 수 없어서 추가했다.
+        model.addAttribute("topPages", siteStatsQueryService.topPages(PATH_DAYS, TOP_LIMIT));
+        model.addAttribute("topEntries", siteStatsQueryService.topEntryPages(PATH_DAYS, TOP_LIMIT));
+        model.addAttribute("topReferrers", siteStatsQueryService.topReferrers(PATH_DAYS, TOP_LIMIT));
+        model.addAttribute("pathDays", PATH_DAYS);
 
         // 접속 기록 보유 현황
         model.addAttribute("logStored", visitLogRetentionService.storedCount());

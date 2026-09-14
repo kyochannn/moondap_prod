@@ -49,6 +49,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ON DUPLICATE KEY UPDATE view_count = view_count + 1
     </insert>
 
+    <!--
+      경로별 조회수 +1.
+
+      entry 는 0 또는 1 이다. 유입이 아닐 때 0 을 더하는 것은 낭비처럼 보이지만,
+      조회수와 유입수를 같은 행에 두려면 INSERT 한 번으로 끝나는 이 형태가 맞다.
+      분기하면 신규 행일 때 두 컬럼 중 하나가 비는 경우를 따로 다뤄야 한다.
+    -->
+    <insert id="upsertPathView">
+        INSERT INTO moondap.md_pageview_path (visit_date, path, view_count, entry_count)
+        VALUES (#{visitDate}, #{path}, 1, #{entry})
+        ON DUPLICATE KEY UPDATE view_count  = view_count + 1,
+                                entry_count = entry_count + #{entry}
+    </insert>
+
+    <!-- 유입 출처별 건수 +1 -->
+    <insert id="upsertReferrerVisit">
+        INSERT INTO moondap.md_referrer_daily (visit_date, source, visit_count)
+        VALUES (#{visitDate}, #{source}, 1)
+        ON DUPLICATE KEY UPDATE visit_count = visit_count + 1
+    </insert>
+
     <!-- 관리자 통계: 일별 추이 -->
     <select id="selectDailyStats" resultType="com.moondap.dto.DailyStatDTO">
         SELECT DATE_FORMAT(visit_date, '%Y-%m-%d') AS visitDate,
@@ -73,6 +94,45 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
         GROUP BY visit_hour
         ORDER BY visit_hour ASC
+    </select>
+
+    <!-- 관리자 통계: 조회수 상위 경로 -->
+    <select id="selectTopPaths" resultType="com.moondap.dto.PagePathStatDTO">
+        SELECT path,
+               SUM(view_count)  AS viewCount,
+               SUM(entry_count) AS entryCount
+        FROM moondap.md_pageview_path
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+        GROUP BY path
+        ORDER BY viewCount DESC, path ASC
+        LIMIT #{limit}
+    </select>
+
+    <!--
+      유입 수 상위 경로.
+      유입이 0 인 화면(사이트 안에서만 열리는 화면)은 이 목록에서 아무 의미가 없어 뺀다.
+    -->
+    <select id="selectTopEntryPaths" resultType="com.moondap.dto.PagePathStatDTO">
+        SELECT path,
+               SUM(view_count)  AS viewCount,
+               SUM(entry_count) AS entryCount
+        FROM moondap.md_pageview_path
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+        GROUP BY path
+        HAVING entryCount &gt; 0
+        ORDER BY entryCount DESC, path ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 관리자 통계: 유입 출처 -->
+    <select id="selectTopReferrers" resultType="com.moondap.dto.ReferrerStatDTO">
+        SELECT source,
+               SUM(visit_count) AS visitCount
+        FROM moondap.md_referrer_daily
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+        GROUP BY source
+        ORDER BY visitCount DESC, source ASC
+        LIMIT #{limit}
     </select>
 
     <!-- ── 접속 기록 보유기간 관리 ──────────────────────────── -->

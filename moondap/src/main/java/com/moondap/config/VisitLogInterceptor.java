@@ -1,6 +1,7 @@
 package com.moondap.config;
 
 import com.moondap.common.CommonUtil;
+import com.moondap.common.TrafficSource;
 import com.moondap.service.StatService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,14 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
  *
  * <p>집계 실패가 화면을 막지 않도록 예외를 삼킨다. 통계 한 건보다 페이지가 열리는 것이
  * 중요하다.
+ *
+ * <p><b>알려진 한계</b> — 집계는 {@code preHandle} 에서 하므로 응답 상태를 모른다.
+ * 매핑이 아예 없는 주소(스캐너가 찍어 보는 {@code /wp-admin/...} 같은 것)는 시큐리티
+ * 필터에서 404 로 끝나 여기까지 오지 않으므로 문제가 없지만, <b>매핑은 있고 콘텐츠만
+ * 없는 경로</b>({@code /test/없는키} → {@link com.moondap.common.exception.ContentNotFoundException})
+ * 는 조회 1건으로 남는다. 상태를 보려면 집계를 {@code afterCompletion} 으로 옮겨야 하는데
+ * 그러면 방문자 수의 의미까지 같이 바뀌어 지난 기록과 비교할 수 없게 된다.
+ * 지표의 연속성을 택했다.
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -59,12 +68,48 @@ public class VisitLogInterceptor implements HandlerInterceptor {
 
         if (shouldCount(request, handler)) {
             try {
-                statService.recordVisit(CommonUtil.getClientIp(request));
+                statService.recordVisit(
+                        CommonUtil.getClientIp(request),
+                        normalizePath(request.getRequestURI()),
+                        TrafficSource.classify(request.getHeader("Referer"), request.getServerName()));
             } catch (Exception e) {
                 log.error("방문 집계 실패: uri={}", request.getRequestURI(), e);
             }
         }
         return true;
+    }
+
+    /** md_pageview_path.path 컬럼 길이. */
+    private static final int MAX_PATH_LENGTH = 191;
+
+    /**
+     * 같은 화면이 여러 행으로 갈리지 않도록 경로를 다듬는다.
+     *
+     * <p>{@code /test/abc} 와 {@code /test/abc/} 가 따로 쌓이면 상위 목록에서 둘 다
+     * 순위 밖으로 밀려, 실제로 가장 많이 열린 화면이 보이지 않는다.
+     */
+    private String normalizePath(String uri) {
+        if (uri == null || uri.isEmpty()) {
+            return "/";
+        }
+
+        String path = uri;
+
+        // 쿠키를 막은 클라이언트에는 톰캣이 ;jsessionid=... 를 경로에 붙여 보낸다.
+        // 그대로 두면 방문자마다 다른 경로가 되어 집계가 통째로 흩어진다.
+        int semicolon = path.indexOf(';');
+        if (semicolon >= 0) {
+            path = path.substring(0, semicolon);
+        }
+
+        while (path.length() > 1 && path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        if (path.isEmpty()) {
+            return "/";
+        }
+
+        return path.length() > MAX_PATH_LENGTH ? path.substring(0, MAX_PATH_LENGTH) : path;
     }
 
     private boolean shouldCount(HttpServletRequest request, Object handler) {

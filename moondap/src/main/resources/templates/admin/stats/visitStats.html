@@ -52,6 +52,50 @@
             border-radius: 16px;
             padding: 16px;
         }
+
+        /*
+          부트스트랩 .table 은 --bs-table-color 를 td 에 직접 적용한다.
+          클래스 선택자로 color 만 주면 그 변수(기본 검정)에 밀려 어두운 배경에
+          검은 글씨가 나온다. 변수 자체를 덮어야 한다.
+        */
+        .stat-table {
+            --bs-table-color: #fff;
+            --bs-table-bg: transparent;
+            --bs-table-hover-color: #fff;
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.06);
+            margin-bottom: 0;
+        }
+        .stat-table thead th {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        .stat-table td, .stat-table th { border-color: rgba(255, 255, 255, 0.06); }
+        .stat-table td.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        /* 경로는 길어질 수 있다. 줄바꿈 대신 잘라서 표의 줄 높이를 일정하게 유지한다. */
+        .stat-table td.path {
+            max-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.85rem;
+        }
+        .stat-table td.path a { color: #fff; text-decoration: none; }
+        .stat-table td.path a:hover { text-decoration: underline; }
+
+        .empty-note {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            padding: 24px 4px;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -134,6 +178,103 @@
                 </div>
 
                 <!--
+                  무엇을 보고 어디서 오는가.
+
+                  방문자 수만 있을 때는 하루 90명이 들어와 1~2명만 테스트를 끝내는 이유가
+                  "메인만 보고 나가서"인지 "테스트를 시작했다 그만둬서"인지 알 수 없었다.
+                  경로별 조회수와 유입 출처가 있어야 어디를 고칠지가 정해진다.
+                -->
+                <div class="chart-box mt-4">
+                    <h6 class="text-white fw-bold mb-1">유입 출처</h6>
+                    <p class="text-white-50 small mb-3">
+                        최근 <span th:text="${pathDays}">7</span>일. 바깥에서 사이트로 들어온 건수만 셉니다.
+                        사이트 안에서 링크를 눌러 이동한 것은 제외합니다.
+                    </p>
+                    <div th:if="${#lists.isEmpty(topReferrers)}" class="empty-note">
+                        아직 기록이 없습니다. 배포된 시점부터 쌓입니다.
+                    </div>
+                    <div th:unless="${#lists.isEmpty(topReferrers)}"
+                         id="referrerChart" style="height: 300px;"></div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <!--
+                      유입 경로와 조회 경로를 나란히 둔다.
+                      메인은 조회수가 늘 1위라 그 표만 보면 아무것도 알 수 없지만,
+                      유입 기준으로는 다른 화면이 위로 올라온다. 그 차이가 정보다.
+                    -->
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-box h-100">
+                            <h6 class="text-white fw-bold mb-1">유입 경로 (첫 화면)</h6>
+                            <p class="text-white-50 small mb-3">
+                                검색·SNS·주소 입력으로 <strong>바로 열린</strong> 화면입니다.
+                            </p>
+                            <div th:if="${#lists.isEmpty(topEntries)}" class="empty-note">
+                                아직 기록이 없습니다.
+                            </div>
+                            <div th:unless="${#lists.isEmpty(topEntries)}" class="table-responsive">
+                                <table class="table stat-table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>경로</th>
+                                            <th style="width: 80px;" class="text-end">유입</th>
+                                            <th style="width: 80px;" class="text-end">조회</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="p : ${topEntries}">
+                                            <td class="path" th:title="${p.path}">
+                                                <a th:href="${p.path}" th:text="${p.path}" target="_blank"
+                                                   rel="noopener">/</a>
+                                            </td>
+                                            <td class="num"
+                                                th:text="${#numbers.formatInteger(p.entryCount, 0, 'COMMA')}">0</td>
+                                            <td class="num"
+                                                th:text="${#numbers.formatInteger(p.viewCount, 0, 'COMMA')}">0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="chart-box h-100">
+                            <h6 class="text-white fw-bold mb-1">많이 열린 화면</h6>
+                            <p class="text-white-50 small mb-3">
+                                조회 건수입니다. 같은 사람이 여러 번 본 것도 셉니다.
+                            </p>
+                            <div th:if="${#lists.isEmpty(topPages)}" class="empty-note">
+                                아직 기록이 없습니다.
+                            </div>
+                            <div th:unless="${#lists.isEmpty(topPages)}" class="table-responsive">
+                                <table class="table stat-table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>경로</th>
+                                            <th style="width: 80px;" class="text-end">조회</th>
+                                            <th style="width: 80px;" class="text-end">유입</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="p : ${topPages}">
+                                            <td class="path" th:title="${p.path}">
+                                                <a th:href="${p.path}" th:text="${p.path}" target="_blank"
+                                                   rel="noopener">/</a>
+                                            </td>
+                                            <td class="num"
+                                                th:text="${#numbers.formatInteger(p.viewCount, 0, 'COMMA')}">0</td>
+                                            <td class="num"
+                                                th:text="${#numbers.formatInteger(p.entryCount, 0, 'COMMA')}">0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--
                   접속 기록 보유 현황.
                   IP 가 담긴 기록이라 개인정보처리방침 제3조에 고지한 기간이 지나면
                   파기해야 한다. 지금 얼마나 쌓여 있는지 여기서 바로 보이게 한다.
@@ -178,6 +319,7 @@
         /*<![CDATA[*/
         const trend = /*[[${trend}]]*/ [];
         const hourly = /*[[${hourly}]]*/ [];
+        const referrers = /*[[${topReferrers}]]*/ [];
         /*]]>*/
 
         // 어두운 배경에 맞춘 공통 설정. 차트마다 반복하지 않는다.
@@ -194,6 +336,8 @@
             yAxis: {
                 gridLineColor: 'rgba(255,255,255,0.06)',
                 title: { text: null },
+                // 건수라 소수점이 있을 수 없다. 값이 작은 날 눈금이 0.2, 0.4 로 쪼개진다.
+                allowDecimals: false,
                 labels: { style: { color: 'rgba(255,255,255,0.5)' } }
             }
         };
@@ -219,6 +363,24 @@
             plotOptions: { column: { borderWidth: 0, borderRadius: 3 } },
             series: [{ name: '접속 건수', data: hourly.map(h => h.viewCount), color: '#524dd3' }]
         }));
+
+        // 출처가 하나도 없으면 차트 div 자체를 그리지 않았다(안내 문구로 대체).
+        if (referrers.length) {
+            Highcharts.chart('referrerChart', Highcharts.merge(darkTheme, {
+                // 가로 막대다. 출처 이름이 길어 세로 막대에서는 라벨이 겹쳐 읽히지 않는다.
+                chart: { type: 'bar' },
+                xAxis: { categories: referrers.map(r => r.source) },
+                legend: { enabled: false },
+                plotOptions: {
+                    bar: {
+                        borderWidth: 0,
+                        borderRadius: 3,
+                        dataLabels: { enabled: true, style: { color: '#fff', textOutline: 'none' } }
+                    }
+                },
+                series: [{ name: '유입', data: referrers.map(r => r.visitCount), color: '#7d77ff' }]
+            }));
+        }
     </script>
 </body>
 </html>
