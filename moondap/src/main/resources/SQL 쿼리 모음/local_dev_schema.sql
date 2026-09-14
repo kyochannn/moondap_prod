@@ -7,11 +7,16 @@
 --
 -- 적용:  mysql -u root -p moondap < local_dev_schema.sql
 --
--- 콜레이션은 기존 balance_questions 와 같은 utf8mb4_unicode_ci 로 맞춘다.
+-- 테이블 이름이 정리되기 전(md_tests, balance_questions, site_statistics ...)에 만든
+-- 로컬 DB 가 이미 있다면, 이 파일을 돌리기 전에 table_rename.sql 을 먼저 실행해야 한다.
+-- CREATE TABLE IF NOT EXISTS 라서, 구 이름 테이블이 남아 있으면 그걸 건너뛰지 않고
+-- 새 이름으로 빈 테이블을 하나 더 만들어 버린다(데이터는 구 이름 쪽에 그대로 남는다).
+--
+-- 콜레이션은 기존 md_balance_game 와 같은 utf8mb4_unicode_ci 로 맞춘다.
 -- 서버 기본값(utf8mb4_0900_ai_ci)으로 만들면 두 테이블을 JOIN 할 때
 -- "Illegal mix of collations" 로 조회가 실패한다.
 
-CREATE TABLE IF NOT EXISTS md_test_category (
+CREATE TABLE IF NOT EXISTS md_content_category (
     id            BIGINT       NOT NULL AUTO_INCREMENT,
     category_name VARCHAR(50)  NOT NULL,
     display_name  VARCHAR(100) NOT NULL,
@@ -22,7 +27,7 @@ CREATE TABLE IF NOT EXISTS md_test_category (
     UNIQUE KEY uk_category_name (category_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS md_tests (
+CREATE TABLE IF NOT EXISTS md_test (
     id              BIGINT       NOT NULL AUTO_INCREMENT,
     test_key        VARCHAR(100) NOT NULL,
     title           VARCHAR(255) NOT NULL,
@@ -45,7 +50,7 @@ CREATE TABLE IF NOT EXISTS md_tests (
     KEY idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS md_test_questions (
+CREATE TABLE IF NOT EXISTS md_test_question (
     id             BIGINT NOT NULL AUTO_INCREMENT,
     test_id        BIGINT NOT NULL,
     question_order INT             DEFAULT 0,
@@ -59,7 +64,7 @@ CREATE TABLE IF NOT EXISTS md_test_questions (
     KEY idx_test_id (test_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS md_test_results (
+CREATE TABLE IF NOT EXISTS md_test_result_type (
     id             BIGINT NOT NULL AUTO_INCREMENT,
     test_id        BIGINT NOT NULL,
     result_title   VARCHAR(255) NOT NULL,
@@ -74,7 +79,7 @@ CREATE TABLE IF NOT EXISTS md_test_results (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 이 테이블만 camelCase 컬럼을 쓴다 (EgenTetoMapper.xml 이 그렇게 조회한다).
-CREATE TABLE IF NOT EXISTS egen_teto_test_result (
+CREATE TABLE IF NOT EXISTS md_egenteto_play (
     userNo                   VARCHAR(50) NOT NULL,
     userName                 VARCHAR(100) DEFAULT NULL,
     gender                   VARCHAR(10)  DEFAULT NULL,
@@ -97,35 +102,35 @@ CREATE TABLE IF NOT EXISTS egen_teto_test_result (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 방문 로그. (날짜, IP) 조합으로 중복 방문을 한 번만 센다.
-CREATE TABLE IF NOT EXISTS site_visit_log (
+CREATE TABLE IF NOT EXISTS md_visit_log (
     visit_date DATE        NOT NULL,
     ip_address VARCHAR(45) NOT NULL,
     PRIMARY KEY (visit_date, ip_address)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 일자별 집계. 방문수와 참여수를 같은 행에 쌓는다(SiteStatMapper.xml).
-CREATE TABLE IF NOT EXISTS site_statistics (
+CREATE TABLE IF NOT EXISTS md_visit_daily (
     visit_date          DATE   NOT NULL,
     visit_count         BIGINT DEFAULT 0,
     participation_count BIGINT DEFAULT 0,
     PRIMARY KEY (visit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 로컬 balance_questions 가 구버전이라 현재 매퍼가 쓰는 컬럼이 빠져 있다.
+-- 로컬 md_balance_game 가 구버전이라 현재 매퍼가 쓰는 컬럼이 빠져 있다.
 -- (MySQL 8 은 ADD COLUMN IF NOT EXISTS 를 지원하지 않아 존재 확인 후 실행한다.)
 SET @sql := IF(
   (SELECT COUNT(*) FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='balance_questions' AND COLUMN_NAME='status') = 0,
-  "ALTER TABLE balance_questions ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'active'",
+    WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='md_balance_game' AND COLUMN_NAME='status') = 0,
+  "ALTER TABLE md_balance_game ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'active'",
   'DO 0');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
 
--- site_statistics 도 방문수만 있는 구버전이 남아 있을 수 있다.
+-- md_visit_daily 도 방문수만 있는 구버전이 남아 있을 수 있다.
 -- 이 컬럼이 없으면 투표할 때마다 500 이 난다
 -- (StandardBalanceGameService.vote -> MdStatService.incrementParticipationCount).
 SET @sql := IF(
   (SELECT COUNT(*) FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='site_statistics' AND COLUMN_NAME='participation_count') = 0,
-  'ALTER TABLE site_statistics ADD COLUMN participation_count BIGINT DEFAULT 0',
+    WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='md_visit_daily' AND COLUMN_NAME='participation_count') = 0,
+  'ALTER TABLE md_visit_daily ADD COLUMN participation_count BIGINT DEFAULT 0',
   'DO 0');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;

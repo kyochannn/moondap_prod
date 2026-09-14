@@ -30,7 +30,7 @@
 
 			searchBalanceGameList();
 			localStorage.setItem('moondap_balancegame_category', listCategory);
-			localStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
+			localStorage.setItem('moondap_balancegame_spicyfilter_v2', listSpicyFilter);
 
 			// console.log("리스트 최초 카테고리: ", listCategory);
 			// console.log("리스트 최초 매운맛 필터: ", listSpicyFilter);
@@ -46,7 +46,7 @@
 			$('#spicyFilter').on('change', function () {
 				searchBalanceGameList();
 				listSpicyFilter = $('#spicyFilter').is(':checked') ? 1 : 0;
-				localStorage.setItem('moondap_balancegame_spicyfilter', listSpicyFilter);
+				localStorage.setItem('moondap_balancegame_spicyfilter_v2', listSpicyFilter);
 				// console.log("리스트 선택된 카테고리: ", listCategory);
 				// console.log("리스트 선택된 매운맛 필터: ", listSpicyFilter);
 			});
@@ -169,11 +169,11 @@
 		function startBalanceGame() {
 			// 세션에 저장되어있는 검색 조건
 			let listCategory = localStorage.getItem('moondap_balancegame_category');
-			let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter');
+			let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter_v2');
 			
 			// null 체크 및 기본값 설정
 			if (!listCategory || listCategory === 'null') listCategory = 'all';
-			if (!listSpicyFilter || listSpicyFilter === 'null') listSpicyFilter = '1';
+			if (!listSpicyFilter || listSpicyFilter === 'null') listSpicyFilter = '0';
 
 			location.href = '/balanceGame/selectBalanceGameView?spicyFilter=' + listSpicyFilter + '&category=' + listCategory;
 		}
@@ -222,7 +222,7 @@
 							<div class="row leadership-slider pb-4">
 								<div class="col-12">
 									<p class="text-start ms-2 text-primary small mb-2"><i
-											class="bi bi-info-circle-fill"></i> 매운맛 질문을 제외할 수 있어요.</p>
+											class="bi bi-info-circle-fill"></i> 매운맛 질문은 기본으로 숨겨져 있어요.</p>
 									<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 										<!-- 매운맛 질문 필터 -->
 										<div>
@@ -232,7 +232,10 @@
 													for="spicyFilter" style="cursor: pointer;">
 													🌶️ 매운맛 질문 포함
 												</label>
-												<input class="form-check-input mt-0" checked type="checkbox"
+												<!-- [정책] 기본 해제. 켜는 것은 사용자의 명시적 선택이어야 한다.
+													 checked 를 되돌리지 말 것 — 처음 들어온 익명 방문자에게
+													 성인 지향 콘텐츠가 바로 보이면 애드센스 정책 위반이다. -->
+												<input class="form-check-input mt-0" type="checkbox"
 													role="switch" id="spicyFilter" style="cursor: pointer;">
 											</div>
 										</div>

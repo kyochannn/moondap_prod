@@ -38,6 +38,6 @@ public interface MdTestMapper {
     void deleteResultsByTestId(@Param("testId") Long testId);
 
     // 통합 조회 (메인/리스트용)
-    List<MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("offset") int offset, @Param("limit") int limit);
+    List<MdContentItemDTO> selectAllContentList(@Param("category") String category, @Param("sort") String sort, @Param("type") String type, @Param("offset") int offset, @Param("limit") int limit, @Param("includeSpicy") boolean includeSpicy);
     long selectTotalPlayCount();
 }

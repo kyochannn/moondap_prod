@@ -51,6 +51,17 @@ class SeoMetaRenderingTest {
     }
 
     @Test
+    @DisplayName("[회귀] 모든 페이지가 한국어임을 선언한다")
+    void declaresLanguage() throws Exception {
+        // lang 이 없으면 검색엔진의 언어 판별과 스크린리더 발음이 모두 어긋난다.
+        // 콘텐츠 템플릿의 <html> 태그는 레이아웃 방언이 버리므로 main_layout 에만 둔다.
+        mockMvc.perform(get("/privacy"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<html lang=\"ko\"")));
+        mockMvc.perform(get("/terms"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<html lang=\"ko\"")));
+    }
+
+    @Test
     @DisplayName("[회귀] og:image 는 절대 URL 이어야 SNS 크롤러가 읽는다")
     void rendersAbsoluteOgImage() throws Exception {
         // 이전에는 content="/assets/img/logo.webp" 라 공유 카드 이미지가 비어 있었다.

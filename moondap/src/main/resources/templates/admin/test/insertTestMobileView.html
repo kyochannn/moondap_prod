@@ -448,6 +448,13 @@
                                     </div>
 
 
+                                <!-- 등록에만 노출한다. 수정 경로(/test/manage/{id}/update)는
+                                     서버에서 이 값을 검사하지 않으므로, 화면에서만 막으면
+                                     확인과 강제가 어긋난다. -->
+                                <div class="mb-4" th:if="${test.id == null}">
+                                    <div th:replace="~{fragment/upload_rights::notice}"></div>
+                                </div>
+
                                 <div class="admin-cta-box" data-aos="fade-up">
                                     <div class="cta-content">
                                         <h4 th:text="${test.id != null} ? '테스트 수정을 완료할까요?' : '테스트를 등록할까요?'"></h4>
@@ -950,6 +957,14 @@
                     }
                 });
                 if (!allScoresFilled) return false;
+            }
+
+            // 업로드 권리 확인. 등록 화면에만 존재하므로(수정에는 없다) 있을 때만 검사한다.
+            const $copyright = $('#agreeCopyright');
+            if ($copyright.length && !$copyright.is(':checked')) {
+                alert('업로드하는 이미지에 대한 권리를 확인해주세요.');
+                $copyright.focus();
+                return false;
             }
 
             // 2. 데이터 수집

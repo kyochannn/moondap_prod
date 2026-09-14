@@ -92,10 +92,17 @@
 		        alert("사진을 양쪽 다 올려주셔야 해요!");
 		        return;
 		    }
-		   	
+
+		    // 업로드 권리 확인. 서버에서도 같은 검사를 한다.
+		    if (!$('#agreeCopyright').is(':checked')) {
+		        alert("업로드하는 이미지에 대한 권리를 확인해주세요.");
+		        $('#agreeCopyright').focus();
+		        return;
+		    }
+
 			// 로딩 시작
 			showLoading();
-			
+
 			const formData = new FormData();
 			
 		    formData.append('title', title);
@@ -106,7 +113,8 @@
 		    formData.append('option2Text', option2Text);
 			formData.append('option1Image', file1);
 		    formData.append('option2Image', file2);
-			
+		    formData.append('agreeCopyright', 'true');
+
 		    $.ajax({
 		        url: '/balanceGame/insertBalanceGame',
 		        type: 'POST',
@@ -117,7 +125,9 @@
 		            hideLoading();
 		            if (response.flag === "success") {
 			            alert("밸런스 게임 등록이 완료되었어요!");		            	
-			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + '1' + '&category=' + 'all');
+			            // [정책] 매운맛 필터를 '1' 로 고정하면 등록 직후 화면의 이전/다음 탐색이
+			            // 매운맛을 포함하게 된다. 방금 만든 게임의 설정을 그대로 따른다.
+			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + (spicyFilter ? '1' : '0') + '&category=' + 'all');
 		            } else {
 		            	alert("밸런스 게임 저장 중에 데이터를 불러오면서 문제가 발생했어요.");
 		            }
@@ -292,6 +302,13 @@
 					</div>
 <!-- 				</form> -->
 					
+				<!-- 업로드 권리 확인 -->
+		        <div class="row mt-4">
+		        	<div class="col-lg-8 offset-lg-2">
+		        		<div th:replace="~{fragment/upload_rights::notice}"></div>
+		        	</div>
+		        </div>
+
 				<!-- 반영 -->
 		        <div class="row mt-4">
 		        	<div class="col-lg-8 offset-lg-2">

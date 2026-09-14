@@ -116,7 +116,7 @@ class TestHistoryServiceTest {
     void listSurvivesDatabaseFailure() {
         bindRequest("anon-123");
         when(testHistoryMapper.selectHistory(anyString(), anyString(), anyInt(), anyInt()))
-                .thenThrow(new RuntimeException("Table 'md_test_history' doesn't exist"));
+                .thenThrow(new RuntimeException("Table 'md_test_play' doesn't exist"));
 
         // 마이그레이션을 아직 적용하지 않은 서버에서 이 페이지가 통째로 500 이 났다.
         assertThat(service.list(0)).isEmpty();

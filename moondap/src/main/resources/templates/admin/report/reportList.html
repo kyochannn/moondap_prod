@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>신고 관리 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    <style>
+        .table-dark-custom {
+            --bs-table-striped-bg: rgba(255,255,255,0.03);
+            min-width: 1000px;
+        }
+        .table-dark-custom thead th {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .snapshot {
+            max-width: 340px;
+            white-space: normal;
+            word-break: break-all;
+            color: rgba(255,255,255,0.75);
+            font-size: 0.82rem;
+        }
+        .reason-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; }
+        .reason-ABUSE     { background: rgba(220,53,69,0.18);  color: #ff8f9a; }
+        .reason-SEXUAL    { background: rgba(214,51,132,0.18); color: #ff9ed2; }
+        .reason-HATE      { background: rgba(255,99,71,0.18);  color: #ffab96; }
+        .reason-COPYRIGHT { background: rgba(255,193,7,0.18);  color: #ffd964; }
+        .reason-SPAM      { background: rgba(13,110,253,0.18); color: #8bb8ff; }
+        .reason-ETC       { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+        .filter-tab {
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .filter-tab.active { background: #524dd3; color: #fff; border-color: #524dd3; }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h4 class="fw-bold text-white mb-1">🚨 신고 관리</h4>
+                        <p class="text-white-50 mb-0 small">
+                            이용자가 접수한 신고를 확인하고 처리합니다.
+                            미처리 <strong class="text-warning" th:text="${pendingCount}">0</strong>건
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 상태 필터 -->
+                <div class="d-flex gap-2 mb-4 flex-wrap">
+                    <a th:href="@{/admin/report/list(status='PENDING')}" class="filter-tab"
+                       th:classappend="${currentStatus == 'PENDING'} ? ' active'">접수</a>
+                    <a th:href="@{/admin/report/list(status='RESOLVED')}" class="filter-tab"
+                       th:classappend="${currentStatus == 'RESOLVED'} ? ' active'">조치완료</a>
+                    <a th:href="@{/admin/report/list(status='REJECTED')}" class="filter-tab"
+                       th:classappend="${currentStatus == 'REJECTED'} ? ' active'">반려</a>
+                    <a th:href="@{/admin/report/list(status='all')}" class="filter-tab"
+                       th:classappend="${currentStatus == 'all'} ? ' active'">전체</a>
+                </div>
+
+                <div class="admin-card p-1 p-md-4">
+                    <div th:if="${#lists.isEmpty(reports)}" class="text-center py-5 text-white-50">
+                        <i class="bi bi-shield-check fs-1 d-block mb-2"></i>
+                        <p class="mb-0">해당하는 신고가 없습니다.</p>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(reports)}" class="table-responsive">
+                        <table class="table table-dark-custom table-hover align-middle mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70px;">번호</th>
+                                    <th style="width: 90px;">종류</th>
+                                    <th style="width: 100px;">사유</th>
+                                    <th style="width: auto;">신고 대상 내용</th>
+                                    <th style="width: 110px;">신고자</th>
+                                    <th style="width: 80px;">누적</th>
+                                    <th style="width: 140px;">접수일</th>
+                                    <th style="width: 200px;">처리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="report : ${reports}" th:id="'report-row-' + ${report.no}">
+                                    <td class="text-white small" th:text="${report.no}"></td>
+                                    <td>
+                                        <span class="admin-badge badge-domain"
+                                              th:text="${report.targetType == 'COMMENT' ? '댓글'
+                                                       : (report.targetType == 'BALANCE' ? '밸런스' : '테스트')}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="reason-badge"
+                                              th:classappend="' reason-' + ${report.reasonCode}"
+                                              th:text="${report.reasonCode == 'ABUSE' ? '욕설·비방'
+                                                       : (report.reasonCode == 'SEXUAL' ? '음란'
+                                                       : (report.reasonCode == 'HATE' ? '혐오'
+                                                       : (report.reasonCode == 'COPYRIGHT' ? '저작권'
+                                                       : (report.reasonCode == 'SPAM' ? '도배·광고' : '기타'))))}"></span>
+                                    </td>
+                                    <td class="text-start snapshot">
+                                        <div th:if="${report.targetSnapshot != null}" th:text="${report.targetSnapshot}"></div>
+                                        <div th:if="${report.targetSnapshot == null}" class="text-white-50 fst-italic">
+                                            (원본을 찾을 수 없음 — 이미 삭제된 콘텐츠일 수 있습니다)
+                                        </div>
+                                        <div th:if="${report.detail != null and !report.detail.isEmpty()}"
+                                             class="mt-1 text-warning" style="font-size: 0.75rem;">
+                                            신고자 메모: <span th:text="${report.detail}"></span>
+                                        </div>
+                                        <!-- 대상으로 바로 이동. 댓글은 게임 상세 안에 있어 링크를 만들 수 없다. -->
+                                        <a th:if="${report.targetType == 'BALANCE'}"
+                                           th:href="@{/balanceGame/selectBalanceGameView(id=${report.targetId})}"
+                                           target="_blank" rel="noopener"
+                                           class="small text-info">대상 보기 →</a>
+                                        <a th:if="${report.targetType == 'TEST'}"
+                                           th:href="@{'/test/' + ${report.targetId}}"
+                                           target="_blank" rel="noopener"
+                                           class="small text-info">대상 보기 →</a>
+                                        <span th:if="${report.targetType == 'COMMENT'}"
+                                              class="small text-white-50">댓글 번호 [[${report.targetId}]]</span>
+                                    </td>
+                                    <td class="text-white small"
+                                        th:text="${report.reporterUserId != null ? report.reporterUserId : '비회원'}"></td>
+                                    <td>
+                                        <span class="text-white small" th:text="${report.reportCount} + '건'"></span>
+                                    </td>
+                                    <td class="text-white-50" style="font-size: 0.75rem;"
+                                        th:text="${report.createdAt}"></td>
+                                    <td>
+                                        <div th:if="${report.status == 'PENDING'}" class="d-flex gap-1 justify-content-center">
+                                            <button type="button" class="btn btn-sm btn-outline-success"
+                                                    th:onclick="'updateReportStatus(' + ${report.no} + ', \'RESOLVED\')'">
+                                                조치완료
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                    th:onclick="'updateReportStatus(' + ${report.no} + ', \'REJECTED\')'">
+                                                반려
+                                            </button>
+                                        </div>
+                                        <div th:if="${report.status != 'PENDING'}" class="small">
+                                            <span th:if="${report.status == 'RESOLVED'}" class="admin-badge badge-status-active">✅ 조치완료</span>
+                                            <span th:if="${report.status == 'REJECTED'}" class="admin-badge badge-status-draft">반려</span>
+                                            <div class="text-white-50 mt-1" style="font-size: 0.7rem;"
+                                                 th:text="${report.handledBy}"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 페이지 이동 -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a th:if="${currentPage > 0}"
+                       th:href="@{/admin/report/list(status=${currentStatus}, page=${currentPage - 1})}"
+                       class="btn btn-outline-light btn-sm">← 이전</a>
+                    <span th:if="${currentPage == 0}"></span>
+
+                    <span class="text-white-50 small" th:text="'전체 ' + ${totalCount} + '건'"></span>
+
+                    <a th:if="${hasMore}"
+                       th:href="@{/admin/report/list(status=${currentStatus}, page=${currentPage + 1})}"
+                       class="btn btn-outline-light btn-sm">다음 →</a>
+                    <span th:unless="${hasMore}"></span>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function updateReportStatus(no, status) {
+            const label = status === 'RESOLVED' ? '조치완료' : '반려';
+            if (!confirm(no + '번 신고를 ' + label + ' 처리할까요?')) return;
+
+            // CSRF 토큰은 fragment/link.html 의 meta 에서 읽는다.
+            const header = $('meta[name="_csrf_header"]').attr('content');
+            const token = $('meta[name="_csrf"]').attr('content');
+
+            $.ajax({
+                url: '/admin/report/' + no + '/status',
+                type: 'POST',
+                data: { status: status },
+                beforeSend: function (xhr) {
+                    if (header && token) xhr.setRequestHeader(header, token);
+                },
+                success: function () {
+                    location.reload();
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON && xhr.responseJSON.message;
+                    alert(msg || '처리 중 오류가 발생했습니다.');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

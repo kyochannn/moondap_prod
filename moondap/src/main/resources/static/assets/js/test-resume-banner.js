@@ -21,17 +21,23 @@
     var done = p.index;
     var pct = Math.round((done / p.total) * 100);
 
+    // 다 풀었지만 결과를 못 본 기록(광고 대기 중 이탈)은 "이어서 하기"가 아니다.
+    // 남은 문항이 없는데 이어서 하라고 하면 또 풀어야 하는 줄 알고 누르지 않는다.
+    var label = p.pending ? '결과 대기' : '진행 중';
+    var count = p.pending ? '문항을 모두 풀었어요' : done + ' / ' + p.total + '문항';
+    var cta = p.pending ? '결과 확인하기' : '이어서 하기';
+
     var el = document.createElement('section');
     el.className = 'resume-banner';
     el.innerHTML =
       '<a class="resume-banner-link" href="' + p.url + '">' +
         '<div class="resume-banner-body">' +
-          '<span class="resume-banner-label">진행 중</span>' +
+          '<span class="resume-banner-label">' + label + '</span>' +
           '<strong class="resume-banner-title"></strong>' +
-          '<span class="resume-banner-count">' + done + ' / ' + p.total + '문항</span>' +
+          '<span class="resume-banner-count">' + count + '</span>' +
           '<div class="resume-banner-track"><div class="resume-banner-bar"></div></div>' +
         '</div>' +
-        '<span class="btn btn-primary btn-sm resume-banner-cta">이어서 하기 <i class="bi bi-arrow-right"></i></span>' +
+        '<span class="btn btn-primary btn-sm resume-banner-cta">' + cta + ' <i class="bi bi-arrow-right"></i></span>' +
       '</a>' +
       '<button type="button" class="resume-banner-close" aria-label="이어하기 숨기기">' +
         '<i class="bi bi-x-lg"></i></button>';

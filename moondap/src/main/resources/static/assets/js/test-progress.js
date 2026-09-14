@@ -6,6 +6,10 @@
  *
  * 저장은 질문 화면이, 복원 안내는 메인 화면(test-resume-banner.js)이 맡는다.
  * 서버에 아무것도 보내지 않으므로 비로그인 사용자도 그대로 동작한다.
+ *
+ * 상태는 두 가지다.
+ *   진행 중  index < total  — 아직 덜 푼 상태. save() 가 남긴다.
+ *   결과 대기 pending: true — 다 풀었지만 결과를 아직 못 본 상태. savePending() 이 남긴다.
  */
 window.TestProgress = (function () {
   'use strict';
@@ -56,6 +60,28 @@ window.TestProgress = (function () {
         id: p.id, url: p.url, title: p.title,
         index: p.index, total: p.total,
         answers: p.answers || [], savedAt: Date.now(),
+      };
+      writeAll(all);
+    },
+
+    /**
+     * 다 풀었지만 아직 결과를 못 본 상태.
+     *
+     * 마지막 문항 뒤에는 광고·대기 화면이 뜨고, 광고는 현재 탭에서 열린다.
+     * 여기서 사용자가 페이지를 떠나면 답변은 JS 메모리와 hidden input 에만
+     * 있었으므로 전부 사라졌고, 돌아온 사람은 처음부터 다시 풀어야 했다.
+     * 다 푼 사람을 잃는 것이라 중간 이탈보다 손해가 크다.
+     *
+     * save() 는 index >= total 을 "이어할 것이 없음"으로 보고 지우므로 따로 둔다.
+     * 이 기록은 결과 화면이 실제로 열릴 때 clear() 로 지운다.
+     */
+    savePending: function (p) {
+      if (!p || !p.id || !p.total) return;
+      var all = readAll();
+      all[p.id] = {
+        id: p.id, url: p.url, title: p.title,
+        index: p.total, total: p.total,
+        answers: p.answers || [], pending: true, savedAt: Date.now(),
       };
       writeAll(all);
     },

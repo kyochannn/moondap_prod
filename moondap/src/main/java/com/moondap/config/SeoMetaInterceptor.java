@@ -24,11 +24,16 @@ import jakarta.servlet.http.HttpServletResponse;
  *   <li><b>canonical 부재</b> — 결과 페이지는 {@code ?resultCode=&score=&answers=} 조합으로
  *       URL 이 사실상 무한히 생성된다. canonical 이 없으면 같은 테스트 하나가 수백 개의
  *       얇은 중복 페이지로 색인돼 사이트 전체가 '가치 없는 콘텐츠'로 평가된다.</li>
- *   <li><b>중간 상태 페이지의 색인</b> — 질문지·결과·로그인·가입 화면은 읽을거리가 없다.
+ *   <li><b>중간 상태 페이지의 색인</b> — 질문지·로그인·가입 화면은 읽을거리가 없다.
  *       이런 페이지가 색인의 다수를 차지하면 콘텐츠 품질 점수가 떨어진다.
  *       robots.txt 로 막지 않고 noindex 를 쓰는 이유는, 이미 색인된 URL 을 빼려면
  *       크롤러가 페이지에 접근해 이 태그를 읽을 수 있어야 하기 때문이다.</li>
  * </ol>
+ *
+ * <p>심리테스트 결과({@code /test/*&#47;result})는 한때 여기 묶여 있었으나 지금은 색인 대상이다.
+ * 결과 본문이 유형당 1,000자 안팎으로 사이트에서 가장 긴 글인데, 정작 색인되는 것은
+ * 220자짜리 소개글뿐이라 사이트 전체가 얇아 보였다. 무한 URL 문제는 컨트롤러가
+ * {@code ?resultCode=} 하나만 남긴 canonical 을 직접 지정해 막는다.
  *
  * <p>컨트롤러가 {@code seo} 모델 속성을 미리 넣어두면 그 값이 우선하고, 비어 있는
  * 항목만 여기서 보충한다.
@@ -46,9 +51,12 @@ public class SeoMetaInterceptor implements HandlerInterceptor {
     /** 검색 결과에 노출될 이유가 없는 경로. 읽을거리가 없거나 로그인이 필요한 화면들. */
     private static final List<String> NOINDEX_PATTERNS = List.of(
             "/test/*/questions",
-            "/test/*/result",
             "/test/manage/**",
             "/egenTeto/questions",
+            // 에겐테토 결과는 심리테스트와 달리 색인하지 않는다. URL 키가 결과 유형이
+            // 아니라 응시 건마다 새로 만드는 UUID(userNo)라, 같은 유형의 결과가 응시
+            // 횟수만큼 다른 URL 로 복제된다. 묶어 줄 대표 URL 이 없으므로 열면 중복
+            // 콘텐츠만 늘어난다. 유형별 고정 URL 이 생기면 그때 다시 판단한다.
             "/egenTeto/result",
             "/egenTeto/select",
             "/egenTeto/start",
@@ -62,6 +70,10 @@ public class SeoMetaInterceptor implements HandlerInterceptor {
             "/joinViewAfterError",
             "/mypage",
             "/mypage/**",
+            // 내 결과 보관함. 로그인 없이도 열리는(익명 쿠키 기반) 개인화 화면이라
+            // 방문자마다 내용이 다르고 남에게는 의미가 없다. robots.txt 로도 막고
+            // 있지만, 차단만으로는 이미 색인된 URL 을 뺄 수 없어 noindex 를 함께 둔다.
+            "/my/**",
             "/admin/**",
             "/error",
             "/error/**"

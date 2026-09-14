@@ -4217,6 +4217,19 @@ section,
   margin-left: 0.5rem;
 }
 
+/* 댓글 신고. 눈에는 띄되 삭제보다 약하게 — 오조작을 줄이려고 기본은 흐리게 둔다. */
+.comment-report-btn {
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+  transition: color 0.15s ease;
+}
+
+.comment-report-btn:hover {
+  color: var(--bs-danger);
+}
+
 /*--------------------------------------------------------------
 # 메인 히어로 섹션
 #

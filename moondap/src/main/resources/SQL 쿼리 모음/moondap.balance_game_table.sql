@@ -1,8 +1,8 @@
-SELECT * FROM moondap.balance_questions WHERE id = 'B0001-260228';
+SELECT * FROM moondap.md_balance_game WHERE id = 'B0001-260228';
         
--- DROP TABLE moondap.balance_questions;
+-- DROP TABLE moondap.md_balance_game;
 
-CREATE TABLE moondap.balance_questions (
+CREATE TABLE moondap.md_balance_game (
     -- 시스템용 일련번호 (PK)
     no INT AUTO_INCREMENT PRIMARY KEY COMMENT '시스템 관리용 일련번호',
     
@@ -33,9 +33,9 @@ CREATE TABLE moondap.balance_questions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 댓글 테이블
-SELECT * FROM moondap.balance_comments;
+SELECT * FROM moondap.md_balance_comment;
 
-CREATE TABLE moondap.balance_comments (
+CREATE TABLE moondap.md_balance_comment (
     -- 시스템용 PK
     no INT AUTO_INCREMENT PRIMARY KEY COMMENT '댓글 일련번호',
     
@@ -57,11 +57,11 @@ CREATE TABLE moondap.balance_comments (
     
     -- 인덱스 (조회 성능 최적화)
     INDEX idx_question_id_created (question_id, created_at DESC),
-    CONSTRAINT fk_comment_question FOREIGN KEY (question_id) REFERENCES balance_questions(id) ON DELETE CASCADE
+    CONSTRAINT fk_comment_question FOREIGN KEY (question_id) REFERENCES md_balance_game(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-        INSERT INTO moondap.balance_comments(question_id, selected_side ,content)
+        INSERT INTO moondap.md_balance_comment(question_id, selected_side ,content)
         VALUES ('B0001-260228', 'left', 'test');
         
         

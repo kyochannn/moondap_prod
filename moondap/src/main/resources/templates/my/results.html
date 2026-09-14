@@ -120,12 +120,21 @@
             <a th:href="@{/test/{key}/result(key=${h.testKey}, resultCode=${h.resultCode}, score=${h.score})}"
                class="d-flex align-items-center gap-3 flex-grow-1 text-decoration-none"
                style="min-width: 0;">
+              <!--
+                보관함은 결과 이미지의 '파일명'을 그 시점 그대로 복사해 둔다.
+                그런데 콘텐츠를 수정하면 더 이상 쓰이지 않는 이미지 파일은 서버에서
+                삭제된다(MdTestAdminService.updateTest). 그래서 파일명은 남아 있는데
+                파일은 없는 상태가 생기고, th:if 는 이걸 걸러내지 못한다(값이 null 이
+                아니므로). 실제로 번아웃 테스트를 개편했을 때 기존 참여자들의 보관함에
+                깨진 이미지가 남았다. 불러오기에 실패하면 아이콘으로 되돌린다.
+              -->
               <div class="history-thumb">
                 <img th:if="${h.resultImage != null and h.resultImage != ''}"
                      th:src="${#strings.startsWith(h.resultImage, '/assets/')} ? ${h.resultImage} : (@{/uploads/} + ${h.resultImage})"
-                     th:alt="${h.resultTitle}" loading="lazy">
-                <i th:unless="${h.resultImage != null and h.resultImage != ''}"
-                   class="bi bi-journal-text history-thumb-fallback"></i>
+                     th:alt="${h.resultTitle}" loading="lazy"
+                     onerror="this.hidden = true; if (this.nextElementSibling) this.nextElementSibling.hidden = false;">
+                <i class="bi bi-journal-text history-thumb-fallback"
+                   th:hidden="${h.resultImage != null and h.resultImage != ''}"></i>
               </div>
               <div class="history-body">
                 <div class="history-test" th:text="${h.testTitle}">테스트 제목</div>

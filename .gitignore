@@ -1,3 +1,15 @@
+### IntelliJ IDEA ###
+# moondap/.gitignore 의 .idea 규칙은 그 하위 디렉터리에만 적용된다.
+# 저장소 루트에도 .idea/ 가 생기므로 여기서 따로 무시한다.
+.idea/
+*.iml
+
+### 생성물 ###
+# seed/img 는 seed/gen_images.py 가 만들어내는 SVG 카드 88MB 다.
+# 소스(gen_images.py, questions.json)만 있으면 언제든 다시 만들 수 있고,
+# 저장소에 넣으면 클론 비용만 늘어난다.
+seed/
+
 ### Eclipse ###
 .metadata
 

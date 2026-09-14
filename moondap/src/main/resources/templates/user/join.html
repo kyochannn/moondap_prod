@@ -18,6 +18,34 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 
     <style>
+        /* 약관 동의 */
+        .consent-all {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .form-check-input:checked {
+            background-color: #524dd3;
+            border-color: #524dd3;
+        }
+        .form-check-input {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+        }
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(82, 77, 211, 0.3);
+        }
+        .consent-link {
+            color: #a5a0ff;
+            text-decoration: underline;
+        }
+        .consent-detail {
+            font-size: 0.75rem;
+            line-height: 1.6;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
         #profile-drop-zone {
             max-width: 180px;
             aspect-ratio: 1 / 1;
@@ -189,6 +217,16 @@
             checkEmailValidity();
         }
 
+        // 전체 동의 <-> 개별 항목 연동
+        $(function () {
+            $('#agreeAll').on('change', function () {
+                $('.consent-item').prop('checked', $(this).is(':checked'));
+            });
+            $('.consent-item').on('change', function () {
+                $('#agreeAll').prop('checked', $('.consent-item:not(:checked)').length === 0);
+            });
+        });
+
         function joinProc() {
             if (!isUsernameChecked || $('#username').val() !== checkedUsername) { alert("아이디 중복 확인이 필요합니다."); return; }
             if (!isNicknameChecked || $('#nickname').val() !== checkedNickname) { alert("닉네임 중복 확인이 필요합니다."); return; }
@@ -209,6 +247,12 @@
                 if (!emailId || !emailDom) { alert("이메일 주소를 완성해주세요."); return; }
                 $('#email').val(emailId + "@" + emailDom);
             }
+
+            // 필수 동의. 서버(MdUserController.joinProc)에서도 같은 검사를 하므로
+            // 이 확인은 사용자 편의를 위한 것이고, 우회되더라도 가입은 막힌다.
+            if (!$('#agreeTerms').is(':checked')) { alert("이용약관에 동의해주세요."); return; }
+            if (!$('#agreePrivacy').is(':checked')) { alert("개인정보 수집·이용에 동의해주세요."); return; }
+            if (!$('#agreeAge').is(':checked')) { alert("만 14세 이상만 가입할 수 있습니다."); return; }
 
             document.joinForm.submit();
         }
@@ -314,6 +358,48 @@
                                             <option value="kakao.com">kakao.com</option>
                                         </select>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- 약관 동의 -->
+                            <div class="item-card-dark p-3 p-md-4 mb-4">
+                                <p class="text-start ms-2 text-primary small mb-3">
+                                    <i class="bi bi-check2-square"></i> 약관 동의 <span class="text-white-50">(모두 필수)</span>
+                                </p>
+
+                                <!-- 전체 동의 -->
+                                <div class="form-check consent-all mb-2 pb-3">
+                                    <input class="form-check-input" type="checkbox" id="agreeAll">
+                                    <label class="form-check-label text-white fw-bold" for="agreeAll" style="cursor: pointer;">
+                                        전체 동의하기
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input consent-item" type="checkbox" id="agreeTerms" name="agreeTerms" value="true">
+                                    <label class="form-check-label text-white-50 small" for="agreeTerms" style="cursor: pointer;">
+                                        <span class="text-white">[필수]</span> 이용약관에 동의합니다.
+                                    </label>
+                                    <a th:href="@{/terms}" target="_blank" rel="noopener" class="consent-link small ms-1">보기</a>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input consent-item" type="checkbox" id="agreePrivacy" name="agreePrivacy" value="true">
+                                    <label class="form-check-label text-white-50 small" for="agreePrivacy" style="cursor: pointer;">
+                                        <span class="text-white">[필수]</span> 개인정보 수집·이용에 동의합니다.
+                                    </label>
+                                    <a th:href="@{/privacy}" target="_blank" rel="noopener" class="consent-link small ms-1">보기</a>
+                                    <p class="text-white-50 mb-0 mt-1 consent-detail">
+                                        수집 항목: 아이디, 비밀번호, 닉네임, 이메일(선택), 프로필 이미지(선택)<br>
+                                        이용 목적: 회원 식별 및 서비스 제공 · 보유 기간: 회원 탈퇴 시까지
+                                    </p>
+                                </div>
+
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input consent-item" type="checkbox" id="agreeAge" name="agreeAge" value="true">
+                                    <label class="form-check-label text-white-50 small" for="agreeAge" style="cursor: pointer;">
+                                        <span class="text-white">[필수]</span> 만 14세 이상입니다.
+                                    </label>
                                 </div>
                             </div>
 

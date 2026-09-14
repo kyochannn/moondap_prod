@@ -2,6 +2,7 @@ package com.moondap.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -56,7 +57,7 @@ class ContentCacheTest {
         cacheManager.getCacheNames()
                 .forEach(name -> cacheManager.getCache(name).clear());
 
-        when(mdTestMapper.selectAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestMapper.selectAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
                 .thenReturn(List.of(new MdContentItemDTO()));
         when(mdTestCategoryMapper.selectActiveCategories())
                 .thenReturn(List.of(new MdTestCategoryDTO()));
@@ -67,24 +68,37 @@ class ContentCacheTest {
     @Test
     @DisplayName("같은 조건의 콘텐츠 목록 조회는 한 번만 DB 를 친다")
     void contentListIsCached() {
-        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
-        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
-        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
+        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6, false);
+        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6, false);
+        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6, false);
 
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "all", 0, 6);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "all", 0, 6, false);
     }
 
     @Test
     @DisplayName("조건이 다르면 별개로 캐시된다")
     void differentArgumentsAreCachedSeparately() {
         // 메인 페이지는 정렬 조건만 다른 조회를 3번 한다. 하나로 뭉뚱그려지면 안 된다.
-        mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 6);
-        mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 6);
-        mdTestUserService.getAllContentList("all", "latest", "NORMAL", 0, 6);
+        mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 6, false);
+        mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 6, false);
+        mdTestUserService.getAllContentList("all", "latest", "NORMAL", 0, 6, false);
 
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "NORMAL", 0, 6);
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "BALANCE", 0, 6);
-        verify(mdTestMapper, times(1)).selectAllContentList("all", "latest", "NORMAL", 0, 6);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "NORMAL", 0, 6, false);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "popular", "BALANCE", 0, 6, false);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "latest", "NORMAL", 0, 6, false);
+    }
+
+    @Test
+    @DisplayName("[회귀] 매운맛 포함 여부가 캐시 키에 반영된다")
+    void includeSpicyIsPartOfCacheKey() {
+        // sitemap 은 매운맛까지 필요하고 화면 목록은 아니다. 이 값이 키에서 빠지면
+        // sitemap 이 먼저 캐시를 채운 뒤 메인 페이지가 그 결과를 그대로 받아
+        // 매운맛이 노출된다. 조용히 터지는 형태라 테스트로 고정한다.
+        mdTestUserService.getAllContentList("all", "latest", "all", 0, 6, true);
+        mdTestUserService.getAllContentList("all", "latest", "all", 0, 6, false);
+
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "latest", "all", 0, 6, true);
+        verify(mdTestMapper, times(1)).selectAllContentList("all", "latest", "all", 0, 6, false);
     }
 
     @Test
@@ -113,12 +127,12 @@ class ContentCacheTest {
     @DisplayName("카테고리를 수정하면 콘텐츠 목록 캐시도 함께 비워진다")
     void updatingCategoryEvictsContentList() {
         // 목록에 카테고리 표시 이름이 들어가므로 같이 비워야 한다.
-        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
+        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6, false);
 
         mdTestCategoryService.updateCategory(new MdTestCategoryDTO());
 
-        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6);
-        verify(mdTestMapper, times(2)).selectAllContentList("all", "popular", "all", 0, 6);
+        mdTestUserService.getAllContentList("all", "popular", "all", 0, 6, false);
+        verify(mdTestMapper, times(2)).selectAllContentList("all", "popular", "all", 0, 6, false);
     }
 
     @Test

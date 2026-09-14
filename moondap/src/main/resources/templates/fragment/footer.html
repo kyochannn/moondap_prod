@@ -68,12 +68,51 @@
     <div class="container copyright text-center mt-4">
       <p>© <span>Copyright</span> <strong class="px-1 sitename">moondap</strong> <span>All Rights Reserved</span></p>
       <div class="footer-legal-links mt-2">
+        <a th:href="@{/about}" class="text-white-50 mx-2 small">서비스 소개</a>
+        <span class="text-white-50">|</span>
+        <a th:href="@{/contact}" class="text-white-50 mx-2 small">문의하기</a>
+        <span class="text-white-50">|</span>
         <a th:href="@{/privacy}" class="text-white-50 mx-2 small">개인정보처리방침</a>
         <span class="text-white-50">|</span>
         <a th:href="@{/terms}" class="text-white-50 mx-2 small">이용약관</a>
         <span class="text-white-50">|</span>
         <a th:href="@{/partnership}" class="text-warning mx-2 small fw-bold">광고/제휴 문의</a>
+
+        <!-- 쿠키 동의 철회. 애드센스 Privacy & messaging 가이드라인이 요구하는 재설정 경로다.
+             동의 메시지를 받지 않는 지역(한국 등)에서는 googlefc 가 로드되지 않아
+             누르면 아무 일도 일어나지 않는 죽은 링크가 되므로, CONSENT_API_READY 가
+             올 때만 노출한다. -->
+        <span id="cookie-settings-wrap" style="display: none;">
+          <span class="text-white-50">|</span>
+          <a href="#" id="cookie-settings-link" class="text-white-50 mx-2 small">쿠키 설정</a>
+        </span>
       </div>
+
+      <script>
+        (function () {
+          window.googlefc = window.googlefc || {};
+          // googlefc 가 먼저 로드됐다면 기존 큐를 유지해야 한다. 새 배열로 덮으면
+          // 이미 등록된 콜백이 사라진다.
+          window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+
+          window.googlefc.callbackQueue.push({
+            'CONSENT_API_READY': function () {
+              var wrap = document.getElementById('cookie-settings-wrap');
+              if (wrap) wrap.style.display = 'inline';
+            }
+          });
+
+          var link = document.getElementById('cookie-settings-link');
+          if (link) {
+            link.addEventListener('click', function (e) {
+              e.preventDefault();
+              if (window.googlefc && typeof window.googlefc.showRevocationMessage === 'function') {
+                window.googlefc.showRevocationMessage();
+              }
+            });
+          }
+        })();
+      </script>
     </div>
 
   </footer>

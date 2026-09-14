@@ -83,7 +83,8 @@ public class SecurityConfig {
 
             // ── 1. 정적 리소스 / 업로드 파일 ──────────────────────────
             .requestMatchers("/assets/**", "/uploads/**", "/profile/**").permitAll()
-            .requestMatchers("/favicon.png", "/apple-touch-icon.png",
+            .requestMatchers("/favicon.ico", "/favicon.png", "/apple-touch-icon.png",
+                             "/manifest.json",
                              "/robots.txt", "/sitemap.xml", "/ads.txt",
                              "/.well-known/**").permitAll()
             .requestMatchers("/error").permitAll()
@@ -116,7 +117,12 @@ public class SecurityConfig {
             .requestMatchers("/checkUsername", "/checkNickname", "/checkAdminKey").permitAll()
 
             // ── 4. 공개 콘텐츠 ──────────────────────────────────────
-            .requestMatchers("/", "/privacy", "/terms", "/partnership").permitAll()
+            .requestMatchers("/", "/privacy", "/terms", "/partnership",
+                             "/about", "/contact").permitAll()
+            // 신고는 비로그인 이용자도 할 수 있어야 한다. 로그인을 요구하면 대부분의
+            // 방문자가 신고하지 못해 기능이 있으나 마나가 된다.
+            // (관리 경로 /admin/report/** 는 위 2번 규칙에서 ADMIN 으로 막힌다)
+            .requestMatchers("/report").permitAll()
             .requestMatchers("/test/**", "/balanceGame/**", "/egenTeto/**").permitAll()
             // 내 결과 보관함. 로그인 여부와 무관하게 열리지만, 보이는 내용은
             // 로그인 계정 또는 익명 쿠키(md_anon)로 서버가 정한다.

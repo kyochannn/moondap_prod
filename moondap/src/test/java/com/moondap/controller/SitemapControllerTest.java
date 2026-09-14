@@ -1,8 +1,10 @@
 package com.moondap.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -50,7 +52,7 @@ class SitemapControllerTest {
     @Test
     @DisplayName("개별 심리테스트와 밸런스 게임 URL 이 모두 포함된다")
     void includesEveryContentUrl() {
-        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
                 .thenReturn(List.of(
                         content("NORMAL", "love-type", "2026-05-01 10:00:00"),
                         content("BALANCE", "BG000012", "2026-05-02 11:00:00")));
@@ -66,7 +68,7 @@ class SitemapControllerTest {
     @Test
     @DisplayName("콘텐츠가 없어도 고정 URL 은 내려준다")
     void alwaysIncludesStaticUrls() {
-        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
                 .thenReturn(List.of());
 
         String xml = controller.sitemap();
@@ -83,7 +85,7 @@ class SitemapControllerTest {
     @Test
     @DisplayName("콘텐츠 조회가 실패해도 sitemap 자체는 응답한다")
     void survivesContentLookupFailure() {
-        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
                 .thenThrow(new RuntimeException("DB down"));
 
         String xml = controller.sitemap();
@@ -96,7 +98,7 @@ class SitemapControllerTest {
     @Test
     @DisplayName("EGEN 은 고정 URL 에 이미 있으므로 중복 생성하지 않는다")
     void doesNotDuplicateEgenUrl() {
-        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
                 .thenReturn(List.of(content("EGEN", "selectEgenTetoGame", "2024-01-01 00:00:00")));
 
         String xml = controller.sitemap();
@@ -106,9 +108,22 @@ class SitemapControllerTest {
     }
 
     @Test
+    @DisplayName("매운맛도 색인 대상이므로 includeSpicy=true 로 조회한다")
+    void requestsSpicyContentForIndexing() {
+        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
+                .thenReturn(List.of());
+
+        controller.sitemap();
+
+        // 매운맛은 화면 목록에서만 뺀다. sitemap 까지 빼면 이미 색인된 페이지가
+        // 정리되는 게 아니라 크롤링만 뜸해진다.
+        verify(mdTestUserService).getAllContentList("all", "latest", "all", 0, 5000, true);
+    }
+
+    @Test
     @DisplayName("key 나 createdAt 이 비어 있어도 XML 이 깨지지 않는다")
     void toleratesIncompleteRows() {
-        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt()))
+        when(mdTestUserService.getAllContentList(anyString(), anyString(), anyString(), anyInt(), anyInt(), anyBoolean()))
                 .thenReturn(List.of(
                         content("NORMAL", null, "2026-05-01 10:00:00"),
                         content("NORMAL", "no-date", null)));

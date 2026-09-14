@@ -601,7 +601,7 @@ public class StandardBalanceGameService implements BalanceGameService {
      * 발급했다(UNIQUE 위반으로 등록 실패). 동시 등록 시 두 요청이 같은 MAX 를 읽는
      * 경쟁 조건도 있었다.
      *
-     * <p>이제는 id_sequence 테이블의 행 락으로 직렬화되므로 두 문제가 모두 사라진다.
+     * <p>이제는 md_id_sequence 테이블의 행 락으로 직렬화되므로 두 문제가 모두 사라진다.
      * 호출부가 @Transactional 이어야 한다(LAST_INSERT_ID 는 커넥션 단위 상태).
      */
     private String nextBalanceGameId() {
@@ -610,7 +610,7 @@ public class StandardBalanceGameService implements BalanceGameService {
 
         Object value = param.get("value");
         if (value == null) {
-            // id_sequence 에 'balance_game' 행이 없으면 UPDATE 가 0건이라 값이 없다.
+            // md_id_sequence 에 'balance_game' 행이 없으면 UPDATE 가 0건이라 값이 없다.
             // 조용히 1번부터 발급하면 기존 ID 와 충돌하므로 명시적으로 실패시킨다.
             throw new IllegalStateException(
                     "ID 시퀀스가 초기화되지 않았습니다. 'SQL 쿼리 모음/id_sequence.sql' 을 실행하세요.");

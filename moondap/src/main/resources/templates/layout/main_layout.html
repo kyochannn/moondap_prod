@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!-- lang 은 이 레이아웃에만 둔다. 콘텐츠 템플릿의 <html> 태그는 레이아웃 방언이
+     버리므로 거기에 적으면 렌더 결과에 남지 않는다. -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,6 +29,26 @@
 
     <!-- google seacrh -->
     <meta name="google-site-verification" content="XyiaKYwTkRMZ-SPFLtteHO2m9HKfOvhcMCIGTeIduXA" />
+
+    <!-- Google Analytics 4.
+         analytics.ga4-id 가 비어 있으면 스니펫 자체를 내보내지 않는다. 로컬·테스트에서
+         운영 통계를 오염시키지 않기 위한 것이라, 측정 ID 를 코드에 하드코딩하지 말 것.
+         화면 코드는 gtag 를 직접 부르지 않고 analytics.js 의 mdTrack 을 쓴다(이 블록이
+         없을 때 ReferenceError 로 죽지 않게 하기 위해).
+
+         th:with 는 th:if 보다 나중에 처리되므로 한 태그에 같이 쓸 수 없다. 그래서 중첩한다. -->
+    <th:block th:with="ga4Id=${@environment.getProperty('analytics.ga4-id')}">
+        <th:block th:if="${!#strings.isEmpty(ga4Id)}">
+            <script async th:src="'https://www.googletagmanager.com/gtag/js?id=' + ${ga4Id}"></script>
+            <script th:inline="javascript">
+                window.dataLayer = window.dataLayer || [];
+                function gtag() { dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', /*[[${ga4Id}]]*/ '');
+            </script>
+        </th:block>
+    </th:block>
+
     <!-- google ads -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5509463812555494"
      crossorigin="anonymous"></script>

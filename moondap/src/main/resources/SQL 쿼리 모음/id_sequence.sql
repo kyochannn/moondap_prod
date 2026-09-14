@@ -16,7 +16,7 @@
 -- 동시 등록 시의 경쟁 조건도 함께 있었다(둘 다 같은 MAX 를 읽음).
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS moondap.id_sequence (
+CREATE TABLE IF NOT EXISTS moondap.md_id_sequence (
     seq_name   VARCHAR(50) NOT NULL PRIMARY KEY COMMENT '시퀀스 이름',
     next_val   BIGINT      NOT NULL             COMMENT '다음에 발급할 번호',
     updated_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -27,17 +27,17 @@ CREATE TABLE IF NOT EXISTS moondap.id_sequence (
 --   - status 를 따지지 않는다. 삭제되지 않은 모든 행이 대상이다.
 --   - 'BG' + 숫자 형태만 센다. 다른 형식의 레거시 ID 가 있어도 안전하다.
 --   - 이미 행이 있으면 건드리지 않는다(재실행해도 값이 되돌아가지 않음).
-INSERT INTO moondap.id_sequence (seq_name, next_val)
+INSERT INTO moondap.md_id_sequence (seq_name, next_val)
 SELECT 'balance_game',
        COALESCE(MAX(CAST(SUBSTRING(id, 3) AS UNSIGNED)), 0) + 1
-  FROM moondap.balance_questions
+  FROM moondap.md_balance_game
  WHERE id REGEXP '^BG[0-9]+$'
 ON DUPLICATE KEY UPDATE next_val = next_val;
 
 
 -- 초기화 결과 확인용 (실행 후 값이 기대와 맞는지 볼 것)
--- SELECT * FROM moondap.id_sequence;
+-- SELECT * FROM moondap.md_id_sequence;
 --
--- 기대값: balance_questions 의 가장 큰 BG 번호 + 1
+-- 기대값: md_balance_game 의 가장 큰 BG 번호 + 1
 -- SELECT COALESCE(MAX(CAST(SUBSTRING(id, 3) AS UNSIGNED)), 0) + 1 AS expected
---   FROM moondap.balance_questions WHERE id REGEXP '^BG[0-9]+$';
+--   FROM moondap.md_balance_game WHERE id REGEXP '^BG[0-9]+$';

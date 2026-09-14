@@ -7,7 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <insert id="insertHistory" parameterType="com.moondap.dto.TestHistoryDTO"
             useGeneratedKeys="true" keyProperty="no">
-        INSERT INTO moondap.md_test_history
+        INSERT INTO moondap.md_test_play
             (test_key, test_id, result_id, result_code, result_title, result_image,
              test_title, score, user_id, anon_id)
         VALUES
@@ -30,7 +30,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                result_id AS resultId, result_code AS resultCode, result_title AS resultTitle,
                result_image AS resultImage, score, user_id AS userId, anon_id AS anonId,
                created_at AS createdAt
-        FROM moondap.md_test_history
+        FROM moondap.md_test_play
         <choose>
             <when test="userId != null and userId != ''">
                 WHERE user_id = #{userId}
@@ -51,14 +51,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
       user_id IS NULL 조건이 있어야, 이미 다른 계정에 귀속된 기록을 빼앗지 않는다.
     -->
     <update id="claimAnonymousHistory">
-        UPDATE moondap.md_test_history
+        UPDATE moondap.md_test_play
            SET user_id = #{userId}
          WHERE anon_id = #{anonId}
            AND user_id IS NULL
     </update>
 
     <delete id="deleteHistory">
-        DELETE FROM moondap.md_test_history
+        DELETE FROM moondap.md_test_play
         WHERE no = #{no}
         <choose>
             <when test="userId != null and userId != ''">

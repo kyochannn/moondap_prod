@@ -24,8 +24,8 @@
 -- 이 기록이 있으면 "내가 누른 댓글"을 서버가 알려줄 수 있어,
 -- 기기를 바꿔도 하트 상태가 유지된다.
 -- ────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS moondap.balance_comment_like (
-    comment_no INT          NOT NULL COMMENT 'balance_comments.no',
+CREATE TABLE IF NOT EXISTS moondap.md_balance_comment_like (
+    comment_no INT          NOT NULL COMMENT 'md_balance_comment.no',
 
     -- 투표와 동일한 형식. 로그인: 'u:' + username / 비로그인: 'ip:' + 주소
     voter_key  VARCHAR(100) NOT NULL COMMENT '좋아요 누른 주체',
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS moondap.balance_comment_like (
 
     -- 댓글이 지워지면 좋아요 기록도 함께 정리된다.
     CONSTRAINT fk_comment_like_comment
-        FOREIGN KEY (comment_no) REFERENCES moondap.balance_comments(no) ON DELETE CASCADE
+        FOREIGN KEY (comment_no) REFERENCES moondap.md_balance_comment(no) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -51,14 +51,14 @@ CREATE TABLE IF NOT EXISTS moondap.balance_comment_like (
 SET @col_exists := (
     SELECT COUNT(*) FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = 'moondap'
-       AND TABLE_NAME   = 'balance_vote_log'
+       AND TABLE_NAME   = 'md_balance_vote'
        AND COLUMN_NAME  = 'selected_side'
 );
 SET @stmt := IF(@col_exists = 0,
-    'ALTER TABLE moondap.balance_vote_log
+    'ALTER TABLE moondap.md_balance_vote
         ADD COLUMN selected_side ENUM(''left'',''right'') NULL
         COMMENT ''투표한 진영. 기존 행은 NULL(첫 댓글 작성 시 보정됨)''',
-    'SELECT ''[건너뜀] balance_vote_log.selected_side 이미 존재'' AS result'
+    'SELECT ''[건너뜀] md_balance_vote.selected_side 이미 존재'' AS result'
 );
 PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
 
@@ -75,14 +75,14 @@ PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
 SET @col_exists := (
     SELECT COUNT(*) FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = 'moondap'
-       AND TABLE_NAME   = 'balance_comments'
+       AND TABLE_NAME   = 'md_balance_comment'
        AND COLUMN_NAME  = 'anon_id'
 );
 SET @stmt := IF(@col_exists = 0,
-    'ALTER TABLE moondap.balance_comments
+    'ALTER TABLE moondap.md_balance_comment
         ADD COLUMN anon_id VARCHAR(36) NULL
         COMMENT ''익명 작성자 식별 토큰(로그인 사용자는 NULL)''',
-    'SELECT ''[건너뜀] balance_comments.anon_id 이미 존재'' AS result'
+    'SELECT ''[건너뜀] md_balance_comment.anon_id 이미 존재'' AS result'
 );
 PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
 
@@ -90,11 +90,11 @@ PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
 SET @idx_exists := (
     SELECT COUNT(*) FROM information_schema.STATISTICS
      WHERE TABLE_SCHEMA = 'moondap'
-       AND TABLE_NAME   = 'balance_comments'
+       AND TABLE_NAME   = 'md_balance_comment'
        AND INDEX_NAME   = 'idx_comment_anon'
 );
 SET @stmt := IF(@idx_exists = 0,
-    'CREATE INDEX idx_comment_anon ON moondap.balance_comments (anon_id)',
+    'CREATE INDEX idx_comment_anon ON moondap.md_balance_comment (anon_id)',
     'SELECT ''[건너뜀] idx_comment_anon 이미 존재'' AS result'
 );
 PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
@@ -106,21 +106,21 @@ PREPARE s FROM @stmt; EXECUTE s; DEALLOCATE PREPARE s;
 -- 컬럼 별칭에 한글을 쓰지 않는다. MariaDB 10.1 에서는 따옴표 없는 비ASCII
 -- 식별자가 접속 문자셋에 따라 파싱 오류(ERROR 1064)를 낸다.
 -- ────────────────────────────────────────────────────────────
-SELECT 'balance_comment_like (table)' AS item, IF(COUNT(*) > 0, 'OK', 'MISSING') AS status
+SELECT 'md_balance_comment_like (table)' AS item, IF(COUNT(*) > 0, 'OK', 'MISSING') AS status
   FROM information_schema.TABLES
- WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_comment_like'
+ WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'md_balance_comment_like'
 UNION ALL
-SELECT 'balance_vote_log.selected_side', IF(COUNT(*) > 0, 'OK', 'MISSING')
+SELECT 'md_balance_vote.selected_side', IF(COUNT(*) > 0, 'OK', 'MISSING')
   FROM information_schema.COLUMNS
- WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_vote_log'
+ WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'md_balance_vote'
    AND COLUMN_NAME = 'selected_side'
 UNION ALL
-SELECT 'balance_comments.anon_id', IF(COUNT(*) > 0, 'OK', 'MISSING')
+SELECT 'md_balance_comment.anon_id', IF(COUNT(*) > 0, 'OK', 'MISSING')
   FROM information_schema.COLUMNS
- WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_comments'
+ WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'md_balance_comment'
    AND COLUMN_NAME = 'anon_id'
 UNION ALL
 SELECT 'idx_comment_anon (index)', IF(COUNT(*) > 0, 'OK', 'MISSING')
   FROM information_schema.STATISTICS
- WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'balance_comments'
+ WHERE TABLE_SCHEMA = 'moondap' AND TABLE_NAME = 'md_balance_comment'
    AND INDEX_NAME = 'idx_comment_anon';

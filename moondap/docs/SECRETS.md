@@ -86,7 +86,7 @@ openssl rand -base64 32        # 새 키 생성
 
 ```sql
 SELECT username, nickname, role, created_at
-FROM moondap.md_users
+FROM moondap.md_user
 WHERE role = 'ROLE_ADMIN'
 ORDER BY created_at DESC;
 ```
@@ -94,7 +94,7 @@ ORDER BY created_at DESC;
 본인이 만들지 않은 `ROLE_ADMIN` 계정이 있으면 즉시 차단한다.
 
 ```sql
-UPDATE moondap.md_users SET status = 'SUSPENDED' WHERE username = '<의심계정>';
+UPDATE moondap.md_user SET status = 'SUSPENDED' WHERE username = '<의심계정>';
 ```
 
 ### 4-2. `DB_PASSWORD` (무중단 적용 순서)

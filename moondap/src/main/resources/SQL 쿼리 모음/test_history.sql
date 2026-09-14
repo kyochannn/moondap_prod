@@ -9,7 +9,7 @@
 -- 로그인 사용자는 user_id, 비로그인 사용자는 익명 쿠키(md_anon)의 anon_id 로 남긴다.
 -- 둘 중 하나는 반드시 채워진다.
 
-CREATE TABLE IF NOT EXISTS md_test_history (
+CREATE TABLE IF NOT EXISTS md_test_play (
     no          BIGINT       NOT NULL AUTO_INCREMENT,
 
     test_key    VARCHAR(100) NOT NULL COMMENT '결과 URL 재구성용',

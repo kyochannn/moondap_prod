@@ -33,6 +33,15 @@ function shareKakaoCommon(data) {
 
     const { title, description, imageUrl, shareUrl, buttonTitle = '확인하러 가기' } = data;
 
+    // 공유 집계는 이 길목 한 곳에서만 한다. 공유 버튼은 소개·결과·밸런스게임에 흩어져
+    // 있지만 실제 동작은 전부 여기를 지나므로, 화면이 늘어나도 추적이 따라온다.
+    // mdWithRef 로 붙인 ?ref=kakao 가 없으면 "몇 번 공유됐나"는 알아도 "그래서 몇 명이
+    // 들어왔나"를 알 수 없다 — 바이럴 계수의 분모가 사라진다.
+    const trackedUrl = typeof mdWithRef === 'function' ? mdWithRef(shareUrl, 'kakao') : shareUrl;
+    if (typeof mdTrackShare === 'function') {
+        mdTrackShare('kakao', { content_title: title });
+    }
+
     Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
@@ -40,16 +49,16 @@ function shareKakaoCommon(data) {
             description: description,
             imageUrl: imageUrl,
             link: {
-                mobileWebUrl: shareUrl,
-                webUrl: shareUrl,
+                mobileWebUrl: trackedUrl,
+                webUrl: trackedUrl,
             },
         },
         buttons: [
             {
                 title: buttonTitle,
                 link: {
-                    mobileWebUrl: shareUrl,
-                    webUrl: shareUrl,
+                    mobileWebUrl: trackedUrl,
+                    webUrl: trackedUrl,
                 },
             },
         ],
@@ -62,7 +71,14 @@ function shareKakaoCommon(data) {
  * @param {Function} callback - 복사 성공 후 실행할 콜백
  */
 function copyLinkCommon(url, callback) {
-    const targetUrl = url || window.location.href;
+    const rawUrl = url || window.location.href;
+
+    // 카카오 공유와 같은 이유로 채널을 붙인다. 복사된 주소가 그대로 퍼지므로
+    // 여기에 ref 가 없으면 '링크 복사'를 통한 유입은 direct 로 뭉뚱그려진다.
+    const targetUrl = typeof mdWithRef === 'function' ? mdWithRef(rawUrl, 'link') : rawUrl;
+    if (typeof mdTrackShare === 'function') {
+        mdTrackShare('link');
+    }
     
     if (typeof copyToClipboard === 'function') {
         copyToClipboard(targetUrl, callback);

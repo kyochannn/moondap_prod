@@ -79,8 +79,17 @@ public class MdTestManageController {
             @RequestParam(value = "resultsJson", required = false) String resultsJson,
             @RequestParam(value = "questionsJson", required = false) String questionsJson,
             @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnail,
-            @RequestParam(value = "resultFiles", required = false) List<MultipartFile> resultFiles) {
+            @RequestParam(value = "resultFiles", required = false) List<MultipartFile> resultFiles,
+            @RequestParam(value = "agreeCopyright", required = false, defaultValue = "false") boolean agreeCopyright) {
         try {
+            // 업로드 이미지의 권리 확인. 화면에서도 막지만 폼을 직접 조작하면 우회되므로
+            // 실제 차단은 여기서 한다. 체크박스는 해제 시 파라미터 자체가 오지 않으므로
+            // required=false + 기본 false 로 받는다.
+            if (!agreeCopyright) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "업로드하는 이미지에 대한 권리를 확인해주세요."));
+            }
+
             // JSON 질문 리스트 파싱
             if (questionsJson != null && !questionsJson.isBlank()) {
                 List<MdTestQuestionDTO> questions = objectMapper.readValue(questionsJson, new TypeReference<List<MdTestQuestionDTO>>() {});

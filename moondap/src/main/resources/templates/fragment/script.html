@@ -24,6 +24,9 @@
   <!-- HTML 이스케이프 전역 유틸. 클라이언트에서 문자열로 DOM 을 조립하는 화면이 사용한다. -->
   <script th:src="@{/assets/js/html-escape.js}"></script>
 
+  <!-- 이벤트 추적(mdTrack/mdWithRef). share-service.js 가 이 함수들을 쓰므로 먼저 둔다. -->
+  <script th:src="@{/assets/js/analytics.js}"></script>
+
   <!-- 폭중 효과를 위한 cdn -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   

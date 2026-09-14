@@ -94,7 +94,10 @@
                                  배치된다. 순서는 test-intro.css 가 flex order 로 바꾼다. -->
                             <div class="button-group mb-4">
                                 <div class="intro-actions">
-                                    <button onclick="location.href='/egenTeto/select'"
+                                    <!-- 심리테스트(intro.html)와 같은 이름의 이벤트를 보낸다.
+                                         content_type 으로만 갈라 두면 GA4 에서 세 콘텐츠의
+                                         시작→완료 전환을 같은 리포트로 비교할 수 있다. -->
+                                    <button onclick="startEgenTetoTest()"
                                             class="btn btn-primary intro-start">
                                         테스트 시작 <i class="bi bi-arrow-right"></i>
                                     </button>
@@ -237,6 +240,21 @@
     <script th:src="@{/assets/js/test-intro.js(v=1.0)}"></script>
 
     <script th:inline="javascript">
+        // 0. 시작 전환 집계.
+        //    심리테스트는 startTest(url) 안에서 로딩 오버레이와 함께 보내지만, 여기는
+        //    성별 선택(/egenTeto/select)이 한 단계 더 있어 오버레이 없이 바로 넘어간다.
+        //    이동 직전에 보내도 GA4 가 sendBeacon 을 쓰므로 유실되지 않는다.
+        function startEgenTetoTest() {
+            if (typeof mdTrack === 'function') {
+                mdTrack('test_start', {
+                    content_type: 'EGEN',
+                    content_key: 'egenTeto',
+                    content_title: '에겐 vs 테토 테스트'
+                });
+            }
+            location.href = '/egenTeto/select';
+        }
+
         // 1. 결과 링크 복사 (밸런스 게임 스타일 로직)
         function copyLinkAction() {
             const url = window.location.href;

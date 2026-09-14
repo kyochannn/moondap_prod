@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.moondap.common.exception.UserMessageException;
 import com.moondap.dto.MdUserDTO;
 import com.moondap.service.StandardMdUserService;
 
@@ -91,13 +92,25 @@ public class MdUserController {
 
 	/**
 	 * 회원가입 처리 로직
+	 *
+	 * <p>필수 동의 항목은 체크박스라서 해제하면 파라미터 자체가 오지 않는다.
+	 * 따라서 {@code required = false} + 기본값 false 로 받고 여기서 검사한다.
+	 * 화면(join.html)에서도 같은 검사를 하지만 그것은 편의용이고, 폼을 직접
+	 * 조작하면 우회되므로 실제 차단은 이 지점이 담당한다.
 	 */
 	@PostMapping("/joinProc")
-	public String joinProc(MdUserDTO user, 
+	public String joinProc(MdUserDTO user,
 						   @RequestParam(value = "profileFile", required = false) org.springframework.web.multipart.MultipartFile profileFile,
+						   @RequestParam(value = "agreeTerms", required = false, defaultValue = "false") boolean agreeTerms,
+						   @RequestParam(value = "agreePrivacy", required = false, defaultValue = "false") boolean agreePrivacy,
+						   @RequestParam(value = "agreeAge", required = false, defaultValue = "false") boolean agreeAge,
 						   RedirectAttributes rttr) {
-		
+
 		try {
+			if (!agreeTerms || !agreePrivacy || !agreeAge) {
+				throw new UserMessageException("필수 약관에 모두 동의해야 가입할 수 있습니다.");
+			}
+
 			// 프로필 이미지 처리
 			if (profileFile != null && !profileFile.isEmpty()) {
 				String savedFilename = fileService.uploadProfile(profileFile);

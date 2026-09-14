@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>문답 소개 - 어떤 서비스인가요?</title>
+    <style>
+        .legal-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            backdrop-filter: blur(10px);
+        }
+        .legal-container h2 { color: #fff; margin-top: 30px; margin-bottom: 15px; font-weight: 700; }
+        .legal-container h3 { color: #eee; margin-top: 35px; font-weight: 600; }
+        .legal-container h3:first-of-type { margin-top: 0; }
+        .legal-container p, .legal-container li { font-size: 0.95rem; }
+        .about-stat {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 20px 10px;
+            text-align: center;
+            height: 100%;
+        }
+        .about-stat .num { font-size: 1.6rem; font-weight: 700; color: #fff; display: block; }
+        .about-stat .cap { font-size: 0.8rem; color: rgba(255, 255, 255, 0.55); }
+        .about-link { color: #00d2ff; }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+                <div class="section-title">
+                    <h2>문답 소개</h2>
+                    <p>테스트로 만나는 또 다른 나</p>
+                </div>
+
+                <div class="legal-container shadow-lg">
+
+                    <h3>어떤 서비스인가요?</h3>
+                    <p>
+                        문답(moondap)은 심리테스트, 밸런스 게임, 성격 검사를 한곳에 모은 웹 서비스입니다.
+                        복잡한 설치나 가입 없이 웹 브라우저에서 바로 참여할 수 있고, 결과는 링크 하나로 친구에게 공유할 수 있습니다.
+                    </p>
+                    <p>
+                        ‘나를 아는 일’은 원래 어렵고 진지한 작업입니다. 문답은 그 과정을 몇 분짜리 가벼운 질문으로 바꿔서,
+                        누구나 부담 없이 시작할 수 있게 만드는 것을 목표로 합니다.
+                    </p>
+
+                    <h3>무엇을 할 수 있나요?</h3>
+                    <ul>
+                        <li>
+                            <strong>심리테스트</strong> — 연애, 성격, 일상 등 다양한 주제의 유형 검사입니다.
+                            질문에 답하면 결과 유형과 해설을 받아볼 수 있습니다.
+                            <a th:href="@{/test/list}" class="about-link">전체 목록 보기</a>
+                        </li>
+                        <li>
+                            <strong>밸런스 게임</strong> — 둘 중 하나만 골라야 하는 질문입니다. 내 선택이 다른 사람들과
+                            얼마나 같은지 비율로 확인하고 댓글로 의견을 나눌 수 있습니다.
+                            <a th:href="@{/balanceGame/selectBalanceGameListView}" class="about-link">밸런스 게임 하러 가기</a>
+                        </li>
+                        <li>
+                            <strong>에겐테토 테스트</strong> — 성향 문항을 통해 에겐형·테토형 중 나의 유형을 알아보는
+                            정밀 성격 분석입니다.
+                            <a th:href="@{/egenTeto/selectEgenTetoGame}" class="about-link">테스트 하러 가기</a>
+                        </li>
+                    </ul>
+                    <p>
+                        로그인하면 직접 테스트나 밸런스 게임을 만들어 공개할 수도 있습니다.
+                        회원이 만든 콘텐츠는 검수를 거쳐 공개되며, 운영 기준에 맞지 않는 경우 비공개 처리될 수 있습니다.
+                    </p>
+
+                    <h3>지금까지</h3>
+                    <div class="row g-3 mt-2 mb-2">
+                        <div class="col-6 col-md-4">
+                            <div class="about-stat">
+                                <span class="num" th:text="${#numbers.formatInteger(totalParticipantCount, 0, 'COMMA')}">0</span>
+                                <span class="cap">누적 참여</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="about-stat">
+                                <span class="num" th:text="${#numbers.formatInteger(contentCount, 0, 'COMMA')}">0</span>
+                                <span class="cap">공개 콘텐츠</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="about-stat">
+                                <span class="num">2026</span>
+                                <span class="cap">서비스 시작</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>운영 원칙</h3>
+                    <ul>
+                        <li>
+                            테스트 결과는 재미와 자기 이해를 위한 정보일 뿐, 의학적·심리학적 진단이 아닙니다.
+                            전문적인 상담이 필요한 상황이라면 반드시 전문가의 도움을 받으시기 바랍니다.
+                        </li>
+                        <li>
+                            수집하는 개인정보는 서비스 운영에 필요한 최소한으로 제한합니다.
+                            자세한 내용은 <a th:href="@{/privacy}" class="about-link">개인정보처리방침</a>에서 확인하실 수 있습니다.
+                        </li>
+                        <li>
+                            이용자가 작성한 댓글과 콘텐츠 중 타인을 비방하거나 불쾌감을 주는 내용은 신고를 받아 조치합니다.
+                        </li>
+                    </ul>
+
+                    <h3>만든 사람</h3>
+                    <p>
+                        문답은 개인이 기획하고 개발해 운영하는 서비스입니다.
+                        기능 제안이나 오류 제보, 제휴 문의 모두 환영합니다.
+                    </p>
+                    <ul>
+                        <li>문의: <a th:href="@{/contact}" class="about-link">문의하기</a></li>
+                        <li>광고·제휴: <a th:href="@{/partnership}" class="about-link">광고/제휴 문의</a></li>
+                    </ul>
+
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

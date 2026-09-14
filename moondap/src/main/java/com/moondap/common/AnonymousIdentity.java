@@ -64,18 +64,26 @@ public final class AnonymousIdentity {
 
         String issued = UUID.randomUUID().toString();
 
-        Cookie cookie = new Cookie(COOKIE_NAME, issued);
-        cookie.setHttpOnly(true);     // 스크립트가 읽지 못하게 한다(XSS 로 탈취 방지)
-        cookie.setPath("/");
-        cookie.setMaxAge(MAX_AGE_SECONDS);
-        cookie.setAttribute("SameSite", "Lax");
+        // Set-Cookie 를 직접 만든다. Cookie#setAttribute 는 서블릿 6.0 API 라
+        // 운영 서버의 톰캣 10.0(서블릿 5.0)에서는 NoSuchMethodError 로 터진다.
+        // SameSite 를 포기하지 않으면서 두 버전 모두에서 도는 방법은 이것뿐이다.
+        //
+        // 값은 UUID 라 헤더에 섞일 위험한 문자가 없다.
+        StringBuilder setCookie = new StringBuilder()
+                .append(COOKIE_NAME).append('=').append(issued)
+                .append("; Path=/")
+                .append("; Max-Age=").append(MAX_AGE_SECONDS)
+                .append("; HttpOnly")
+                .append("; SameSite=Lax");
 
         // 운영은 HTTPS 이므로 보안 쿠키로 내보낸다.
         // 로컬(http) 에서는 Secure 쿠키가 저장되지 않으므로 요청 스킴을 따른다.
         HttpServletRequest request = currentRequest();
-        cookie.setSecure(request != null && request.isSecure());
+        if (request != null && request.isSecure()) {
+            setCookie.append("; Secure");
+        }
 
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", setCookie.toString());
         return issued;
     }
 

@@ -6,7 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.moondap.mapper.SiteStatMapper">
     <!-- 오늘 날짜의 방문자 수를 증가 (없으면 생성, 있으면 1 증가) -->
     <insert id="upsertVisitCount">
-        INSERT INTO moondap.site_statistics (visit_date, visit_count)
+        INSERT INTO moondap.md_visit_daily (visit_date, visit_count)
         VALUES (#{visitDate}, 1)
         ON DUPLICATE KEY UPDATE visit_count = visit_count + 1
     </insert>
@@ -17,13 +17,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
       그래서 first_seen_at 에는 '그날 처음 들어온 시각'이 남는다.
     -->
     <insert id="insertVisitLog">
-        INSERT IGNORE INTO moondap.site_visit_log (visit_date, ip_address, first_seen_at)
+        INSERT IGNORE INTO moondap.md_visit_log (visit_date, ip_address, first_seen_at)
         VALUES (#{visitDate}, #{ipAddress}, NOW())
     </insert>
 
     <!-- 오늘 날짜의 콘텐츠 참여자 수를 증가 (없으면 생성, 있으면 1 증가) -->
     <insert id="upsertParticipationCount">
-        INSERT INTO moondap.site_statistics (visit_date, participation_count)
+        INSERT INTO moondap.md_visit_daily (visit_date, participation_count)
         VALUES (#{visitDate}, 1)
         ON DUPLICATE KEY UPDATE participation_count = participation_count + 1
     </insert>
@@ -31,20 +31,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- 특정 날짜의 방문자 수 조회 -->
     <select id="selectVisitCount" resultType="long">
         SELECT COALESCE(MAX(visit_count), 0)
-        FROM moondap.site_statistics
+        FROM moondap.md_visit_daily
         WHERE visit_date = #{visitDate}
     </select>
 
     <!-- 특정 날짜의 콘텐츠 참여자 수 조회 -->
     <select id="selectParticipationCount" resultType="long">
         SELECT COALESCE(MAX(participation_count), 0)
-        FROM moondap.site_statistics
+        FROM moondap.md_visit_daily
         WHERE visit_date = #{visitDate}
     </select>
 
     <!-- 시간대별 접속 건수 +1 -->
     <insert id="upsertHourlyView">
-        INSERT INTO moondap.site_visit_hourly (visit_date, visit_hour, view_count)
+        INSERT INTO moondap.md_pageview_hourly (visit_date, visit_hour, view_count)
         VALUES (#{visitDate}, #{visitHour}, 1)
         ON DUPLICATE KEY UPDATE view_count = view_count + 1
     </insert>
@@ -54,14 +54,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         SELECT DATE_FORMAT(visit_date, '%Y-%m-%d') AS visitDate,
                COALESCE(visit_count, 0)            AS visitCount,
                COALESCE(participation_count, 0)    AS participationCount
-        FROM moondap.site_statistics
+        FROM moondap.md_visit_daily
         WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
         ORDER BY visit_date ASC
     </select>
 
     <select id="selectVisitSum" resultType="long">
         SELECT COALESCE(SUM(visit_count), 0)
-        FROM moondap.site_statistics
+        FROM moondap.md_visit_daily
         WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
     </select>
 
@@ -69,7 +69,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectHourlyStats" resultType="com.moondap.dto.HourlyStatDTO">
         SELECT visit_hour            AS visitHour,
                SUM(view_count)       AS viewCount
-        FROM moondap.site_visit_hourly
+        FROM moondap.md_pageview_hourly
         WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
         GROUP BY visit_hour
         ORDER BY visit_hour ASC
@@ -78,20 +78,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!-- ── 접속 기록 보유기간 관리 ──────────────────────────── -->
 
     <select id="countVisitLogs" resultType="long">
-        SELECT COUNT(*) FROM moondap.site_visit_log
+        SELECT COUNT(*) FROM moondap.md_visit_log
     </select>
 
     <select id="countVisitLogsBefore" resultType="long">
-        SELECT COUNT(*) FROM moondap.site_visit_log
+        SELECT COUNT(*) FROM moondap.md_visit_log
         WHERE visit_date &lt; #{cutoffDate}
     </select>
 
     <select id="selectOldestVisitLogDate" resultType="string">
-        SELECT DATE_FORMAT(MIN(visit_date), '%Y-%m-%d') FROM moondap.site_visit_log
+        SELECT DATE_FORMAT(MIN(visit_date), '%Y-%m-%d') FROM moondap.md_visit_log
     </select>
 
     <delete id="deleteVisitLogsBefore">
-        DELETE FROM moondap.site_visit_log
+        DELETE FROM moondap.md_visit_log
         WHERE visit_date &lt; #{cutoffDate}
     </delete>
 
@@ -109,14 +109,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectVisitLogs" resultType="com.moondap.dto.VisitLogDTO">
         SELECT ip_address    AS ipAddress,
                first_seen_at AS firstSeenAt
-        FROM moondap.site_visit_log
+        FROM moondap.md_visit_log
         WHERE visit_date = #{visitDate}
         ORDER BY first_seen_at IS NULL ASC, first_seen_at ASC, ip_address ASC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countVisitLogsOn" resultType="long">
-        SELECT COUNT(*) FROM moondap.site_visit_log
+        SELECT COUNT(*) FROM moondap.md_visit_log
         WHERE visit_date = #{visitDate}
     </select>
 </mapper>

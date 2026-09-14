@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!--
+  업로드 이미지 권리 확인.
+
+  콘텐츠 생성 폼(테스트 · 밸런스 게임)에서 공통으로 쓴다. 타인의 저작물이 올라오면
+  애드센스 저작권 정책 위반이 되고, 광고가 붙은 페이지라 위험이 크다.
+
+  사용하는 쪽에서 해야 할 일:
+    1. <div th:replace="~{fragment/upload_rights::notice}"></div> 삽입
+    2. 제출 전 #agreeCopyright 체크 여부 확인
+    3. 요청에 agreeCopyright=true 를 담아 전송 (서버가 다시 검사한다)
+-->
+<body>
+<div th:fragment="notice">
+    <style>
+        .upload-rights {
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 14px;
+            padding: 18px 20px;
+        }
+        .upload-rights .title { color: #ffc107; font-weight: 600; font-size: 0.95rem; }
+        .upload-rights .desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            margin: 8px 0 14px;
+        }
+        .upload-rights .form-check-label { color: #fff; font-size: 0.88rem; cursor: pointer; }
+        .upload-rights .form-check-input { cursor: pointer; }
+        .upload-rights .form-check-input:checked {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+        .upload-rights a { color: #ffc107; }
+    </style>
+
+    <div class="upload-rights">
+        <p class="title mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>업로드 이미지 권리 확인
+        </p>
+        <p class="desc mb-0">
+            인터넷에서 검색한 이미지, 영화·방송·만화 캡처 등 타인의 저작물은 올릴 수 없습니다.
+            권리 침해 신고가 접수되면 해당 게시물은 예고 없이 비공개 처리되며,
+            분쟁이 발생할 경우 책임은 업로드한 이용자에게 있습니다.
+            자세한 내용은 <a th:href="@{/terms}" target="_blank" rel="noopener">이용약관 제5조</a>를 확인해 주세요.
+        </p>
+        <div class="form-check mb-0">
+            <!-- name 을 주는 이유: 테스트 등록 폼은 new FormData(form) 으로 제출하므로
+                 체크됐을 때만 agreeCopyright=true 가 자동으로 실린다.
+                 밸런스 게임 폼은 FormData 를 직접 조립해 따로 append 한다. -->
+            <input class="form-check-input" type="checkbox" id="agreeCopyright"
+                   name="agreeCopyright" value="true">
+            <label class="form-check-label" for="agreeCopyright">
+                직접 만들었거나 사용 권리가 있는 이미지임을 확인합니다. (필수)
+            </label>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

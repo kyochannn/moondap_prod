@@ -29,6 +29,7 @@
               <li><a href="/test/manage/list">테스트 관리</a></li>
               <li><a href="/balanceGame/manage/list">밸런스 게임 관리</a></li>
               <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin/category/list">카테고리 관리</a></li>
+              <li sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin/report/list">신고 관리</a></li>
             </ul>
           </li>
           <li sec:authorize="isAuthenticated()" class="dropdown">

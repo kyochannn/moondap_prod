@@ -22,6 +22,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -51,7 +54,7 @@ public class MdTestUserController {
         int offset = page * limit;
 
         List<MdContentItemDTO> contentList =
-                mdTestUserService.getAllContentList(category, sort, type, offset, limit + 1);
+                mdTestUserService.getAllContentList(category, sort, type, offset, limit + 1, false);
         List<MdTestCategoryDTO> categories = mdTestCategoryService.getActiveCategories();
         
         boolean hasMore = contentList.size() > limit;
@@ -264,6 +267,11 @@ public class MdTestUserController {
         model.addAttribute("resultCode", resultCode);
         model.addAttribute("isPreview", preview);
 
+        // 결과 화면이 열렸으니 브라우저에 남은 진행 기록(localStorage)을 지우라는 신호.
+        // GET 은 공유 링크로 남의 결과를 보는 경로이기도 하다. 그때 지워 버리면
+        // 같은 테스트를 풀다 만 방문자의 답변까지 날아가므로 POST 일 때만 켠다.
+        model.addAttribute("justCompleted", "POST".equalsIgnoreCase(request.getMethod()));
+
         // 공유용 URL 생성
         String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         String shareUrl = baseUrl + "/test/" + testKey + "/result?resultCode=" + java.net.URLEncoder.encode(resultCode, "UTF-8");
@@ -272,11 +280,32 @@ public class MdTestUserController {
         }
         model.addAttribute("shareUrl", shareUrl);
 
+        // 결과 본문은 유형당 1,000자 안팎으로 이 사이트에서 가장 긴 글이다. 색인 대상이며,
+        // canonical 은 반드시 여기서 직접 지정해야 한다. 이 페이지에 닿는 경로가 셋이라
+        // 그냥 두면 같은 글이 여러 URL 로 갈린다.
+        //   POST /test/{key}/result            — 방금 응시. 쿼리스트링이 없어 대표 URL 이 못 된다.
+        //   GET  ...?resultCode=3              — 공유 링크
+        //   GET  ...?resultCode=3&score=41     — 점수까지 붙은 공유 링크
+        // score 는 같은 결과 안에서 사람마다 달라질 뿐 본문을 바꾸지 않으므로 뺀다.
+        // 그래야 결과 하나당 URL 도 하나로 고정된다.
+        SeoMetaDTO seo = new SeoMetaDTO();
+        seo.setTitle(matchedResult.getResultTitle() + " - " + test.getTitle());
+        seo.setDescription(matchedResult.getResultContent());
+        seo.setCanonical("/test/" + UriUtils.encodePathSegment(testKey, StandardCharsets.UTF_8)
+                + "/result?resultCode=" + UriUtils.encodeQueryParam(resultCode, StandardCharsets.UTF_8));
+        seo.setImage(thumbnailUrl(matchedResult.getResultImage()));
+        seo.setOgType("article");
+        // 미리보기는 관리자만 보는 화면이고, 비공개 테스트의 결과는 아직 공개된 글이 아니다.
+        if (preview || !isPublished(test.getStatus())) {
+            seo.setRobots("noindex, follow");
+        }
+        model.addAttribute("seo", seo);
+
         // 추천 콘텐츠 (종류별 2개씩).
         // 3개일 때는 모바일 2열 그리드에서 두 번째 줄에 한 장만 남아 빈칸이 생겼고,
         // 결과 화면이 그만큼 길어졌다. 2개면 정확히 한 줄로 끝난다.
-        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 2);
-        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 2);
+        List<MdContentItemDTO> popularNormalTests = mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 2, false);
+        List<MdContentItemDTO> popularBalanceTests = mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 2, false);
         model.addAttribute("popularNormalTests", popularNormalTests);
         model.addAttribute("popularBalanceTests", popularBalanceTests);
 

@@ -4,14 +4,14 @@
 -- ⚠️ 애플리케이션 배포 "전에" 반드시 실행할 것.
 --    이 테이블이 없으면 투표 요청이 전부 실패한다.
 --
--- 기존 site_visit_log 와 동일하게 UNIQUE 키 + INSERT IGNORE 로
+-- 기존 md_visit_log 와 동일하게 UNIQUE 키 + INSERT IGNORE 로
 -- 중복을 판정한다. affected rows 가 0 이면 이미 투표한 것이다.
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS moondap.balance_vote_log (
+CREATE TABLE IF NOT EXISTS moondap.md_balance_vote (
     no          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
-    -- balance_questions.id (예: BG00001)
+    -- md_balance_game.id (예: BG00001)
     question_id VARCHAR(64)  NOT NULL,
 
     -- 투표자 식별자.

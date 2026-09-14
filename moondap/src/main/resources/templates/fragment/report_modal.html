@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!--
+  신고 모달.
+
+  금칙어 필터를 통과한 표현이나 단어로 거를 수 없는 문제(저작권 침해 이미지, 도배)를
+  이용자가 알릴 수 있는 경로다. 광고가 붙은 페이지에 문제 콘텐츠가 오래 남으면
+  애드센스 정책 위반이 되므로, 발견을 운영자 순회에만 맡기지 않는다.
+
+  사용하는 쪽에서 해야 할 일:
+    1. <div th:replace="~{fragment/report_modal::modal}"></div> 삽입
+    2. 신고 버튼을 둔다. 둘 중 하나를 쓴다.
+       - 서버 렌더링: class="report-trigger" + data-report-type / th:data-report-id
+       - 스크립트로 만든 요소: onclick="openReportModal('COMMENT', 12)"
+
+  서버 렌더링에서 th:onclick 을 쓰지 않는 이유: Thymeleaf 는 이벤트 핸들러 속성에
+  문자열 변수를 넣는 것을 거부한다(XSS 방어). 숫자·불리언만 허용된다.
+-->
+<th:block th:fragment="modal">
+    <style>
+        .report-modal-content {
+            background: #1a1b2e;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
+            color: #fff;
+        }
+        .report-reason {
+            display: block;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .report-reason:hover { border-color: rgba(82, 77, 211, 0.6); }
+        .report-reason input { margin-right: 8px; }
+        .report-reason input:checked + span { color: #fff; font-weight: 600; }
+        .report-detail {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.88rem;
+            width: 100%;
+            padding: 10px 12px;
+            resize: vertical;
+        }
+        .report-detail::placeholder { color: rgba(255, 255, 255, 0.35); }
+    </style>
+
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content report-modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-flag-fill me-2 text-danger"></i>신고하기</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-white-50 small mb-3">
+                        신고 사유를 선택해 주세요. 접수된 내용은 운영자가 확인 후 조치합니다.
+                    </p>
+
+                    <label class="report-reason">
+                        <input type="radio" name="reportReason" value="ABUSE" checked><span>욕설 · 비방</span>
+                    </label>
+                    <label class="report-reason">
+                        <input type="radio" name="reportReason" value="SEXUAL"><span>음란물 · 선정적인 내용</span>
+                    </label>
+                    <label class="report-reason">
+                        <input type="radio" name="reportReason" value="HATE"><span>혐오 · 차별 표현</span>
+                    </label>
+                    <label class="report-reason">
+                        <input type="radio" name="reportReason" value="COPYRIGHT"><span>저작권 침해</span>
+                    </label>
+                    <label class="report-reason">
+                        <input type="radio" name="reportReason" value="SPAM"><span>도배 · 광고</span>
+                    </label>
+                    <label class="report-reason">
+                        <input type="radio" name="reportReason" value="ETC"><span>기타</span>
+                    </label>
+
+                    <textarea id="reportDetail" class="report-detail mt-2" rows="3" maxlength="500"
+                              placeholder="자세한 내용을 적어주시면 판단에 도움이 됩니다. (선택, 500자 이내)"></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger" id="reportSubmitBtn" onclick="submitReport()">신고하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let reportTargetType = null;
+        let reportTargetId = null;
+
+        // 서버가 렌더링한 신고 버튼. data 속성에서 대상을 읽는다.
+        $(function () {
+            $(document).on('click', '.report-trigger', function (e) {
+                e.preventDefault();
+                openReportModal($(this).data('report-type'), $(this).data('report-id'));
+            });
+        });
+
+        function openReportModal(targetType, targetId) {
+            reportTargetType = targetType;
+            reportTargetId = String(targetId);
+
+            $('#reportDetail').val('');
+            $('input[name="reportReason"][value="ABUSE"]').prop('checked', true);
+
+            new bootstrap.Modal(document.getElementById('reportModal')).show();
+        }
+
+        function submitReport() {
+            if (!reportTargetType || !reportTargetId) return;
+
+            const $btn = $('#reportSubmitBtn');
+            $btn.prop('disabled', true);
+
+            // CSRF 토큰은 fragment/link.html 의 meta 에서 읽는다.
+            const header = $('meta[name="_csrf_header"]').attr('content');
+            const token = $('meta[name="_csrf"]').attr('content');
+
+            $.ajax({
+                url: '/report',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    targetType: reportTargetType,
+                    targetId: reportTargetId,
+                    reasonCode: $('input[name="reportReason"]:checked').val(),
+                    detail: $('#reportDetail').val().trim()
+                }),
+                beforeSend: function (xhr) {
+                    if (header && token) xhr.setRequestHeader(header, token);
+                },
+                success: function (res) {
+                    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+                    alert(res.message || '신고가 접수되었습니다.');
+                },
+                error: function (xhr) {
+                    // 중복 신고·잘못된 사유는 서버가 사유를 담아 400 으로 돌려준다.
+                    const msg = xhr.responseJSON && xhr.responseJSON.message;
+                    alert(msg || '신고 접수 중 오류가 발생했습니다.');
+                },
+                complete: function () {
+                    $btn.prop('disabled', false);
+                }
+            });
+        }
+    </script>
+</th:block>
+
+</html>

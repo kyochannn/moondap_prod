@@ -205,6 +205,10 @@
                     <!-- 4. 하단 액션 버튼 영역 -->
                     <div class="row mt-5 mb-5">
                         <div class="col-lg-8 offset-lg-2">
+                            <div class="mb-4">
+                                <div th:replace="~{fragment/upload_rights::notice}"></div>
+                            </div>
+
                             <div class="admin-cta-box" data-aos="fade-up">
                                 <div class="cta-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
                                 <div class="cta-content text-center">
@@ -513,6 +517,13 @@
                     }
                 });
                 if (!allScoresFilled) return false;
+            }
+
+            // 업로드 권리 확인. 서버(/test/manage/insert)에서도 같은 검사를 한다.
+            if (!$('#agreeCopyright').is(':checked')) {
+                alert('업로드하는 이미지에 대한 권리를 확인해주세요.');
+                $('#agreeCopyright').focus();
+                return false;
             }
 
             $submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> 등록 중...');

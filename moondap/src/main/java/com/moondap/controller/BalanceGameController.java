@@ -183,7 +183,7 @@ public class BalanceGameController {
 		//
 		// type='NORMAL' 은 매퍼에서 심리테스트와 에겐테토를 함께 반환한다.
 		model.addAttribute("popularNormalTests",
-				mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3));
+				mdTestUserService.getAllContentList("all", "popular", "NORMAL", 0, 3, false));
 
 		// 인기 밸런스 게임도 함께 추천한다. '다음 질문' 버튼은 순서대로 한 칸씩만
 		// 옮겨주므로, 지금 화제가 되는 질문으로 바로 건너뛸 길이 따로 필요하다.
@@ -191,7 +191,7 @@ public class BalanceGameController {
 		// 지금 보고 있는 게임은 제외한다. 눌러도 제자리인 항목이 섞이면 세 칸 중
 		// 하나가 통째로 낭비된다. 4개를 받아 하나를 걸러도 3개가 남게 한다.
 		List<MdContentItemDTO> balanceRecommendations =
-				mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 4).stream()
+				mdTestUserService.getAllContentList("all", "popular", "BALANCE", 0, 4, false).stream()
 						.filter(item -> !balanceGame.getId().equals(item.getId()))
 						.limit(3)
 						.toList();
@@ -374,7 +374,9 @@ public class BalanceGameController {
 	@ResponseBody
 	public Map<String, Object> insertBalanceGame(@Valid @ModelAttribute BalanceGameForm form,
 			@RequestParam("option1Image") MultipartFile option1Image,
-			@RequestParam("option2Image") MultipartFile option2Image) throws Exception {
+			@RequestParam("option2Image") MultipartFile option2Image,
+			@RequestParam(value = "agreeCopyright", required = false, defaultValue = "false") boolean agreeCopyright)
+			throws Exception {
 
 		Map<String, Object> rtnMap = new HashMap<String, Object>();
 
@@ -383,6 +385,13 @@ public class BalanceGameController {
 			rtnMap.put("flag", "fail");
 			rtnMap.put("message", "로그인 후 이용 가능합니다.");
 			return rtnMap;
+		}
+
+		// 업로드 이미지의 권리 확인. 화면에서도 막지만 폼을 직접 조작하면 우회되므로
+		// 실제 차단은 여기서 한다. 타인의 저작물이 올라오면 광고가 붙은 페이지에
+		// 저작권 침해물이 노출된다.
+		if (!agreeCopyright) {
+			throw new UserMessageException("업로드하는 이미지에 대한 권리를 확인해주세요.");
 		}
 
 		// 검증 실패(금칙어·길이 초과 등)는 UserMessageException 으로 올라가

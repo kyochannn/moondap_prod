@@ -5,8 +5,18 @@
   <meta name="_csrf" th:content="${_csrf.token}">
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
 
-  <link th:href="@{/assets/img/favicon.png}" rel="icon">
-  <link th:href="@{/assets/img/favicon.png}" rel="apple-touch-icon">
+  <!-- 파비콘. 원본 favicon.png 는 426x462 비정사각이라 탭에서 찌그러져 보였다.
+       정사각으로 맞춘 세트를 쓰고, 크기별로 브라우저가 고르게 한다.
+       ico 는 링크 태그를 읽지 않는 곳(구글 검색결과·북마크·구형 브라우저)이
+       /favicon.ico 를 직접 요청하기 때문에 함께 둔다. -->
+  <link th:href="@{/favicon.ico}" rel="icon" sizes="any">
+  <link th:href="@{/assets/img/favicon-32.png}" rel="icon" type="image/png" sizes="32x32">
+  <!-- iOS 홈 화면은 투명 배경을 검정으로 합성한다. 사이트 배경색을 깔아둔 별도 이미지를 쓴다. -->
+  <link th:href="@{/apple-touch-icon.png}" rel="apple-touch-icon" sizes="180x180">
+  <!-- .webmanifest 확장자는 스프링의 MIME 표에 없어 octet-stream 으로 나간다.
+       .json 으로 두면 별도 설정 없이 올바른 타입으로 서빙된다. -->
+  <link th:href="@{/manifest.json}" rel="manifest">
+  <meta name="theme-color" content="#05071e">
 
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>

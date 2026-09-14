@@ -4,7 +4,7 @@
 
     <!-- 테스트 결과 삽입 -->
     <insert id="insertTestResult" parameterType="com.moondap.dto.EgenTetoDTO">
-        INSERT INTO egen_teto_test_result (
+        INSERT INTO md_egenteto_play (
             userNo,
             userName,
             gender,
@@ -64,7 +64,7 @@
             ambitionPoint,
             isTesterMyself,
             testDate
-        FROM egen_teto_test_result
+        FROM md_egenteto_play
         WHERE userNo = #{userNo}
     </select>
 
@@ -74,7 +74,7 @@
             IFNULL(AVG(tetoScore), 50.0) as avgScore,
             IFNULL(STDDEV(tetoScore), 15.0) as stdDevScore,
             COUNT(*) as totalCount
-        FROM egen_teto_test_result
+        FROM md_egenteto_play
     </select>
 
     <!-- 성별별 참여자 수 조회 -->
@@ -82,7 +82,7 @@
         SELECT 
             IFNULL(SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END), 0) as maleCount,
             IFNULL(SUM(CASE WHEN gender = 'W' THEN 1 ELSE 0 END), 0) as femaleCount
-        FROM egen_teto_test_result
+        FROM md_egenteto_play
     </select>
 
 </mapper>

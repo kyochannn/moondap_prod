@@ -13,8 +13,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 /**
  * 캐시 설정.
  *
- * <p>메인 페이지는 한 번 열릴 때 쿼리 9개를 날렸고, 그중 3개가 md_tests 와
- * balance_questions 를 통째로 UNION 한 뒤 정렬·LIMIT 하는 쿼리였다.
+ * <p>메인 페이지는 한 번 열릴 때 쿼리 9개를 날렸고, 그중 3개가 md_test 와
+ * md_balance_game 를 통째로 UNION 한 뒤 정렬·LIMIT 하는 쿼리였다.
  * 이 형태는 인덱스를 타지 못해 데이터가 늘수록 선형으로 느려진다.
  *
  * <p>캐시마다 성격이 달라 만료 시간을 따로 준다. 스프링 기본

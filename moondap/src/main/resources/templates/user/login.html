@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 - 문답</title>
-    
+
+    <!-- 레이아웃을 쓰지 않아 fragment/link 의 파비콘도 들어오지 않는다.
+         이 페이지만 탭 아이콘이 비는 것을 막기 위해 직접 건다. -->
+    <link th:href="@{/favicon.ico}" rel="icon" sizes="any">
+    <link th:href="@{/assets/img/favicon-32.png}" rel="icon" type="image/png" sizes="32x32">
+    <link th:href="@{/apple-touch-icon.png}" rel="apple-touch-icon" sizes="180x180">
+    <meta name="theme-color" content="#05071e">
+
     <!-- 이 페이지는 공통 레이아웃을 쓰지 않으므로 필요한 CSS 를 직접 건다.
          다른 페이지와 같은 버전을 쓰도록 CDN 대신 프로젝트의 vendor 사본을 사용한다. -->
     <link th:href="@{/assets/vendor/bootstrap/css/bootstrap.css}" rel="stylesheet">

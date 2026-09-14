@@ -187,13 +187,22 @@ public class MdTestUserService {
     /**
      * 전체 리스트 페이지용 콘텐츠 리스트를 조회합니다.
      *
-     * <p>md_tests 와 balance_questions 를 통째로 UNION 한 뒤 정렬·LIMIT 하는 쿼리라
+     * <p>md_test 와 md_balance_game 를 통째로 UNION 한 뒤 정렬·LIMIT 하는 쿼리라
      * 인덱스를 타지 못한다. 메인 페이지 한 번에 이 조회가 3번 일어나므로 캐시한다.
      * 콘텐츠가 등록·수정·삭제되면 캐시를 비운다(MdTestAdminService, StandardBalanceGameService).
+     *
+     * @param includeSpicy 매운맛 밸런스 게임을 포함할지 여부. 화면에 보여주는 목록은
+     *        전부 {@code false} 여야 한다. 광고가 붙는 페이지에 성인 지향 콘텐츠가
+     *        노출되면 애드센스 정책 위반이기 때문이다. 매운맛을 보려면 밸런스 게임
+     *        목록에서 사용자가 직접 필터를 켜야 하고, 그 경로는 이 메서드를 타지 않는다
+     *        (BalanceGameService.selectBalanceGameList).
+     *        기본값을 두지 않고 매번 명시하게 한 것은, 새로 추가되는 호출부가
+     *        무심코 매운맛을 노출시키는 일을 막기 위해서다.
      */
     @Cacheable(cacheNames = CacheConfig.CONTENT_LIST)
-    public List<MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit) {
-        return mdTestMapper.selectAllContentList(category, sort, type, offset, limit);
+    public List<MdContentItemDTO> getAllContentList(String category, String sort, String type, int offset, int limit,
+                                                    boolean includeSpicy) {
+        return mdTestMapper.selectAllContentList(category, sort, type, offset, limit, includeSpicy);
     }
 
 }

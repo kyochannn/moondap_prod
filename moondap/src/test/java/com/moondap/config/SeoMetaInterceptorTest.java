@@ -16,6 +16,11 @@ import com.moondap.dto.SeoMetaDTO;
  * <p>애드센스가 '가치 없는 콘텐츠'로 판정한 핵심 원인은 두 가지였다.
  * 결과 페이지가 쿼리스트링 조합마다 별개의 얇은 페이지로 색인된 것, 그리고
  * 읽을거리 없는 중간 화면이 색인 대부분을 차지한 것이다. 둘 다 여기서 막는다.
+ *
+ * <p>심리테스트 결과 페이지는 한때 noindex 였다가 색인 대상으로 바뀌었다. 결과 본문이
+ * 유형당 1,000자 안팎으로 사이트에서 가장 긴 글인데 정작 색인되는 것은 220자짜리
+ * 소개글뿐이어서, 콘텐츠가 있는데도 얇은 사이트로 보였다. 중복 URL 은 noindex 가 아니라
+ * 컨트롤러가 지정하는 canonical 로 막는다 — 아래 두 테스트가 그 역할 분담을 고정한다.
  */
 class SeoMetaInterceptorTest {
 
@@ -65,11 +70,15 @@ class SeoMetaInterceptorTest {
     @DisplayName("읽을거리가 없는 화면은 noindex 로 표시한다")
     void marksThinPagesNoindex() {
         assertThat(run("/test/love-type/questions", null, null).getRobots()).isEqualTo("noindex, follow");
-        assertThat(run("/test/love-type/result", null, null).getRobots()).isEqualTo("noindex, follow");
+        // 에겐테토 결과만 예외로 남는다. URL 키가 결과 유형이 아니라 응시 건마다 발급되는
+        // UUID 라, 같은 유형이 응시 횟수만큼 다른 URL 로 복제된다. 묶어 줄 대표 URL 이 없다.
         assertThat(run("/egenTeto/result", null, null).getRobots()).isEqualTo("noindex, follow");
         assertThat(run("/loginView", null, null).getRobots()).isEqualTo("noindex, follow");
         assertThat(run("/mypage", null, null).getRobots()).isEqualTo("noindex, follow");
         assertThat(run("/admin/test/list", null, null).getRobots()).isEqualTo("noindex, follow");
+        // 보관함은 로그인 없이 열리는(익명 쿠키 기반) 개인화 화면이라 방문자마다 내용이
+        // 다르다. robots.txt 차단만으로는 이미 색인된 URL 을 뺄 수 없어 noindex 도 둔다.
+        assertThat(run("/my/results", null, null).getRobots()).isEqualTo("noindex, follow");
     }
 
     @Test
@@ -78,8 +87,25 @@ class SeoMetaInterceptorTest {
         assertThat(run("/", null, null).getRobots()).isEqualTo("index, follow");
         assertThat(run("/test/list", null, null).getRobots()).isEqualTo("index, follow");
         assertThat(run("/test/love-type", null, null).getRobots()).isEqualTo("index, follow");
+        // 결과 본문은 사이트에서 가장 긴 글이다. 이걸 빼면 색인에 남는 것은 소개글뿐이다.
+        assertThat(run("/test/love-type/result", null, null).getRobots()).isEqualTo("index, follow");
         assertThat(run("/balanceGame/selectBalanceGameView", null, null).getRobots()).isEqualTo("index, follow");
         assertThat(run("/egenTeto/selectEgenTetoGame", null, null).getRobots()).isEqualTo("index, follow");
+    }
+
+    @Test
+    @DisplayName("결과 페이지의 canonical 은 resultCode 만 남기고 score 는 버린다")
+    void resultCanonicalKeepsOnlyResultCode() {
+        // 결과 페이지에 닿는 경로가 셋이다. 응시 직후의 POST(쿼리 없음), 공유 링크
+        // (?resultCode=), 점수까지 붙은 공유 링크(&score=). score 는 사람마다 다르지만
+        // 본문을 바꾸지 않으므로, 셋 다 하나의 URL 로 모여야 결과 하나당 페이지도 하나가 된다.
+        SeoMetaDTO preset = new SeoMetaDTO();
+        preset.setCanonical("/test/love-type/result?resultCode=3");
+
+        SeoMetaDTO seo = run("/test/love-type/result", "resultCode=3&score=41", preset);
+
+        assertThat(seo.getCanonical()).isEqualTo("https://moondap.com/test/love-type/result?resultCode=3");
+        assertThat(seo.getRobots()).isEqualTo("index, follow");
     }
 
     @Test

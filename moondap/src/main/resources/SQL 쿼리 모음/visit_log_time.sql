@@ -1,6 +1,6 @@
 -- 접속 기록에 시각 추가
 --
--- site_visit_log 는 PK 가 (visit_date, ip_address) 라 날짜만 있고 시각이 없었다.
+-- md_visit_log 는 PK 가 (visit_date, ip_address) 라 날짜만 있고 시각이 없었다.
 -- 관리자 화면에서 "언제 들어왔는지"를 보려면 시각이 필요하다.
 --
 -- 적용:  mysql -u <user> -p moondap < visit_log_time.sql
@@ -15,8 +15,8 @@
 SET @sql := IF(
   (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'site_visit_log'
+      AND TABLE_NAME = 'md_visit_log'
       AND COLUMN_NAME = 'first_seen_at') = 0,
-  'ALTER TABLE site_visit_log ADD COLUMN first_seen_at DATETIME DEFAULT NULL COMMENT ''그날 처음 접속한 시각''',
+  'ALTER TABLE md_visit_log ADD COLUMN first_seen_at DATETIME DEFAULT NULL COMMENT ''그날 처음 접속한 시각''',
   'DO 0');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>문의하기 - 문답</title>
+    <style>
+        .legal-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            backdrop-filter: blur(10px);
+        }
+        .legal-container h3 { color: #eee; margin-top: 35px; font-weight: 600; }
+        .legal-container h3:first-of-type { margin-top: 0; }
+        .legal-container p, .legal-container li { font-size: 0.95rem; }
+        .contact-channel {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .contact-channel:hover {
+            border-color: rgba(0, 210, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .contact-channel i { font-size: 1.5rem; color: #00d2ff; }
+        .contact-channel .label { color: #fff; font-weight: 600; display: block; }
+        .contact-channel .value { color: rgba(255, 255, 255, 0.6); font-size: 0.88rem; }
+        .contact-note {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 0.88rem;
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+                <div class="section-title">
+                    <h2>문의하기</h2>
+                    <p>궁금한 점이나 불편한 점을 알려주세요.</p>
+                </div>
+
+                <div class="legal-container shadow-lg">
+
+                    <h3>문의 채널</h3>
+                    <p>아래 경로로 연락 주시면 확인 후 답변드리겠습니다.</p>
+
+                    <a href="mailto:webmaster@moondap.com" class="contact-channel">
+                        <i class="bi bi-envelope-fill"></i>
+                        <span>
+                            <span class="label">이메일</span>
+                            <span class="value">webmaster@moondap.com</span>
+                        </span>
+                    </a>
+
+                    <a href="https://www.instagram.com/moondap_com/" target="_blank" rel="noopener" class="contact-channel">
+                        <i class="bi bi-instagram"></i>
+                        <span>
+                            <span class="label">인스타그램</span>
+                            <span class="value">@moondap_com</span>
+                        </span>
+                    </a>
+
+                    <a href="https://twitter.com/moondap_com/" target="_blank" rel="noopener" class="contact-channel">
+                        <i class="bi bi-twitter-x"></i>
+                        <span>
+                            <span class="label">X (트위터)</span>
+                            <span class="value">@moondap_com</span>
+                        </span>
+                    </a>
+
+                    <h3>이런 내용을 보내주세요</h3>
+                    <ul>
+                        <li><strong>오류 제보</strong> — 어떤 화면에서 무엇을 하다가 문제가 생겼는지 알려주시면 빠르게 확인할 수 있습니다.</li>
+                        <li><strong>콘텐츠 신고</strong> — 부적절한 댓글이나 게시물을 발견하신 경우. 해당 페이지 주소를 함께 보내주세요.</li>
+                        <li><strong>기능 제안</strong> — 있었으면 하는 테스트 주제나 기능이 있다면 편하게 알려주세요.</li>
+                        <li><strong>개인정보 관련 요청</strong> — 열람·정정·삭제 요청은 이메일로 접수합니다.</li>
+                    </ul>
+
+                    <h3>광고 · 제휴 문의</h3>
+                    <p>
+                        배너 광고, 브랜드 테스트 제작, 제휴 마케팅 문의는 별도 안내 페이지를 참고해 주세요.
+                        <a th:href="@{/partnership}" style="color:#00d2ff;">광고/제휴 문의 페이지 바로가기</a>
+                    </p>
+
+                    <div class="contact-note mt-4">
+                        <p class="mb-1"><i class="bi bi-info-circle-fill me-2"></i><strong>답변 안내</strong></p>
+                        <p class="mb-0 text-white-50">
+                            문답은 개인이 운영하는 서비스라 답변까지 영업일 기준 2~3일이 걸릴 수 있습니다.
+                            답변을 받으실 이메일 주소를 함께 적어주시면 더 빠르게 회신드릴 수 있습니다.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

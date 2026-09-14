@@ -20,9 +20,9 @@
             t.created_at,
             t.updated_at,
             COUNT(q.id) AS question_count
-        FROM md_tests t
-        LEFT JOIN md_test_questions q ON t.id = q.test_id AND q.is_active = 1
-        LEFT JOIN md_test_category c ON t.category = c.category_name
+        FROM md_test t
+        LEFT JOIN md_test_question q ON t.id = q.test_id AND q.is_active = 1
+        LEFT JOIN md_content_category c ON t.category = c.category_name
         <where>
             <if test="createdBy != null and createdBy != ''">
                 AND t.created_by = #{createdBy}
@@ -49,8 +49,8 @@
             t.play_count,
             t.created_at,
             t.updated_at
-        FROM md_tests t
-        LEFT JOIN md_test_category c ON t.category = c.category_name
+        FROM md_test t
+        LEFT JOIN md_content_category c ON t.category = c.category_name
         WHERE t.id = #{id}
     </select>
 
@@ -70,15 +70,15 @@
             t.play_count,
             t.created_at,
             t.updated_at
-        FROM md_tests t
-        LEFT JOIN md_test_category c ON t.category = c.category_name
+        FROM md_test t
+        LEFT JOIN md_content_category c ON t.category = c.category_name
         WHERE t.test_key = #{testKey}
     </select>
 
 
     <!-- 테스트 등록 -->
     <insert id="insertTest" parameterType="com.moondap.dto.MdTestDTO" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO md_tests (
+        INSERT INTO md_test (
             test_key, title, description, thumbnail_image,
             category, test_type, estimated_time, status, created_by
         ) VALUES (
@@ -89,7 +89,7 @@
 
     <!-- 테스트 수정 -->
     <update id="updateTest" parameterType="com.moondap.dto.MdTestDTO">
-        UPDATE md_tests SET
+        UPDATE md_test SET
             title           = #{title},
             description     = #{description},
             thumbnail_image = #{thumbnailImage},
@@ -103,18 +103,18 @@
 
     <!-- 테스트 삭제 -->
     <delete id="deleteTest">
-        DELETE FROM md_tests WHERE id = #{id}
+        DELETE FROM md_test WHERE id = #{id}
     </delete>
 
     <!-- testKey 중복 체크 -->
     <select id="countByTestKey" resultType="int">
-        SELECT COUNT(*) FROM md_tests WHERE test_key = #{testKey}
+        SELECT COUNT(*) FROM md_test WHERE test_key = #{testKey}
     </select>
     
     <!-- 날짜별 최대 시퀀스 조회 -->
     <select id="selectMaxSequenceByDatePrefix" resultType="Integer">
         SELECT MAX(CAST(SUBSTRING_INDEX(test_key, '-', -1) AS UNSIGNED))
-        FROM md_tests
+        FROM md_test
         WHERE test_key LIKE CONCAT(#{prefix}, '%')
     </select>
 
@@ -130,7 +130,7 @@
             is_active  AS `active`,
             created_at,
             updated_at
-        FROM md_test_questions
+        FROM md_test_question
         WHERE test_id = #{testId} AND is_active = 1
         ORDER BY question_order ASC
     </select>
@@ -147,13 +147,13 @@
             is_active  AS `active`,
             created_at,
             updated_at
-        FROM md_test_questions
+        FROM md_test_question
         WHERE id = #{id}
     </select>
 
     <!-- 질문 등록 -->
     <insert id="insertQuestion" parameterType="com.moondap.dto.MdTestQuestionDTO" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO md_test_questions (
+        INSERT INTO md_test_question (
             test_id, question_order, question_text, domain, is_reverse, is_active
         ) VALUES (
             #{testId}, #{questionOrder}, #{questionText}, #{domain}, #{reverse}, #{active}
@@ -162,7 +162,7 @@
 
     <!-- 질문 수정 -->
     <update id="updateQuestion" parameterType="com.moondap.dto.MdTestQuestionDTO">
-        UPDATE md_test_questions SET
+        UPDATE md_test_question SET
             question_text = #{questionText},
             domain        = #{domain},
             is_reverse    = #{reverse}
@@ -171,17 +171,17 @@
 
     <!-- 질문 소프트 삭제 -->
     <update id="softDeleteQuestion">
-        UPDATE md_test_questions SET is_active = 0 WHERE id = #{id}
+        UPDATE md_test_question SET is_active = 0 WHERE id = #{id}
     </update>
 
     <!-- 질문 테스트별 삭제 (동기화용 하드 삭제) -->
     <delete id="deleteQuestionsByTestId">
-        DELETE FROM md_test_questions WHERE test_id = #{testId}
+        DELETE FROM md_test_question WHERE test_id = #{testId}
     </delete>
 
     <!-- 테스트별 활성 질문 수 조회 (다음 order 계산용) -->
     <select id="countQuestionsByTestId" resultType="int">
-        SELECT COUNT(*) FROM md_test_questions
+        SELECT COUNT(*) FROM md_test_question
         WHERE test_id = #{testId} AND is_active = 1
     </select>
 
@@ -197,14 +197,14 @@
             max_score,
             created_at,
             updated_at
-        FROM md_test_results
+        FROM md_test_result_type
         WHERE test_id = #{testId}
         ORDER BY id ASC
     </select>
 
     <!-- 결과(Result) 등록 -->
     <insert id="insertResult" parameterType="com.moondap.dto.MdTestResultDTO">
-        INSERT INTO md_test_results (
+        INSERT INTO md_test_result_type (
             test_id, result_title, result_content, result_image, min_score, max_score
         ) VALUES (
             #{testId}, #{resultTitle}, #{resultContent}, #{resultImage}, #{minScore}, #{maxScore}
@@ -213,13 +213,13 @@
 
     <!-- 테스트별 결과 삭제 -->
     <delete id="deleteResultsByTestId">
-        DELETE FROM md_test_results WHERE test_id = #{testId}
+        DELETE FROM md_test_result_type WHERE test_id = #{testId}
     </delete>
 
 
     <!-- 참여 수 증가 -->
     <update id="updatePlayCount">
-        UPDATE md_tests SET play_count = play_count + 1 WHERE id = #{id}
+        UPDATE md_test SET play_count = play_count + 1 WHERE id = #{id}
     </update>
 
 
@@ -239,8 +239,8 @@
                 t.created_at as createdAt,
                 (CASE WHEN DATEDIFF(NOW(), t.created_at) &lt;= 14 THEN 1 ELSE 0 END) as isNew,
                 0 as isSpicy
-            FROM md_tests t
-            LEFT JOIN md_test_category c ON t.category = c.category_name
+            FROM md_test t
+            LEFT JOIN md_content_category c ON t.category = c.category_name
             WHERE t.status = 'active'
 
             UNION ALL
@@ -259,9 +259,15 @@
                 bq.created_at as createdAt,
                 (CASE WHEN DATEDIFF(NOW(), bq.created_at) &lt;= 14 THEN 1 ELSE 0 END) as isNew,
                 bq.is_spicy as isSpicy
-            FROM balance_questions bq
-            LEFT JOIN md_test_category c2 ON bq.category = c2.category_name
+            FROM md_balance_game bq
+            LEFT JOIN md_content_category c2 ON bq.category = c2.category_name
             WHERE bq.status = 'active'
+            <!-- 매운맛은 기본적으로 뺀다. 메인·전체목록은 익명 방문자가 처음 보는 화면이고,
+                 광고가 붙는 페이지에 성인 지향 콘텐츠가 노출되면 애드센스 정책 위반이다.
+                 sitemap 처럼 전부 필요한 곳만 includeSpicy=true 로 명시한다. -->
+            <if test="includeSpicy == false">
+                AND bq.is_spicy = 0
+            </if>
 
             UNION ALL
 
@@ -275,7 +281,7 @@
                 CONVERT(NULL USING utf8mb4) as thumbnail2, 
                 CONVERT('selectEgenTetoGame' USING utf8mb4) as categoryId, 
                 CONVERT('심리/성격' USING utf8mb4) as categoryName, 
-                (SELECT COUNT(*) FROM egen_teto_test_result) as playCount, 
+                (SELECT COUNT(*) FROM md_egenteto_play) as playCount, 
                 CONVERT('2024-01-01 00:00:00' USING utf8mb4) as createdAt,
                 0 as isNew,
                 0 as isSpicy
@@ -305,6 +311,6 @@
     <!-- 전체 참여자 수 합계 (일반 테스트) -->
     <select id="selectTotalPlayCount" resultType="long">
         SELECT COALESCE(SUM(play_count), 0)
-        FROM md_tests
+        FROM md_test
     </select>
 </mapper>

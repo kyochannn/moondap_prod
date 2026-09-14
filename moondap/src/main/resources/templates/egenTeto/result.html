@@ -736,6 +736,18 @@
         if (window.TestProgress) {
             TestProgress.clear('egenTeto:' + (/*[[${userBroker.gender}]]*/ 'M'));
         }
+
+        // 심리테스트 결과 화면과 같은 이유로 justCompleted 안에서만 보낸다.
+        // 이 화면은 noindex 지만 공유 링크로는 얼마든지 열리므로, 페이지 로드마다
+        // 보내면 완료 수가 공유량만큼 부풀어 오른다.
+        if (typeof mdTrack === 'function') {
+            mdTrack('test_complete', {
+                content_type: 'EGEN',
+                content_key: 'egenTeto',
+                content_title: '에겐 vs 테토 테스트',
+                result_gender: /*[[${userBroker.gender}]]*/ 'M'
+            });
+        }
         /*]]>*/
     </script>
 </body>

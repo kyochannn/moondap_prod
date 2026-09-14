@@ -576,6 +576,20 @@
         if (window.TestProgress) {
             TestProgress.clear(/*[[${test.testKey}]]*/ '');
         }
+
+        // 실제 응시 완료. 이 화면에 닿는 경로가 셋(방금 응시 POST / 공유 링크 GET /
+        // 검색 유입 GET)인데, 뒤 둘은 '남의 결과를 구경한 것'이지 완료가 아니다.
+        // justCompleted 로 감싸지 않으면 공유가 퍼질수록 완료 수가 부풀어 올라
+        // test_start 대비 완료율이 100% 를 넘는 엉터리 지표가 나온다.
+        // 미리보기(isPreview)는 관리자가 여는 것이라 컨트롤러가 보관함에서도 빼고 있다.
+        if (typeof mdTrack === 'function' && !/*[[${isPreview}]]*/ false) {
+            mdTrack('test_complete', {
+                content_type: 'NORMAL',
+                content_key: /*[[${test.testKey}]]*/ '',
+                content_title: /*[[${test.title}]]*/ '',
+                result_title: /*[[${result.resultTitle}]]*/ ''
+            });
+        }
         /*]]>*/
     </script>
 </body>

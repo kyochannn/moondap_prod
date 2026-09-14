@@ -110,13 +110,20 @@
                                     <h5 class="fw-bold text-white mb-0">전체 결과 유형 미리보기</h5>
                                 </div>
                                 <div class="row row-cols-2 row-cols-md-4 g-3">
+                                    <!-- div 가 아니라 a 인 이유: 결과 페이지를 크롤러가 발견할 길이
+                                         여기뿐이다. 결과는 응시를 마쳐야 닿는 POST 뒤에 있어서 사이트 어디에도
+                                         링크가 없었고, 그래서 사이트에서 가장 긴 글이 색인되지 않았다.
+                                         사용자에게는 지금처럼 미리보기 모달을 띄운다(핸들러가 false 를 반환해
+                                         이동을 막는다). href 는 크롤러와 새 탭으로 여는 사람을 위한 것이다.
+                                         내용을 이미 모달에서 다 보여주므로 스포일러가 늘지도 않는다. -->
                                     <div class="col" th:each="res : ${test.results}">
-                                        <div class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card"     
-                                            style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);" 
+                                        <a class="card h-100 text-center rounded-4 shadow-sm border-0 other-result-card text-decoration-none"
+                                            style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);"
+                                            th:href="@{/test/{key}/result(key=${test.testKey}, resultCode=${res.id})}"
                                             th:data-title="${res.resultTitle}"
                                             th:data-image="${res.resultImage}"
                                             th:data-content="${res.resultContent}"
-                                            onclick="handleOtherResultClick(this)">
+                                            onclick="return handleOtherResultClick(this)">
                                             <div class="p-2">
                                                 <img th:src="${res.resultImage != null and res.resultImage != ''} ? @{'/uploads/' + ${res.resultImage}} : '/assets/img/default-img/default-content-img.png'" 
                                                      class="img-fluid rounded-3 mb-2" alt="결과 이미지" 
@@ -125,7 +132,7 @@
                                                 <h6 class="fw-bold text-white mb-0 small" th:text="${res.resultTitle}" 
                                                     style="word-break: keep-all; font-size: 0.8rem; line-height: 1.2;">유형 이름</h6>
                                             </div>
-                                        </div>
+                                        </a>
                                     </div>
                                 </div>
                                 <p class="text-white-50 mt-3 small text-center opacity-75">
@@ -137,6 +144,17 @@
                 </div>
             </div>
         </section>
+
+        <!-- 사용자가 만든 테스트에 문제가 있을 때 알릴 수 있는 경로.
+             금칙어 필터를 통과한 표현이나 저작권 침해 이미지는 신고로만 잡힌다. -->
+        <div class="container text-center mb-4">
+            <a href="#" class="text-white-50 small report-trigger"
+               data-report-type="TEST" th:data-report-id="${test.testKey}">
+                <i class="bi bi-flag me-1"></i>이 테스트 신고하기
+            </a>
+        </div>
+
+        <div th:replace="~{fragment/report_modal::modal}"></div>
 
         <!-- 결과 상세 보기 모달 -->
         <div id="otherResultModal" class="other-result-modal" onclick="closeOtherResult(event)">
@@ -184,6 +202,18 @@
         }
 
         function startTest(url) {
+            // 소개 → 시작 전환. 이 값이 유입 대비 낮으면 썸네일·소개글이 약한 것이고,
+            // test_complete 대비 높으면 문항이 길거나 지루한 것이다. 둘을 구분하려고
+            // 페이지 진입이 아니라 버튼을 누른 시점에 보낸다.
+            // 아래 setTimeout 800ms 동안 전송된다(GA4 는 sendBeacon 을 쓰므로 이탈해도 남는다).
+            if (typeof mdTrack === 'function') {
+                mdTrack('test_start', {
+                    content_type: 'NORMAL',
+                    content_key: /*[[${test.testKey}]]*/ '',
+                    content_title: /*[[${test.title}]]*/ ''
+                });
+            }
+
             if (typeof showLoading === 'function') {
                 showLoading(0, '테스트를 준비하고 있습니다', '테스트로 만나는 또 다른 나, 문답!');
             }
@@ -214,11 +244,15 @@
         }
 
         // 결과 상세 보기 모달 관련 함수
+        // false 를 반환해 a 태그의 이동을 막는다. href 는 크롤러가 결과 페이지를
+        // 찾아가는 통로일 뿐이고, 사용자에게는 페이지를 떠나지 않는 모달이 낫다.
+        // Ctrl/Cmd·가운데 버튼으로 새 탭에서 여는 것은 그대로 동작한다.
         function handleOtherResultClick(element) {
             const title = element.getAttribute('data-title');
             const image = element.getAttribute('data-image');
             const content = element.getAttribute('data-content');
             openOtherResult(title, image, content);
+            return false;
         }
 
         function openOtherResult(title, image, content) {

@@ -120,7 +120,7 @@ class BalanceGameIdSequenceTest {
     @Test
     @DisplayName("시퀀스가 초기화되지 않으면 조용히 1번을 쓰지 않고 실패한다")
     void failsLoudlyWhenSequenceMissing() {
-        // id_sequence 에 행이 없으면 UPDATE 가 0건이라 값이 비어 온다.
+        // md_id_sequence 에 행이 없으면 UPDATE 가 0건이라 값이 비어 온다.
         doAnswer(inv -> null).when(balanceGameMapper).nextBalanceGameSequence(anyMap());
 
         assertThatThrownBy(this::callNextId)

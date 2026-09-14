@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moondap.mapper.MdReportMapper">
+
+    <insert id="insertReport" parameterType="com.moondap.dto.MdReportDTO"
+            useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO md_content_report (
+            target_type, target_id, reason_code, detail, target_snapshot,
+            reporter_user_id, reporter_anon_id, status
+        ) VALUES (
+            #{targetType}, #{targetId}, #{reasonCode}, #{detail}, #{targetSnapshot},
+            #{reporterUserId}, #{reporterAnonId}, 'PENDING'
+        )
+    </insert>
+
+    <!--
+      같은 사람의 중복 신고 확인.
+      로그인 사용자는 user_id 로, 비로그인 사용자는 익명 쿠키로 본다.
+      둘 중 하나만 채워져 오므로 해당하는 쪽만 비교한다.
+    -->
+    <select id="countByReporter" resultType="int">
+        SELECT COUNT(*)
+          FROM md_content_report
+         WHERE target_type = #{targetType}
+           AND target_id = #{targetId}
+        <choose>
+            <when test="userId != null and userId != ''">
+                AND reporter_user_id = #{userId}
+            </when>
+            <otherwise>
+                AND reporter_anon_id = #{anonId}
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectReports" resultType="com.moondap.dto.MdReportDTO">
+        SELECT r.no
+             , r.target_type
+             , r.target_id
+             , r.reason_code
+             , r.detail
+             , r.target_snapshot
+             , r.reporter_user_id
+             , r.status
+             , r.handled_by
+             , r.handled_at
+             , r.created_at
+             , (SELECT COUNT(*)
+                  FROM md_content_report c
+                 WHERE c.target_type = r.target_type
+                   AND c.target_id = r.target_id) AS report_count
+          FROM md_content_report r
+        <where>
+            <if test="status != null and status != '' and status != 'all'">
+                r.status = #{status}
+            </if>
+        </where>
+         ORDER BY r.created_at DESC
+         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countReports" resultType="int">
+        SELECT COUNT(*)
+          FROM md_content_report
+        <where>
+            <if test="status != null and status != '' and status != 'all'">
+                status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="countPending" resultType="int">
+        SELECT COUNT(*) FROM md_content_report WHERE status = 'PENDING'
+    </select>
+
+    <update id="updateStatus">
+        UPDATE md_content_report
+           SET status = #{status}
+             , handled_by = #{handledBy}
+             , handled_at = NOW()
+         WHERE no = #{no}
+    </update>
+
+    <select id="selectReport" resultType="com.moondap.dto.MdReportDTO">
+        SELECT no, target_type, target_id, reason_code, detail, target_snapshot,
+               reporter_user_id, status, handled_by, handled_at, created_at
+          FROM md_content_report
+         WHERE no = #{no}
+    </select>
+
+</mapper>

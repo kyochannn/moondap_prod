@@ -127,7 +127,9 @@
 		            hideLoading();
 		            if (response.flag === "success") {
 			            alert("밸런스 게임이 수정되었어요!");		            	
-			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + '1' + '&category=' + 'all');
+			            // [정책] 매운맛 필터를 '1' 로 고정하면 등록 직후 화면의 이전/다음 탐색이
+			            // 매운맛을 포함하게 된다. 방금 만든 게임의 설정을 그대로 따른다.
+			            location.replace("/balanceGame/selectBalanceGameView?id=" + response.balanceGameId + '&spicyFilter=' + (spicyFilter ? '1' : '0') + '&category=' + 'all');
 		            } else {
 		            	alert("밸런스 게임 수정 중에 데이터를 불러오면서 문제가 발생했어요.");
 		            }

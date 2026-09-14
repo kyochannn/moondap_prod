@@ -56,30 +56,9 @@
                     <p id="statusText" class="text-secondary small mb-4">잠시 후 결과가 열립니다</p>
                 </div>
 
-                <!-- 광고 영역.
-                     브랜드색을 쓰면 사이트의 기능(주요 버튼)과 구분이 안 돼 광고를 기능으로
-                     오인하게 된다. 중립색으로 두고 「광고」 라벨을 눈에 보이게 붙인다. -->
-                <div class="analysis-container ad-slot mb-4">
-                    <a th:href="'https://link.coupang.com/a/eByaQE'" target="_blank"
-                       rel="sponsored noopener" class="text-decoration-none w-100">
-                        <div class="text-center">
-                            <div class="ad-slot-body">
-                                <span class="ad-slot-label">광고</span>
-                                <i class="bi bi-box-seam mb-2" style="font-size: 2.4rem;"></i>
-                                <span class="fw-bold" style="font-size: 1.05rem;">오늘의 추천 상품 보기</span>
-                                <p class="small mt-2 mb-0">새 탭에서 열리고, 결과는 바로 열립니다</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
                 <button id="finalSubmitBtn" class="btn btn-primary btn-lg w-100" disabled>
                     결과 확인하기 (7초)
                 </button>
-                
-                <p class="coupang-disclaimer">
-                    이 포스팅은 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받을 수 있습니다.
-                </p>
             </div>
         </div>
     </main>
@@ -168,17 +147,43 @@
             });
         }
 
+        // 다 풀고 결과 대기 화면(광고 포함)에 머무는 동안의 저장.
+        // 광고는 현재 탭에서 열리므로 이 화면은 언제든 사라질 수 있다.
+        function savePendingProgress() {
+            if (!window.TestProgress) return;
+            TestProgress.savePending({
+                id: PROGRESS_ID, url: PROGRESS_URL, title: PROGRESS_TITLE,
+                total: questions.length, answers: userAnswers,
+            });
+        }
+
         function clearProgress() {
             if (window.TestProgress) TestProgress.clear(PROGRESS_ID);
         }
 
+        /** @return {'pending'|'partial'|false} 복원한 상태 */
         function restoreProgress() {
             if (!window.TestProgress) return false;
             const saved = TestProgress.load(PROGRESS_ID);
             if (!saved || saved.total !== questions.length) return false;
+            const answers = Array.isArray(saved.answers) ? saved.answers.slice() : [];
+
+            if (saved.pending) {
+                // 24개가 다 차지 않으면 서버가 "답변 개수 부족"으로 거절한다.
+                const filled = answers.length === questions.length
+                    && answers.every((v) => typeof v === 'string' && v.length > 0);
+                if (!filled) {
+                    clearProgress();
+                    return false;
+                }
+                currentIndex = questions.length;
+                userAnswers = answers;
+                return 'pending';
+            }
+
             currentIndex = saved.index;
-            userAnswers = Array.isArray(saved.answers) ? saved.answers.slice() : [];
-            return true;
+            userAnswers = answers;
+            return 'partial';
         }
 
         function showResumeNotice() {
@@ -254,9 +259,11 @@
             }, 400);
         };
 
-        function finishTest() {
-            // 끝까지 푼 기록은 이어할 것이 없으므로 지운다.
-            clearProgress();
+        function finishTest(restored) {
+            // 예전에는 여기서 기록을 지웠다. 하지만 아래 대기 화면에는 광고가 있고
+            // 현재 탭에서 열리므로, 지우고 나면 광고를 눌렀다 돌아온 사람은 다 푼
+            // 답변을 잃고 24문항을 처음부터 다시 풀어야 했다. 결과 화면이 열릴 때 지운다.
+            savePendingProgress();
 
             // 답변 데이터 저장
             document.getElementById("answersInput").value = JSON.stringify(userAnswers);
@@ -266,7 +273,10 @@
                 AnalysisHandler.init({
                     formId: 'submitForm',
                     countdown: 7,
-                    verifyUrl: '/test/verify-analysis'
+                    verifyUrl: '/test/verify-analysis',
+                    // 복원된 사람은 이미 광고를 보고 7초를 기다린 뒤 떠났다.
+                    // 같은 대기를 또 시키면 결과를 코앞에 두고 다시 나간다.
+                    startUnlocked: !!restored,
                 });
             } else {
                 console.warn("AnalysisHandler가 차단되었습니다. 즉시 제출합니다.");
@@ -287,7 +297,6 @@
             }
         };
 
-
         // 브라우저 뒤로가기 시 로딩 오버레이 숨기기
         window.onpageshow = function(event) {
             if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
@@ -295,12 +304,19 @@
             }
         };
 
-
         // 초기 시작
         const resumed = restoreProgress();
-        renderQuestion(currentIndex);
-        // 말없이 중간부터 시작하면 사용자가 당황하므로 알리고 되돌릴 길을 준다.
-        if (resumed) showResumeNotice();
+        if (resumed === 'pending') {
+            // 다 푼 채로 돌아왔다. 문항을 다시 보여줄 이유가 없으니 대기 화면부터 연다.
+            // 모달이 차단돼도 빈 화면이 남지 않도록 마지막 문항은 그려 둔다.
+            renderQuestion(questions.length - 1);
+            progressBar.style.width = '100%';
+            finishTest(true);
+        } else {
+            renderQuestion(currentIndex);
+            // 말없이 중간부터 시작하면 사용자가 당황하므로 알리고 되돌릴 길을 준다.
+            if (resumed) showResumeNotice();
+        }
         /*]]>*/
     </script>
 </body>

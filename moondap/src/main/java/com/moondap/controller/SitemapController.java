@@ -49,6 +49,8 @@ public class SitemapController {
             {"/test/list", "daily", "0.9"},
             {"/balanceGame/selectBalanceGameListView", "daily", "0.9"},
             {"/egenTeto/selectEgenTetoGame", "weekly", "0.8"},
+            {"/about", "monthly", "0.5"},
+            {"/contact", "monthly", "0.4"},
             {"/partnership", "monthly", "0.4"},
             {"/privacy", "yearly", "0.3"},
             {"/terms", "yearly", "0.3"},
@@ -69,9 +71,13 @@ public class SitemapController {
 
         // status='active' 인 콘텐츠만 반환한다(selectAllContentList 의 WHERE 절).
         // 초안·비공개 글이 sitemap 에 실려 404/403 을 받으면 크롤링 품질 점수가 깎인다.
+        //
+        // includeSpicy=true: 매운맛은 화면 목록에서만 빼고 색인에는 남긴다.
+        // 검색으로 찾아오는 것 자체는 막을 이유가 없고, sitemap 에서 URL 을 빼면
+        // 이미 색인된 페이지가 정리되는 게 아니라 크롤링만 뜸해진다.
         List<MdContentItemDTO> contents;
         try {
-            contents = mdTestUserService.getAllContentList("all", "latest", "all", 0, MAX_CONTENT_URLS);
+            contents = mdTestUserService.getAllContentList("all", "latest", "all", 0, MAX_CONTENT_URLS, true);
         } catch (Exception e) {
             // sitemap 은 크롤러만 보는 페이지다. 조회가 실패해도 정적 URL 이라도 내려준다.
             log.error("sitemap 콘텐츠 목록 조회 실패. 정적 URL 만 포함한다.", e);

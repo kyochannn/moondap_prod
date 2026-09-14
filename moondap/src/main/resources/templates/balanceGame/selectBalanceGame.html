@@ -696,11 +696,17 @@
 		        ? `<i class="bi bi-x-circle-fill admin-delete-btn" onclick="deleteComment(${comment.no})" title="댓글 삭제"></i>`
 		        : '';
 
+		    // 본인 댓글은 신고할 이유가 없다. 지울 수 있는 사람에게는 삭제 버튼만 보여준다.
+		    const reportBtn = comment.deletable
+		        ? ''
+		        : `<i class="bi bi-flag comment-report-btn" onclick="openReportModal('COMMENT', ${comment.no})" title="신고하기"></i>`;
+
 		    const likeBlock = `
 		        <div class="d-flex align-items-center gap-1 like-wrapper" style="cursor: pointer; min-width: 20px; line-height: 1;">
 		            <i class="bi ${heartClass} fs-6 like-icon" onclick="toggleLike(this, ${comment.no})"></i>
 		            <span class="like-count" style="font-size: 0.75rem; color: ${countColor};" onclick="toggleLike(this, ${comment.no})">${likeCount}</span>
 		            ${deleteBtn}
+		            ${reportBtn}
 		        </div>`;
 
 		    if (comment.selectedSide === 'left') {
@@ -807,11 +813,11 @@
 			
 			// 세션에 저장되어있는 검색 조건
 	    	let listCategory = localStorage.getItem('moondap_balancegame_category');
-	    	let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter');
+	    	let listSpicyFilter = localStorage.getItem('moondap_balancegame_spicyfilter_v2');
 	    	
 	    	// null 체크 및 기본값 설정
 	    	if (!listCategory || listCategory === 'null') listCategory = 'all';
-	    	if (!listSpicyFilter || listSpicyFilter === 'null') listSpicyFilter = '1';
+	    	if (!listSpicyFilter || listSpicyFilter === 'null') listSpicyFilter = '0';
 	    	
 		    $.ajax({
 		        url: '/balanceGame/nextOrPrevBalanceGameIdSelect',
@@ -1074,6 +1080,14 @@
 					댓글 더보기 <i class="bi bi-chevron-down ms-1"></i>
 				</button>
 			</div>
+
+			<!-- 게임 자체에 대한 신고. 댓글이 아니라 질문·이미지가 문제인 경우다. -->
+			<div class="text-center mt-4">
+				<a href="#" class="text-white-50 small report-trigger"
+				   data-report-type="BALANCE" th:data-report-id="${balanceGame.id}">
+					<i class="bi bi-flag me-1"></i>이 게임 신고하기
+				</a>
+			</div>
 		</section>
 		<!-- /Chat Section -->
 
@@ -1232,6 +1246,9 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- 신고 모달. 댓글의 신고 버튼과 아래 게임 신고 링크가 함께 쓴다. -->
+	<div th:replace="~{fragment/report_modal::modal}"></div>
 
 </body>
 </html>
