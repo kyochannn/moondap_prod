@@ -32,12 +32,15 @@ public class VisitLogRetentionService {
     public static final int RETENTION_DAYS = 90;
 
     /**
-     * 하나의 화면에 보여줄 접속 기록 수.
+     * 화면에서 고를 수 있는 조회 건수.
      *
-     * <p>하루 방문자가 100~150명대라 300 이면 대부분의 날은 한 화면에 다 들어온다.
-     * 페이지를 넘기며 찾는 것보다 브라우저 검색(Ctrl+F)으로 훑는 쪽이 빠르다.
+     * <p>허용값을 고정해 둔다. 요청 값을 그대로 LIMIT 에 넣으면 한 번에 전체를
+     * 끌어올 수 있는데, 이 표에 담긴 것은 IP 라 개인정보를 통째로 뽑아가는 통로가 된다.
      */
-    public static final int PAGE_SIZE = 300;
+    public static final List<Integer> PAGE_SIZES = List.of(50, 100, 1000);
+
+    /** 기본 조회 건수. 하루 방문자가 100~150명대라 대부분의 날은 한두 페이지다. */
+    public static final int DEFAULT_PAGE_SIZE = 100;
 
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -77,9 +80,20 @@ public class VisitLogRetentionService {
      *
      * <p>개인정보 열람이므로 호출한 쪽(컨트롤러)에서 누가 언제 열었는지 로그를 남긴다.
      */
-    public List<VisitLogDTO> logsOn(String visitDate, int page) {
-        int offset = Math.max(0, page) * PAGE_SIZE;
-        return siteStatMapper.selectVisitLogs(visitDate, offset, PAGE_SIZE);
+    public List<VisitLogDTO> logsOn(String visitDate, int page, int pageSize) {
+        int size = resolvePageSize(pageSize);
+        int offset = Math.max(0, page) * size;
+        return siteStatMapper.selectVisitLogs(visitDate, offset, size);
+    }
+
+    /**
+     * 허용된 조회 건수로 보정한다.
+     *
+     * <p>목록에 없는 값이 오면 기본값을 쓴다. 예외를 던지지 않는 이유는, 주소를
+     * 직접 고쳤을 때 오류 화면을 보여줄 일이 아니기 때문이다.
+     */
+    public int resolvePageSize(int requested) {
+        return PAGE_SIZES.contains(requested) ? requested : DEFAULT_PAGE_SIZE;
     }
 
     /** 특정 날짜의 접속 IP 수. */

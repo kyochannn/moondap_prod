@@ -94,6 +94,7 @@ public class MdStatsAdminController {
     @GetMapping("/logs")
     public String logs(@RequestParam(value = "date", required = false) String date,
                        @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                       @RequestParam(value = "size", required = false, defaultValue = "0") int size,
                        Model model) {
 
         String targetDate = (date == null || date.isBlank())
@@ -101,15 +102,17 @@ public class MdStatsAdminController {
                 : date.trim();
 
         int safePage = Math.max(0, page);
+        int pageSize = visitLogRetentionService.resolvePageSize(size);
         long total = visitLogRetentionService.countOn(targetDate);
-        List<VisitLogDTO> logs = visitLogRetentionService.logsOn(targetDate, safePage);
+        List<VisitLogDTO> logs = visitLogRetentionService.logsOn(targetDate, safePage, pageSize);
 
         // 개인정보 열람 기록. 나중에 "누가 언제 봤나"를 확인할 근거가 된다.
         log.info("접속 기록 열람: 조회자={}, 대상일={}, {}건 중 {}건 표시",
                 currentUsername(), targetDate, total, logs.size());
 
-        int pageSize = VisitLogRetentionService.PAGE_SIZE;
         model.addAttribute("logs", logs);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("pageSizes", VisitLogRetentionService.PAGE_SIZES);
         // 표의 번호는 페이지를 넘겨도 이어져야 한다.
         model.addAttribute("rowOffset", safePage * pageSize);
         model.addAttribute("logDate", targetDate);

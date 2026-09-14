@@ -80,6 +80,17 @@
                 <!-- 날짜 선택 -->
                 <form th:action="@{/admin/stats/logs}" method="get" class="d-flex align-items-center gap-2 mb-4 flex-wrap">
                     <input type="date" name="date" th:value="${logDate}" class="form-control" style="max-width: 200px;">
+
+                    <!-- 건수를 바꾸면 페이지 번호는 처음으로 돌아가야 한다.
+                         3페이지를 보다가 1000건으로 바꾸면 있지도 않은 구간을 보게 된다. -->
+                    <select name="size" class="form-select" style="max-width: 130px;"
+                            onchange="this.form.page.value = 0;">
+                        <option th:each="s : ${pageSizes}"
+                                th:value="${s}" th:text="${s} + '건씩'"
+                                th:selected="${s == pageSize}">100건씩</option>
+                    </select>
+                    <input type="hidden" name="page" th:value="${logPage}">
+
                     <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1"></i>조회
                     </button>
@@ -120,14 +131,14 @@
 
                     <div class="d-flex justify-content-center gap-2 mt-4">
                         <a th:if="${logPage > 0}"
-                           th:href="@{/admin/stats/logs(date=${logDate}, page=${logPage - 1})}"
+                           th:href="@{/admin/stats/logs(date=${logDate}, page=${logPage - 1}, size=${pageSize})}"
                            class="btn btn-outline-light btn-sm">
                             <i class="bi bi-chevron-left me-1"></i>이전
                         </a>
                         <span class="text-white-50 small align-self-center"
                               th:text="${logPage + 1} + ' 페이지'">1 페이지</span>
                         <a th:if="${logHasMore}"
-                           th:href="@{/admin/stats/logs(date=${logDate}, page=${logPage + 1})}"
+                           th:href="@{/admin/stats/logs(date=${logDate}, page=${logPage + 1}, size=${pageSize})}"
                            class="btn btn-outline-light btn-sm">
                             다음 <i class="bi bi-chevron-right ms-1"></i>
                         </a>
