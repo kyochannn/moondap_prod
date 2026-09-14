@@ -70,4 +70,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         GROUP BY visit_hour
         ORDER BY visit_hour ASC
     </select>
+
+    <!-- ── 접속 기록 보유기간 관리 ──────────────────────────── -->
+
+    <select id="countVisitLogs" resultType="long">
+        SELECT COUNT(*) FROM moondap.site_visit_log
+    </select>
+
+    <select id="countVisitLogsBefore" resultType="long">
+        SELECT COUNT(*) FROM moondap.site_visit_log
+        WHERE visit_date &lt; #{cutoffDate}
+    </select>
+
+    <select id="selectOldestVisitLogDate" resultType="string">
+        SELECT DATE_FORMAT(MIN(visit_date), '%Y-%m-%d') FROM moondap.site_visit_log
+    </select>
+
+    <delete id="deleteVisitLogsBefore">
+        DELETE FROM moondap.site_visit_log
+        WHERE visit_date &lt; #{cutoffDate}
+    </delete>
 </mapper>

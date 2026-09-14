@@ -36,6 +36,16 @@
         .stat-diff.down { color: #f87171; }
         .stat-diff.flat { color: rgba(255, 255, 255, 0.4); }
 
+        .retention-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-top: 16px;
+        }
+
+        .retention-figure { color: #fff; font-weight: 700; }
+
         .chart-box {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -100,6 +110,11 @@
                     </div>
                 </div>
 
+                <!-- 파기 결과 -->
+                <div th:if="${purgeResult}" class="alert alert-success rounded-3 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i><span th:text="${purgeResult}"></span>
+                </div>
+
                 <!-- 일별 추이 -->
                 <div class="chart-box mb-4">
                     <h6 class="text-white fw-bold mb-3">
@@ -116,6 +131,39 @@
                         여기는 방문자 수가 아니라 <strong>접속 건수</strong>라 같은 사람의 재방문도 셉니다.
                     </p>
                     <div id="hourlyChart" style="height: 260px;"></div>
+                </div>
+
+                <!--
+                  접속 기록 보유 현황.
+                  IP 가 담긴 기록이라 개인정보처리방침 제3조에 고지한 기간이 지나면
+                  파기해야 한다. 지금 얼마나 쌓여 있는지 여기서 바로 보이게 한다.
+                -->
+                <div class="retention-box">
+                    <h6 class="text-white fw-bold mb-2">
+                        <i class="bi bi-shield-lock me-1"></i>접속 기록 보관 현황
+                    </h6>
+                    <p class="text-white-50 small mb-3">
+                        보관 중
+                        <span class="retention-figure" th:text="${#numbers.formatInteger(logStored, 0, 'COMMA')}">0</span>건<span
+                            th:if="${logOldest != null}">, 가장 오래된 기록
+                            <span class="retention-figure" th:text="${logOldest}">-</span></span>.
+                        개인정보처리방침에 고지한 보유기간은
+                        <span class="retention-figure" th:text="${retentionDays}">90</span>일입니다.
+                        파기 대상은
+                        <span class="retention-figure" th:text="${#numbers.formatInteger(logExpired, 0, 'COMMA')}">0</span>건입니다.
+                    </p>
+
+                    <!-- 되돌릴 수 없는 작업이라 계정 하나로 제한한다. 서버에서도 같은 검사를 한다. -->
+                    <form th:if="${canPurge}" th:action="@{/admin/stats/purge-logs}" method="post"
+                          onsubmit="return confirm('보유기간이 지난 접속 기록을 파기합니다. 되돌릴 수 없습니다. 진행할까요?');">
+                        <button type="submit" class="btn btn-danger btn-sm" th:disabled="${logExpired == 0}">
+                            <i class="bi bi-trash me-1"></i>보유기간 지난 기록 파기
+                        </button>
+                        <span th:if="${logExpired == 0}" class="text-white-50 small ms-2">파기할 기록이 없습니다.</span>
+                    </form>
+                    <p th:unless="${canPurge}" class="text-white-50 small mb-0">
+                        <i class="bi bi-info-circle me-1"></i>파기는 mdadmin 계정에서만 실행할 수 있습니다.
+                    </p>
                 </div>
 
             </div>

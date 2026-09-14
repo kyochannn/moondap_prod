@@ -56,4 +56,26 @@ public interface SiteStatMapper {
     /** 기간 내 시간대별 접속 건수 합계. 0~23 중 값이 있는 시각만 반환한다. */
     List<HourlyStatDTO> selectHourlyStats(@Param("fromDate") String fromDate,
                                           @Param("toDate") String toDate);
+
+    // ── 접속 기록 보유기간 관리 ────────────────────────────────
+
+    /** 보관 중인 접속 기록 행 수. */
+    long countVisitLogs();
+
+    /** 기준일보다 오래된 접속 기록 행 수. */
+    long countVisitLogsBefore(@Param("cutoffDate") String cutoffDate);
+
+    /** 가장 오래된 접속 기록의 날짜. 기록이 없으면 null. */
+    String selectOldestVisitLogDate();
+
+    /**
+     * 기준일보다 오래된 접속 기록 파기.
+     *
+     * <p>지워지는 것은 IP 가 담긴 site_visit_log 뿐이다. 일자별 집계(site_statistics)와
+     * 시간대별 집계(site_visit_hourly)에는 개인을 식별할 값이 없으므로 그대로 둔다.
+     * 덕분에 과거 추이 그래프는 파기 후에도 끊기지 않는다.
+     *
+     * @return 지워진 행 수
+     */
+    int deleteVisitLogsBefore(@Param("cutoffDate") String cutoffDate);
 }
