@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.moondap.dto.DailyStatDTO;
 import com.moondap.dto.HourlyStatDTO;
+import com.moondap.dto.VisitLogDTO;
 
 @Mapper
 public interface SiteStatMapper {
@@ -81,10 +82,10 @@ public interface SiteStatMapper {
 
     // ── 접속 기록 열람 ────────────────────────────────────────
 
-    /** 특정 날짜의 접속 IP 목록. */
-    List<String> selectVisitLogIps(@Param("visitDate") String visitDate,
-                                   @Param("offset") int offset,
-                                   @Param("limit") int limit);
+    /** 특정 날짜의 접속 기록(IP + 첫 접속 시각). */
+    List<VisitLogDTO> selectVisitLogs(@Param("visitDate") String visitDate,
+                                      @Param("offset") int offset,
+                                      @Param("limit") int limit);
 
     /** 특정 날짜의 접속 IP 수. */
     long countVisitLogsOn(@Param("visitDate") String visitDate);

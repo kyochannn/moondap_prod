@@ -12,9 +12,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </insert>
 
     <!-- 오늘 날짜와 IP 조합으로 로그 기록 (중복이면 무시) -->
+    <!--
+      INSERT IGNORE 라 그날 두 번째 접속부터는 아무 일도 일어나지 않는다.
+      그래서 first_seen_at 에는 '그날 처음 들어온 시각'이 남는다.
+    -->
     <insert id="insertVisitLog">
-        INSERT IGNORE INTO moondap.site_visit_log (visit_date, ip_address)
-        VALUES (#{visitDate}, #{ipAddress})
+        INSERT IGNORE INTO moondap.site_visit_log (visit_date, ip_address, first_seen_at)
+        VALUES (#{visitDate}, #{ipAddress}, NOW())
     </insert>
 
     <!-- 오늘 날짜의 콘텐츠 참여자 수를 증가 (없으면 생성, 있으면 1 증가) -->
@@ -97,11 +101,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
       정렬을 ip_address 로 고정한다. PK 가 (visit_date, ip_address) 라
       정렬 비용이 없고, 같은 대역이 붙어 나와 몰린 구간이 눈에 띈다.
     -->
-    <select id="selectVisitLogIps" resultType="string">
-        SELECT ip_address
+    <!--
+      시각이 있는 기록을 먼저, 그 안에서는 이른 시각 순으로 보여 준다.
+      컬럼 추가 이전 기록은 시각이 없어 뒤로 밀리는데, 섞이면 시간 흐름이
+      끊겨 읽기 어렵다.
+    -->
+    <select id="selectVisitLogs" resultType="com.moondap.dto.VisitLogDTO">
+        SELECT ip_address    AS ipAddress,
+               first_seen_at AS firstSeenAt
         FROM moondap.site_visit_log
         WHERE visit_date = #{visitDate}
-        ORDER BY ip_address ASC
+        ORDER BY first_seen_at IS NULL ASC, first_seen_at ASC, ip_address ASC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

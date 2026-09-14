@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.moondap.dto.VisitLogDTO;
 import com.moondap.mapper.SiteStatMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,13 @@ public class VisitLogRetentionService {
     /** 처리방침에 고지한 보유기간. 이 값을 바꾸면 privacy.html 도 함께 고쳐야 한다. */
     public static final int RETENTION_DAYS = 90;
 
-    /** 하나의 화면에 보여줄 IP 수. */
-    public static final int PAGE_SIZE = 50;
+    /**
+     * 하나의 화면에 보여줄 접속 기록 수.
+     *
+     * <p>하루 방문자가 100~150명대라 300 이면 대부분의 날은 한 화면에 다 들어온다.
+     * 페이지를 넘기며 찾는 것보다 브라우저 검색(Ctrl+F)으로 훑는 쪽이 빠르다.
+     */
+    public static final int PAGE_SIZE = 300;
 
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -67,13 +73,13 @@ public class VisitLogRetentionService {
     }
 
     /**
-     * 특정 날짜의 접속 IP 목록.
+     * 특정 날짜의 접속 기록.
      *
      * <p>개인정보 열람이므로 호출한 쪽(컨트롤러)에서 누가 언제 열었는지 로그를 남긴다.
      */
-    public List<String> ipsOn(String visitDate, int page) {
+    public List<VisitLogDTO> logsOn(String visitDate, int page) {
         int offset = Math.max(0, page) * PAGE_SIZE;
-        return siteStatMapper.selectVisitLogIps(visitDate, offset, PAGE_SIZE);
+        return siteStatMapper.selectVisitLogs(visitDate, offset, PAGE_SIZE);
     }
 
     /** 특정 날짜의 접속 IP 수. */

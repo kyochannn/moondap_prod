@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.moondap.dto.DailyStatDTO;
 import com.moondap.dto.HourlyStatDTO;
+import com.moondap.dto.VisitLogDTO;
 import com.moondap.service.SiteStatsQueryService;
 import com.moondap.service.VisitLogRetentionService;
 
@@ -101,14 +102,16 @@ public class MdStatsAdminController {
 
         int safePage = Math.max(0, page);
         long total = visitLogRetentionService.countOn(targetDate);
-        List<String> ips = visitLogRetentionService.ipsOn(targetDate, safePage);
+        List<VisitLogDTO> logs = visitLogRetentionService.logsOn(targetDate, safePage);
 
         // 개인정보 열람 기록. 나중에 "누가 언제 봤나"를 확인할 근거가 된다.
         log.info("접속 기록 열람: 조회자={}, 대상일={}, {}건 중 {}건 표시",
-                currentUsername(), targetDate, total, ips.size());
+                currentUsername(), targetDate, total, logs.size());
 
         int pageSize = VisitLogRetentionService.PAGE_SIZE;
-        model.addAttribute("ips", ips);
+        model.addAttribute("logs", logs);
+        // 표의 번호는 페이지를 넘겨도 이어져야 한다.
+        model.addAttribute("rowOffset", safePage * pageSize);
         model.addAttribute("logDate", targetDate);
         model.addAttribute("logTotal", total);
         model.addAttribute("logPage", safePage);
