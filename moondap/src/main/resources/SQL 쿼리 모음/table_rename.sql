@@ -34,6 +34,10 @@
 --
 -- 적용:  mysql -u <user> -p moondap < table_rename.sql
 --
+-- ⚠️ 2026-09-14 운영 반영 완료. 다시 실행하지 말 것 — 1단계 RENAME 은 구 이름이
+--    더 이상 없으므로 실패한다. 이 파일은 이제 "무엇을 왜 바꿨는가" 의 기록이다.
+--    남은 마무리(호환 뷰 제거)는 table_rename_dropviews.sql 로 한다.
+--
 -- ---------------------------------------------------------------------------
 -- 배포 순서 (이 순서를 지켜야 한다)
 --
@@ -143,17 +147,18 @@ DELETE FROM md_pageview_hourly WHERE visit_date = '1970-01-01';
 -- ---------------------------------------------------------------------------
 
 
--- === 3단계. 새 WAR 가 안정화된 뒤 (며칠 뒤 별도로 실행) ===
+-- === 3단계. 새 WAR 가 안정화된 뒤 ===
 --
 -- 뷰를 남겨두면 구 이름으로도 계속 쓸 수 있어서, 정리한 의미가 없어지고
 -- 다음 사람이 어느 쪽이 진짜인지 다시 헷갈린다. 롤백 가능성이 사라지면 지운다.
 --
--- DROP VIEW IF EXISTS
---     md_tests, md_test_questions, md_test_results, md_test_history,
---     egen_teto_test_result,
---     balance_questions, balance_comments, balance_comment_like, balance_vote_log,
---     md_test_category, md_reports, md_users, id_sequence,
---     site_visit_log, site_statistics, site_visit_hourly;
+-- 이 파일을 통째로 다시 돌리면 1단계 RENAME 이 다시 실행돼 실패하므로
+-- (이미 이름이 바뀌어 있다) 3단계는 별도 파일로 떼어 두었다:
+--
+--     table_rename_dropviews.sql
+--
+-- 지우기 전 확인 쿼리와, 나중에 롤백이 필요해졌을 때 뷰를 되살리는 절차가
+-- 함께 들어 있다.
 
 
 -- === 롤백 (1·2단계를 되돌릴 때) ===
