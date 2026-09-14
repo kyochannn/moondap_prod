@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>열람 경로 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+
+    <style>
+        .log-notice {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .ip-badge {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 3px 10px;
+            color: #fff;
+        }
+
+        /*
+          부트스트랩 .table 은 --bs-table-color 를 셀에 직접 적용하므로 부모의 color 가
+          상속되지 않는다. 변수를 덮지 않으면 어두운 배경에 검은 글씨가 나온다.
+        */
+        .trail-table {
+            --bs-table-color: #fff;
+            --bs-table-bg: transparent;
+            --bs-table-hover-color: #fff;
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.06);
+            margin-bottom: 0;
+        }
+        .trail-table thead th {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .trail-table td, .trail-table th {
+            border-color: rgba(255, 255, 255, 0.06);
+            padding: 8px !important;
+            vertical-align: middle;
+        }
+        .trail-table td.no { color: rgba(255, 255, 255, 0.4); font-size: 0.82rem; }
+        .trail-table td.time {
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 0.88rem;
+            font-variant-numeric: tabular-nums;
+        }
+        .trail-table td.path {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+        .trail-table td.path a { color: #fff; text-decoration: none; }
+        .trail-table td.path a:hover { text-decoration: underline; }
+
+        /* 머문 시간. 오래 걸린 구간이 곧 '여기서 멈췄다'는 신호다. */
+        .trail-table td.gap { color: rgba(255, 255, 255, 0.45); font-size: 0.8rem; text-align: right; }
+
+        .empty-note {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            padding: 32px 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <a th:href="@{/admin/stats/logs(date=${logDate})}" class="btn btn-outline-light btn-sm mb-3">
+                    <i class="bi bi-arrow-left me-1"></i>접속 기록으로
+                </a>
+
+                <h4 class="fw-bold text-white mb-2">
+                    <i class="bi bi-signpost-split me-1"></i>열람 경로
+                </h4>
+                <p class="text-white-50 small mb-3">
+                    <span th:text="${logDate}">2026-01-01</span>
+                    · <span class="ip-badge" th:text="${targetIp}">0.0.0.0</span>
+                    · 총 <strong class="text-white" th:text="${#numbers.formatInteger(trailTotal, 0, 'COMMA')}">0</strong>건
+                    <span th:if="${trailTotal > trailLimit}" class="text-warning">
+                        (앞에서부터 <span th:text="${trailLimit}">200</span>건만 표시)
+                    </span>
+                </p>
+
+                <!--
+                  이 화면은 집계가 아니라 개인별 열람 기록이다. 접속 기록(IP) 화면보다
+                  한 단계 더 민감하므로, 무엇을 보고 있는지 화면에서도 분명히 해 둔다.
+                -->
+                <div class="log-notice">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <strong>이 기록은 특정 접속자가 연 화면과 시각입니다.</strong>
+                    개인정보처리방침에 고지한 목적(이용 흐름 분석) 범위에서만 사용하고,
+                    화면을 연 사실은 서버 로그에 남습니다. 보유기간은
+                    <span th:text="${retentionDays}">90</span>일입니다.
+                </div>
+
+                <div th:if="${#lists.isEmpty(trail)}" class="empty-note">
+                    이 IP 의 열람 기록이 없습니다.<br>
+                    <span class="small">열람 경로는 visit_trail.sql 을 적용한 시점부터 쌓입니다.</span>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(trail)}" class="table-responsive">
+                    <table class="table trail-table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 56px;">#</th>
+                                <th style="width: 100px;">시각</th>
+                                <th>연 화면</th>
+                                <th style="width: 90px;" class="text-end">머문 시간</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row, stat : ${trail}">
+                                <td class="no" th:text="${stat.index + 1}">1</td>
+                                <td class="time" th:text="${#temporals.format(row.viewedAt, 'HH:mm:ss')}">00:00:00</td>
+                                <td class="path">
+                                    <a th:href="${row.path}" th:text="${row.path}" target="_blank"
+                                       rel="noopener">/</a>
+                                </td>
+                                <!--
+                                  다음 화면까지 걸린 시간. 마지막 줄은 다음이 없으므로 비운다.
+                                  여기가 길면 그 화면에서 오래 머물렀거나 거기서 떠난 것이다.
+                                -->
+                                <td class="gap" th:if="${!stat.last}"
+                                    th:with="sec=${T(java.time.Duration).between(row.viewedAt, trail[stat.index + 1].viewedAt).getSeconds()}"
+                                    th:text="${sec < 60 ? sec + '초' : (sec / 60) + '분 ' + (sec % 60) + '초'}">-</td>
+                                <td class="gap" th:if="${stat.last}">–</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </section>
+    </main>
+</body>
+</html>

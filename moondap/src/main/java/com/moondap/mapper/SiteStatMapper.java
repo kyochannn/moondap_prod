@@ -11,6 +11,7 @@ import com.moondap.dto.PagePathStatDTO;
 import com.moondap.dto.ReferrerStatDTO;
 import com.moondap.dto.UserAgentStatDTO;
 import com.moondap.dto.VisitLogDTO;
+import com.moondap.dto.VisitTrailDTO;
 
 @Mapper
 public interface SiteStatMapper {
@@ -62,6 +63,16 @@ public interface SiteStatMapper {
      * @return 그날 처음 본 쿠키면 1, 이미 센 쿠키면 0
      */
     int insertVisitCookie(@Param("visitDate") String visitDate, @Param("anonId") String anonId);
+
+    /**
+     * 열람 경로 1건 기록.
+     *
+     * <p>다른 집계와 달리 요청 1건당 1행이 쌓인다. 합치면 "이 IP 가 이 순서로 봤다"가
+     * 되므로 개인정보이고, 보유기간 파기 대상이다.
+     */
+    int insertVisitTrail(@Param("visitDate") String visitDate,
+                         @Param("ipAddress") String ipAddress,
+                         @Param("path") String path);
 
     /**
      * User-Agent 별 요청 수 +1.
@@ -159,6 +170,21 @@ public interface SiteStatMapper {
     /** 기준일보다 오래된 쿠키 기준 방문 기록 행 수. */
     long countVisitCookiesBefore(@Param("cutoffDate") String cutoffDate);
 
+    /** 보관 중인 열람 경로 행 수. */
+    long countVisitTrails();
+
+    /** 기준일보다 오래된 열람 경로 행 수. */
+    long countVisitTrailsBefore(@Param("cutoffDate") String cutoffDate);
+
+    /**
+     * 기준일보다 오래된 열람 경로 파기.
+     *
+     * <p>세 표 중 가장 민감하다(IP + 화면 + 시각). 빠뜨리면 고지한 90일을 지킬 수 없다.
+     *
+     * @return 지워진 행 수
+     */
+    int deleteVisitTrailsBefore(@Param("cutoffDate") String cutoffDate);
+
     /**
      * 기준일보다 오래된 쿠키 기준 방문 기록 파기.
      *
@@ -178,4 +204,17 @@ public interface SiteStatMapper {
 
     /** 특정 날짜의 접속 IP 수. */
     long countVisitLogsOn(@Param("visitDate") String visitDate);
+
+    /**
+     * 특정 날짜·IP 의 열람 경로. 기록된 순서대로.
+     *
+     * <p>개인별 열람 기록이므로 호출한 쪽에서 누가 언제 열었는지 로그를 남긴다.
+     */
+    List<VisitTrailDTO> selectVisitTrail(@Param("visitDate") String visitDate,
+                                         @Param("ipAddress") String ipAddress,
+                                         @Param("limit") int limit);
+
+    /** 특정 날짜·IP 의 열람 건수. */
+    long countVisitTrail(@Param("visitDate") String visitDate,
+                         @Param("ipAddress") String ipAddress);
 }

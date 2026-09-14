@@ -53,6 +53,12 @@ class SiteStatsQueryServiceTest {
         assertThat(service.topReferrers(7, 15)).isEmpty();
     }
 
+    /** 다른 테스트에서도 쓰도록 공개한다. */
+    static BadSqlGrammarException tableMissing(String table) {
+        return new BadSqlGrammarException("", "SELECT 1",
+                new java.sql.SQLSyntaxErrorException("Table 'moondap." + table + "' doesn't exist"));
+    }
+
     private BadSqlGrammarException missingTable(String table) {
         return new BadSqlGrammarException("", "SELECT 1",
                 new java.sql.SQLSyntaxErrorException("Table 'moondap." + table + "' doesn't exist"));

@@ -82,6 +82,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </insert>
 
     <!--
+      열람 경로 1건.
+
+      다른 집계와 달리 UPSERT 가 아니라 매번 INSERT 다. 합계가 아니라 순서가 필요하기
+      때문이다 — "몇 번 봤나"가 아니라 "어느 화면 다음에 어디로 갔나"를 보려는 것이다.
+    -->
+    <insert id="insertVisitTrail">
+        INSERT INTO moondap.md_visit_trail (visit_date, ip_address, path, viewed_at)
+        VALUES (#{visitDate}, #{ipAddress}, #{path}, NOW())
+    </insert>
+
+    <!--
       User-Agent 별 요청 수.
 
       counted 는 User-Agent 만 보고 정해지므로 같은 문자열이면 늘 같은 값이다.
@@ -231,6 +242,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE visit_date &lt; #{cutoffDate}
     </delete>
 
+    <select id="countVisitTrails" resultType="long">
+        SELECT COUNT(*) FROM moondap.md_visit_trail
+    </select>
+
+    <select id="countVisitTrailsBefore" resultType="long">
+        SELECT COUNT(*) FROM moondap.md_visit_trail
+        WHERE visit_date &lt; #{cutoffDate}
+    </select>
+
+    <delete id="deleteVisitTrailsBefore">
+        DELETE FROM moondap.md_visit_trail
+        WHERE visit_date &lt; #{cutoffDate}
+    </delete>
+
     <!-- ── 접속 기록 열람 ──────────────────────────────────── -->
 
     <!--
@@ -254,5 +279,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="countVisitLogsOn" resultType="long">
         SELECT COUNT(*) FROM moondap.md_visit_log
         WHERE visit_date = #{visitDate}
+    </select>
+
+    <!--
+      열람 경로.
+      no 오름차순이 곧 기록된 차례다. viewed_at 으로 정렬하면 같은 초에 열린 화면들의
+      순서가 뒤바뀌어, 정작 보려던 '어디서 어디로 갔나'가 틀리게 보인다.
+    -->
+    <select id="selectVisitTrail" resultType="com.moondap.dto.VisitTrailDTO">
+        SELECT path, viewed_at AS viewedAt
+        FROM moondap.md_visit_trail
+        WHERE visit_date = #{visitDate}
+          AND ip_address = #{ipAddress}
+        ORDER BY no ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countVisitTrail" resultType="long">
+        SELECT COUNT(*) FROM moondap.md_visit_trail
+        WHERE visit_date = #{visitDate}
+          AND ip_address = #{ipAddress}
     </select>
 </mapper>

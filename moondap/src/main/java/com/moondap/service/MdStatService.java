@@ -44,6 +44,11 @@ public class MdStatService implements StatService {
         boolean entry = visit.trafficSource() != null;
         if (visit.path() != null && !visit.path().isBlank()) {
             siteStatMapper.upsertPathView(today, visit.path(), entry ? 1 : 0);
+
+            // 4-1. 열람 경로. 화면별 합계로는 '한 사람이 어떤 순서로 이동했는가'가
+            //      사라져서, 어느 화면에서 멈추는지 알 수 없다.
+            //      IP 가 함께 남으므로 개인정보이고, 90일 파기 대상이다.
+            siteStatMapper.insertVisitTrail(today, visit.ipAddress(), visit.path());
         }
 
         // 5. 유입 출처. 내부 이동까지 세면 "직접 유입"이 실제의 몇 배로 부풀어

@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.moondap.dto.DailyStatDTO;
 import com.moondap.dto.HourlyStatDTO;
 import com.moondap.dto.VisitLogDTO;
+import com.moondap.dto.VisitTrailDTO;
 import com.moondap.service.SiteStatsQueryService;
 import com.moondap.service.VisitLogRetentionService;
 
@@ -153,6 +154,43 @@ public class MdStatsAdminController {
         model.addAttribute("retentionDays", VisitLogRetentionService.RETENTION_DAYS);
 
         return "admin/stats/visitLogs";
+    }
+
+    /**
+     * 한 접속자의 열람 경로.
+     *
+     * <p>화면별 합계(md_pageview_path)로는 '한 사람이 어떤 순서로 이동했는가'가 사라진다.
+     * 방문자당 평균 6.2 페이지를 보면서도 참여율이 1~5% 인 이유를 보려면, 어느 화면에서
+     * 멈추는지를 순서대로 봐야 한다.
+     *
+     * <p>이 화면이 다루는 것은 집계가 아니라 <b>개인별 열람 기록</b>이다. 접속 기록(IP)
+     * 화면보다 한 단계 더 민감하므로, 열람할 때마다 누가 언제 어느 IP 의 기록을 봤는지
+     * 남긴다. 나중에 "그때 누가 봤나"를 확인할 근거가 이 로그뿐이다.
+     */
+    @GetMapping("/trail")
+    public String trail(@RequestParam("date") String date,
+                        @RequestParam("ip") String ip,
+                        Model model) {
+
+        String targetDate = (date == null || date.isBlank())
+                ? LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : date.trim();
+        String targetIp = ip.trim();
+
+        List<VisitTrailDTO> trail = visitLogRetentionService.trailOf(targetDate, targetIp);
+        long total = visitLogRetentionService.trailCountOf(targetDate, targetIp);
+
+        log.info("열람 경로 조회: 조회자={}, 대상일={}, 대상IP={}, {}건 중 {}건 표시",
+                currentUsername(), targetDate, targetIp, total, trail.size());
+
+        model.addAttribute("trail", trail);
+        model.addAttribute("logDate", targetDate);
+        model.addAttribute("targetIp", targetIp);
+        model.addAttribute("trailTotal", total);
+        model.addAttribute("trailLimit", VisitLogRetentionService.TRAIL_LIMIT);
+        model.addAttribute("retentionDays", VisitLogRetentionService.RETENTION_DAYS);
+
+        return "admin/stats/visitTrail";
     }
 
     /**

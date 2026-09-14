@@ -8,6 +8,7 @@ import org.springframework.core.NestedExceptionUtils;
 import org.springframework.stereotype.Service;
 
 import com.moondap.dto.VisitLogDTO;
+import com.moondap.dto.VisitTrailDTO;
 import com.moondap.mapper.SiteStatMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -47,20 +48,46 @@ public class VisitLogRetentionService {
     /** 기본 조회 건수. 하루 방문자가 100~150명대라 대부분의 날은 한두 페이지다. */
     public static final int DEFAULT_PAGE_SIZE = 100;
 
+    /**
+     * 한 IP 의 열람 경로를 최대 몇 건까지 보여줄지.
+     *
+     * <p>방문자당 평균 6.2 페이지라 200이면 사실상 전부 보인다. 상한을 두는 것은
+     * 크롤러처럼 수천 건을 찍은 IP 하나 때문에 화면이 멈추지 않게 하기 위함이다.
+     */
+    public static final int TRAIL_LIMIT = 200;
+
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final SiteStatMapper siteStatMapper;
 
-    /** 보관 중인 접속 기록 수(IP + 익명 쿠키). */
+    /** 보관 중인 접속 기록 수(IP + 익명 쿠키 + 열람 경로). */
     public long storedCount() {
-        return siteStatMapper.countVisitLogs() + orZero(siteStatMapper::countVisitCookies);
+        return siteStatMapper.countVisitLogs()
+                + orZero(siteStatMapper::countVisitCookies)
+                + orZero(siteStatMapper::countVisitTrails);
     }
 
     /** 보유기간이 지나 파기 대상인 기록 수. */
     public long expiredCount() {
         String cutoffDate = cutoff().format(DAY);
         return siteStatMapper.countVisitLogsBefore(cutoffDate)
-                + orZero(() -> siteStatMapper.countVisitCookiesBefore(cutoffDate));
+                + orZero(() -> siteStatMapper.countVisitCookiesBefore(cutoffDate))
+                + orZero(() -> siteStatMapper.countVisitTrailsBefore(cutoffDate));
+    }
+
+    /**
+     * 특정 날짜·IP 가 연 화면을 순서대로.
+     *
+     * <p>개인별 열람 기록이다. 호출한 쪽(컨트롤러)에서 누가 언제 누구 것을 열었는지
+     * 로그를 남긴다.
+     */
+    public List<VisitTrailDTO> trailOf(String visitDate, String ipAddress) {
+        return orEmptyTrail(() -> siteStatMapper.selectVisitTrail(visitDate, ipAddress, TRAIL_LIMIT));
+    }
+
+    /** 특정 날짜·IP 의 전체 열람 건수. 화면에 보여준 것보다 많을 수 있다. */
+    public long trailCountOf(String visitDate, String ipAddress) {
+        return orZero(() -> siteStatMapper.countVisitTrail(visitDate, ipAddress));
     }
 
     /** 가장 오래된 기록의 날짜. 기록이 없으면 null. */
@@ -77,14 +104,15 @@ public class VisitLogRetentionService {
         String cutoffDate = cutoff().format(DAY);
 
         int ipDeleted = siteStatMapper.deleteVisitLogsBefore(cutoffDate);
-        // 쿠키 표는 나중에 추가됐다. 아직 없는 서버에서 IP 파기까지 막히면
+        // 쿠키·열람 경로 표는 나중에 추가됐다. 아직 없는 서버에서 IP 파기까지 막히면
         // 고지한 보유기간을 지킬 수 없게 되므로, 이쪽 실패는 삼키고 계속 간다.
         int cookieDeleted = orZeroInt(() -> siteStatMapper.deleteVisitCookiesBefore(cutoffDate));
+        int trailDeleted = orZeroInt(() -> siteStatMapper.deleteVisitTrailsBefore(cutoffDate));
 
         // 개인정보 파기는 되돌릴 수 없다. 언제 몇 건을 지웠는지 로그로 남겨 둔다.
-        log.info("접속 기록 파기: 기준일 {} 이전 IP {}건, 익명 쿠키 {}건 삭제",
-                cutoffDate, ipDeleted, cookieDeleted);
-        return ipDeleted + cookieDeleted;
+        log.info("접속 기록 파기: 기준일 {} 이전 IP {}건, 익명 쿠키 {}건, 열람 경로 {}건 삭제",
+                cutoffDate, ipDeleted, cookieDeleted, trailDeleted);
+        return ipDeleted + cookieDeleted + trailDeleted;
     }
 
     /**
@@ -93,6 +121,16 @@ public class VisitLogRetentionService {
      * <p>md_visit_cookie 는 나중에 추가된 테이블이라 마이그레이션 전 서버에는 없다.
      * 여기서 예외가 올라가면 보관 현황 때문에 통계 화면 전체가 500 이 된다.
      */
+    private List<VisitTrailDTO> orEmptyTrail(java.util.function.Supplier<List<VisitTrailDTO>> query) {
+        try {
+            return query.get();
+        } catch (Exception e) {
+            log.warn("열람 경로 조회 실패 — 빈 목록으로 본다. visit_trail.sql 을 적용했는지 확인할 것: {}",
+                    NestedExceptionUtils.getMostSpecificCause(e).getMessage());
+            return List.of();
+        }
+    }
+
     private long orZero(java.util.function.Supplier<Long> query) {
         try {
             return query.get();

@@ -23,7 +23,11 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
             color: #fff;
             font-size: 0.88rem;
+            text-decoration: none;
         }
+        /* 누를 수 있다는 것이 보여야 한다. 평소엔 점선, 올리면 실선. */
+        a.ip-cell { border-bottom: 1px dotted rgba(255, 255, 255, 0.3); }
+        a.ip-cell:hover { color: #fff; border-bottom-color: #fff; }
 
         /* 표 자체는 test-admin-common.css 의 .table-dark-custom 을 쓴다.
            여기서 다시 정의하면 다른 관리자 화면과 색이 어긋난다.
@@ -118,7 +122,15 @@
                             <tbody>
                                 <tr th:each="log, stat : ${logs}">
                                     <td class="log-no" th:text="${rowOffset + stat.index + 1}">1</td>
-                                    <td><span class="ip-cell" th:text="${log.ipAddress}">0.0.0.0</span></td>
+                                    <!--
+                      IP 를 누르면 그 접속자가 연 화면이 순서대로 나온다.
+                      링크로 둔 것은, 열람 경로가 이 표보다 한 단계 더 민감해서
+                      "누르는 행동"을 거쳐야 보이게 하려는 것이다(서버에도 로그가 남는다).
+                    -->
+                    <td>
+                        <a class="ip-cell" th:href="@{/admin/stats/trail(date=${logDate}, ip=${log.ipAddress})}"
+                           th:text="${log.ipAddress}" th:title="'이 IP 가 연 화면 보기'">0.0.0.0</a>
+                    </td>
                                     <!-- 시각 컬럼을 추가하기 전에 쌓인 기록에는 시각이 없다.
                                          없는 값을 임의로 채우지 않고 그대로 '-' 로 둔다. -->
                                     <td th:if="${log.firstSeenAt != null}" class="log-time"
