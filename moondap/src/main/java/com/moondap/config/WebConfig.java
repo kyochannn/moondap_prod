@@ -1,6 +1,8 @@
 package com.moondap.config;
 
 import org.springframework.beans.factory.annotation.Value;
+
+import com.moondap.service.StatService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -10,10 +12,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
 	@Value("${file.upload-dir}")
@@ -25,6 +29,8 @@ public class WebConfig implements WebMvcConfigurer {
 	/** canonical·og:image·sitemap 의 절대 URL 기준. */
 	@Value("${app.base-url}")
 	private String baseUrl;
+
+	private final StatService statService;
 
 	@Override
 	public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
@@ -66,6 +72,10 @@ public class WebConfig implements WebMvcConfigurer {
 				return true;
 			}
 		}).addPathPatterns("/uploads/**", "/profile/**");
+
+		// 방문 집계. 예전에는 메인 컨트롤러 안에서만 세어서 검색으로 바로 들어온
+		// 방문자가 전부 누락됐다. (VisitLogInterceptor 주석 참고)
+		registry.addInterceptor(new VisitLogInterceptor(statService));
 
 		// 모든 뷰에 canonical / og:* / robots 메타를 채운다.
 		registry.addInterceptor(new SeoMetaInterceptor(baseUrl));

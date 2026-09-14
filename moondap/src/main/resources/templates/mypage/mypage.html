@@ -265,6 +265,20 @@
                         </div>
                     </a>
 
+                    <!-- [Admin Only] 접속 통계 -->
+                    <a th:if="${user.role == 'ROLE_ADMIN'}" th:href="@{/admin/stats}" class="menu-card" style="border-color: rgba(165, 160, 255, 0.3);">
+                        <div class="menu-icon" style="background: rgba(165, 160, 255, 0.1); color: #a5a0ff;">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <div>
+                            <h4>접속 통계</h4>
+                            <p>일별 방문자 추이와 시간대별 접속 분포를 확인합니다.</p>
+                        </div>
+                        <div class="menu-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
+                    </a>
+
                     <!-- [Admin Only] 카테고리 관리 -->
                     <a th:if="${user.role == 'ROLE_ADMIN'}" th:href="@{/admin/category/list}" class="menu-card" style="border-color: rgba(165, 160, 255, 0.3);">
                         <div class="menu-icon" style="background: rgba(165, 160, 255, 0.1); color: #a5a0ff;">

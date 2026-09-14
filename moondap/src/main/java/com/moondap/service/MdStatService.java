@@ -3,6 +3,7 @@ package com.moondap.service;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.stereotype.Service;
@@ -26,6 +27,22 @@ public class MdStatService implements StatService {
         if (result > 0) {
             siteStatMapper.upsertVisitCount(today);
         }
+    }
+
+    @Override
+    public void recordVisit(String ipAddress) {
+        LocalDateTime now = LocalDateTime.now();
+        String today = now.toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // 1. 순 방문자. PK(visit_date, ip_address) + INSERT IGNORE 라
+        //    같은 IP 가 하루에 몇 번을 들어와도 한 번만 센다.
+        if (siteStatMapper.insertVisitLog(today, ipAddress) > 0) {
+            siteStatMapper.upsertVisitCount(today);
+        }
+
+        // 2. 시간대별 접속 건수. 이쪽은 재방문도 센다 — 트래픽이 몰리는 시각을
+        //    보는 지표라 같은 사람이 여러 번 들어온 것도 부하이자 관심이다.
+        siteStatMapper.upsertHourlyView(today, now.getHour());
     }
 
     @Override

@@ -37,4 +37,37 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         FROM moondap.site_statistics
         WHERE visit_date = #{visitDate}
     </select>
+
+    <!-- 시간대별 접속 건수 +1 -->
+    <insert id="upsertHourlyView">
+        INSERT INTO moondap.site_visit_hourly (visit_date, visit_hour, view_count)
+        VALUES (#{visitDate}, #{visitHour}, 1)
+        ON DUPLICATE KEY UPDATE view_count = view_count + 1
+    </insert>
+
+    <!-- 관리자 통계: 일별 추이 -->
+    <select id="selectDailyStats" resultType="com.moondap.dto.DailyStatDTO">
+        SELECT DATE_FORMAT(visit_date, '%Y-%m-%d') AS visitDate,
+               COALESCE(visit_count, 0)            AS visitCount,
+               COALESCE(participation_count, 0)    AS participationCount
+        FROM moondap.site_statistics
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+        ORDER BY visit_date ASC
+    </select>
+
+    <select id="selectVisitSum" resultType="long">
+        SELECT COALESCE(SUM(visit_count), 0)
+        FROM moondap.site_statistics
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+    </select>
+
+    <!-- 관리자 통계: 시간대별 분포 -->
+    <select id="selectHourlyStats" resultType="com.moondap.dto.HourlyStatDTO">
+        SELECT visit_hour            AS visitHour,
+               SUM(view_count)       AS viewCount
+        FROM moondap.site_visit_hourly
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+        GROUP BY visit_hour
+        ORDER BY visit_hour ASC
+    </select>
 </mapper>

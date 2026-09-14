@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>접속 통계 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/10.3.3/highcharts.js"></script>
+
+    <style>
+        .stat-tile {
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            height: 100%;
+        }
+
+        .stat-tile-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+        }
+
+        .stat-tile-value {
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.6rem;
+            line-height: 1.2;
+        }
+
+        /* 증감은 색으로 방향을 먼저 읽게 한다. 숫자를 읽기 전에 어제보다 나은지가 보인다. */
+        .stat-diff { font-size: 0.8rem; margin-top: 4px; }
+        .stat-diff.up { color: #4ade80; }
+        .stat-diff.down { color: #f87171; }
+        .stat-diff.flat { color: rgba(255, 255, 255, 0.4); }
+
+        .chart-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 16px;
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h4 class="fw-bold text-white mb-1">📈 접속 통계</h4>
+                        <p class="text-white-50 mb-0 small">
+                            방문자 수는 하루에 같은 IP 를 한 번만 셉니다. 봇과 관리자 화면은 제외합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 요약 -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-tile">
+                            <div class="stat-tile-label">오늘 방문자</div>
+                            <div class="stat-tile-value"
+                                 th:text="${#numbers.formatInteger(todayCount, 0, 'COMMA')}">0</div>
+                            <div th:switch="${diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat')}">
+                                <div th:case="'up'" class="stat-diff up">
+                                    ▲ 어제보다 <span th:text="${#numbers.formatInteger(diff, 0, 'COMMA')}">0</span>명
+                                </div>
+                                <div th:case="'down'" class="stat-diff down">
+                                    ▼ 어제보다 <span th:text="${#numbers.formatInteger(-diff, 0, 'COMMA')}">0</span>명
+                                </div>
+                                <div th:case="*" class="stat-diff flat">어제와 같음</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-tile">
+                            <div class="stat-tile-label">어제 방문자</div>
+                            <div class="stat-tile-value"
+                                 th:text="${#numbers.formatInteger(yesterdayCount, 0, 'COMMA')}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-tile">
+                            <div class="stat-tile-label">최근 7일 합계</div>
+                            <div class="stat-tile-value"
+                                 th:text="${#numbers.formatInteger(last7, 0, 'COMMA')}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="stat-tile">
+                            <div class="stat-tile-label">최근 30일 합계</div>
+                            <div class="stat-tile-value"
+                                 th:text="${#numbers.formatInteger(last30, 0, 'COMMA')}">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 일별 추이 -->
+                <div class="chart-box mb-4">
+                    <h6 class="text-white fw-bold mb-3">
+                        최근 <span th:text="${trendDays}">30</span>일 추이
+                    </h6>
+                    <div id="trendChart" style="height: 300px;"></div>
+                </div>
+
+                <!-- 시간대별 분포 -->
+                <div class="chart-box">
+                    <h6 class="text-white fw-bold mb-1">시간대별 접속 분포</h6>
+                    <p class="text-white-50 small mb-3">
+                        최근 <span th:text="${hourlyDays}">7</span>일 합계입니다.
+                        여기는 방문자 수가 아니라 <strong>접속 건수</strong>라 같은 사람의 재방문도 셉니다.
+                    </p>
+                    <div id="hourlyChart" style="height: 260px;"></div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const trend = /*[[${trend}]]*/ [];
+        const hourly = /*[[${hourly}]]*/ [];
+        /*]]>*/
+
+        // 어두운 배경에 맞춘 공통 설정. 차트마다 반복하지 않는다.
+        const darkTheme = {
+            chart: { backgroundColor: 'transparent', style: { fontFamily: 'inherit' } },
+            title: { text: null },
+            credits: { enabled: false },
+            legend: { itemStyle: { color: 'rgba(255,255,255,0.7)' } },
+            xAxis: {
+                lineColor: 'rgba(255,255,255,0.1)',
+                tickColor: 'rgba(255,255,255,0.1)',
+                labels: { style: { color: 'rgba(255,255,255,0.5)' } }
+            },
+            yAxis: {
+                gridLineColor: 'rgba(255,255,255,0.06)',
+                title: { text: null },
+                labels: { style: { color: 'rgba(255,255,255,0.5)' } }
+            }
+        };
+
+        Highcharts.chart('trendChart', Highcharts.merge(darkTheme, {
+            chart: { type: 'areaspline' },
+            // 날짜가 30개면 라벨이 겹친다. 월-일만 남긴다.
+            xAxis: { categories: trend.map(d => d.visitDate.slice(5)) },
+            tooltip: { shared: true },
+            plotOptions: {
+                areaspline: { fillOpacity: 0.15, marker: { enabled: false } }
+            },
+            series: [
+                { name: '방문자', data: trend.map(d => d.visitCount), color: '#7d77ff' },
+                { name: '콘텐츠 참여', data: trend.map(d => d.participationCount), color: '#ffc107' }
+            ]
+        }));
+
+        Highcharts.chart('hourlyChart', Highcharts.merge(darkTheme, {
+            chart: { type: 'column' },
+            xAxis: { categories: hourly.map(h => h.visitHour + '시') },
+            legend: { enabled: false },
+            plotOptions: { column: { borderWidth: 0, borderRadius: 3 } },
+            series: [{ name: '접속 건수', data: hourly.map(h => h.viewCount), color: '#524dd3' }]
+        }));
+    </script>
+</body>
+</html>

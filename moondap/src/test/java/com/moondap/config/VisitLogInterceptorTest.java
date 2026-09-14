@@ -1,0 +1,119 @@
+package com.moondap.config;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
+import com.moondap.service.StatService;
+
+/**
+ * 방문 집계 대상 판정.
+ *
+ * <p>예전에는 메인 컨트롤러 안에서만 집계해서, 검색으로 테스트 페이지에 바로 들어온
+ * 방문자가 한 명도 잡히지 않았다. 전 페이지로 넓히면서 반대로 "사람이 아닌 접속"까지
+ * 세게 될 위험이 생겼다. 어느 쪽이 세어지고 어느 쪽이 빠지는지를 여기서 고정한다.
+ */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class VisitLogInterceptorTest {
+
+    private static final String BROWSER =
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15";
+
+    @Mock
+    private StatService statService;
+
+    @Test
+    @DisplayName("[회귀] 메인이 아닌 페이지 방문도 집계된다")
+    void countsNonMainPages() {
+        handle(request("GET", "/test/love-style", BROWSER, null));
+
+        // 이 한 줄이 빠져 있어서 검색 유입이 통째로 누락됐다.
+        verify(statService).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("봇은 세지 않는다")
+    void skipsBots() {
+        handle(request("GET", "/", "Mozilla/5.0 (compatible; Googlebot/2.1)", null));
+        handle(request("GET", "/", "Mozilla/5.0 (compatible; bingbot/2.0)", null));
+        handle(request("GET", "/", "python-requests/2.31.0", null));
+
+        // 사이트맵을 보고 들어오는 크롤러가 사람 수를 덮어버리면 지표가 무의미해진다.
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("User-Agent 가 없으면 세지 않는다")
+    void skipsMissingUserAgent() {
+        handle(request("GET", "/", null, null));
+        handle(request("GET", "/", "", null));
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("AJAX 요청은 세지 않는다")
+    void skipsAjax() {
+        // 한 화면에서 여러 번 나가므로 방문으로 치면 같은 사람이 여러 번 잡힌다.
+        handle(request("GET", "/balanceGame/selectBalanceGameList", BROWSER, "XMLHttpRequest"));
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("GET 이 아닌 요청은 세지 않는다")
+    void skipsNonGet() {
+        handle(request("POST", "/balanceGame/vote", BROWSER, null));
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("관리자 화면은 세지 않는다")
+    void skipsAdmin() {
+        // 운영자가 통계를 보러 들어온 것이 그 통계에 섞이면 안 된다.
+        handle(request("GET", "/admin/stats", BROWSER, null));
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("집계가 실패해도 화면 요청은 계속 진행된다")
+    void survivesFailure() {
+        org.mockito.Mockito.doThrow(new RuntimeException("DB 장애"))
+                .when(statService).recordVisit(anyString());
+
+        // 예외가 밖으로 나가면 통계 한 건 때문에 페이지 전체가 오류가 된다.
+        boolean proceeded = handle(request("GET", "/", BROWSER, null));
+
+        org.assertj.core.api.Assertions.assertThat(proceeded).isTrue();
+    }
+
+    private boolean handle(MockHttpServletRequest request) {
+        return new VisitLogInterceptor(statService)
+                .preHandle(request, new MockHttpServletResponse(), new Object());
+    }
+
+    private MockHttpServletRequest request(String method, String uri, String userAgent, String requestedWith) {
+        MockHttpServletRequest request = new MockHttpServletRequest(method, uri);
+        request.setRemoteAddr("203.0.113.7");
+        if (userAgent != null) {
+            request.addHeader("User-Agent", userAgent);
+        }
+        if (requestedWith != null) {
+            request.addHeader("X-Requested-With", requestedWith);
+        }
+        return request;
+    }
+}
