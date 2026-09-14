@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 /**
  * 방문 집계.
@@ -53,7 +54,7 @@ public class VisitLogInterceptor implements HandlerInterceptor {
                              @NonNull HttpServletResponse response,
                              @NonNull Object handler) {
 
-        if (shouldCount(request)) {
+        if (shouldCount(request, handler)) {
             try {
                 statService.recordVisit(CommonUtil.getClientIp(request));
             } catch (Exception e) {
@@ -63,7 +64,24 @@ public class VisitLogInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private boolean shouldCount(HttpServletRequest request) {
+    private boolean shouldCount(HttpServletRequest request, Object handler) {
+        /*
+         * 정적 리소스는 방문이 아니다.
+         *
+         * 인터셉터는 DispatcherServlet 을 거치는 요청에 전부 걸리는데, 정적 파일도
+         * ResourceHttpRequestHandler 를 통해 그 안에서 처리된다. 그래서 화면 하나를
+         * 열 때마다 js·css·이미지 요청 수십 건이 함께 집계됐다.
+         *
+         * 순 방문자 수는 (날짜, IP) UNIQUE 라 영향이 없지만, 시간대별 접속 건수가
+         * 실제의 수십 배로 부풀고 요청마다 DB 쓰기가 한 번씩 더 일어난다.
+         *
+         * 경로 문자열로 거르지 않고 핸들러 타입으로 판단한다. 정적 경로가 늘어나도
+         * 여기를 고칠 필요가 없다.
+         */
+        if (handler instanceof ResourceHttpRequestHandler) {
+            return false;
+        }
+
         if (!"GET".equalsIgnoreCase(request.getMethod())) {
             return false;
         }
@@ -71,8 +89,13 @@ public class VisitLogInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        // 화면이 아닌 요청. 브라우저가 알아서 가져가는 것들이라 사람의 방문이 아니다.
         String uri = request.getRequestURI();
-        if (uri.startsWith("/admin") || uri.startsWith("/error")) {
+        if (uri.startsWith("/admin") || uri.startsWith("/error")
+                || uri.equals("/manifest.json") || uri.equals("/favicon.png")
+                || uri.equals("/apple-touch-icon.png") || uri.equals("/robots.txt")
+                || uri.equals("/ads.txt") || uri.equals("/sitemap.xml")
+                || uri.startsWith("/.well-known")) {
             return false;
         }
 

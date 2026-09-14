@@ -80,6 +80,31 @@ class VisitLogInterceptorTest {
     }
 
     @Test
+    @DisplayName("[회귀] 정적 리소스는 세지 않는다")
+    void skipsStaticResources() {
+        // 인터셉터는 정적 파일 요청에도 걸린다. 화면 하나를 열 때마다 js·css·이미지
+        // 수십 건이 함께 집계돼서, 시간대별 접속 건수가 실제의 수십 배로 부풀었다.
+        var resourceHandler = new org.springframework.web.servlet.resource.ResourceHttpRequestHandler();
+
+        new VisitLogInterceptor(statService).preHandle(
+                request("GET", "/assets/js/main.js", BROWSER, null),
+                new MockHttpServletResponse(), resourceHandler);
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
+    @DisplayName("브라우저가 알아서 가져가는 파일은 세지 않는다")
+    void skipsBrowserFetchedFiles() {
+        // manifest.json, favicon 등은 사람이 연 화면이 아니다.
+        handle(request("GET", "/manifest.json", BROWSER, null));
+        handle(request("GET", "/favicon.png", BROWSER, null));
+        handle(request("GET", "/sitemap.xml", BROWSER, null));
+
+        verify(statService, never()).recordVisit(anyString());
+    }
+
+    @Test
     @DisplayName("관리자 화면은 세지 않는다")
     void skipsAdmin() {
         // 운영자가 통계를 보러 들어온 것이 그 통계에 섞이면 안 된다.
