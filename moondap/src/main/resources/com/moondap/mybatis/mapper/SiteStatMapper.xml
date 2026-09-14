@@ -70,7 +70,40 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ON DUPLICATE KEY UPDATE visit_count = visit_count + 1
     </insert>
 
+    <!--
+      쿠키 기준 방문 기록.
+
+      md_visit_log 와 같은 구조(INSERT IGNORE + 복합 PK)라 하루 한 쿠키당 한 행만 남고,
+      first_seen_at 에는 그날 처음 들어온 시각이 남는다.
+    -->
+    <insert id="insertVisitCookie">
+        INSERT IGNORE INTO moondap.md_visit_cookie (visit_date, anon_id, first_seen_at)
+        VALUES (#{visitDate}, #{anonId}, NOW())
+    </insert>
+
+    <!--
+      User-Agent 별 요청 수.
+
+      counted 는 User-Agent 만 보고 정해지므로 같은 문자열이면 늘 같은 값이다.
+      그래도 UPDATE 절에 넣어 둔다 — 봇 마커 목록을 고치면 그날부터 판정이 바뀌는데,
+      값을 갱신하지 않으면 화면에 옛 판정이 남아 방금 고친 것이 반영되지 않은 것처럼 보인다.
+    -->
+    <insert id="upsertUserAgent">
+        INSERT INTO moondap.md_user_agent_daily (visit_date, user_agent, counted, hit_count)
+        VALUES (#{visitDate}, #{userAgent}, #{counted}, 1)
+        ON DUPLICATE KEY UPDATE hit_count = hit_count + 1,
+                                counted   = #{counted}
+    </insert>
+
     <!-- 관리자 통계: 일별 추이 -->
+    <!--
+      쿠키 기준 방문자 수는 여기에 넣지 않는다.
+
+      md_visit_cookie 는 나중에 추가된 테이블이라 마이그레이션 전 서버에는 없다.
+      이 쿼리에 컬럼 하나라도 섞으면 그런 서버에서 방문자 추이 그래프가 통째로
+      사라진다. 부가 지표 때문에 원래 잘 나오던 것을 못 쓰게 만들지 않는다.
+      (selectCookieVisitorStats 를 따로 두고 실패하면 그 항목만 비운다)
+    -->
     <select id="selectDailyStats" resultType="com.moondap.dto.DailyStatDTO">
         SELECT DATE_FORMAT(visit_date, '%Y-%m-%d') AS visitDate,
                COALESCE(visit_count, 0)            AS visitCount,
@@ -94,6 +127,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
         GROUP BY visit_hour
         ORDER BY visit_hour ASC
+    </select>
+
+    <!--
+      관리자 통계: 쿠키 기준 일별 순 방문자.
+
+      별도 카운터 컬럼을 두지 않고 행을 센다. 카운터는 언젠가 행 수와 어긋나는데,
+      그때 어느 쪽이 맞는지 알 방법이 없다. PK(visit_date, anon_id) 라 이 집계는
+      인덱스만 읽는다.
+    -->
+    <select id="selectCookieVisitorStats" resultType="com.moondap.dto.DailyStatDTO">
+        SELECT DATE_FORMAT(visit_date, '%Y-%m-%d') AS visitDate,
+               COUNT(*)                            AS cookieVisitorCount
+        FROM moondap.md_visit_cookie
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+        GROUP BY visit_date
+        ORDER BY visit_date ASC
+    </select>
+
+    <!-- 관리자 통계: User-Agent 별 요청 수 -->
+    <select id="selectUserAgents" resultType="com.moondap.dto.UserAgentStatDTO">
+        SELECT user_agent      AS userAgent,
+               counted,
+               SUM(hit_count)  AS hitCount
+        FROM moondap.md_user_agent_daily
+        WHERE visit_date BETWEEN #{fromDate} AND #{toDate}
+          AND counted = #{counted}
+        GROUP BY user_agent, counted
+        ORDER BY hitCount DESC, user_agent ASC
+        LIMIT #{limit}
     </select>
 
     <!-- 관리자 통계: 조회수 상위 경로 -->
@@ -152,6 +214,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <delete id="deleteVisitLogsBefore">
         DELETE FROM moondap.md_visit_log
+        WHERE visit_date &lt; #{cutoffDate}
+    </delete>
+
+    <select id="countVisitCookies" resultType="long">
+        SELECT COUNT(*) FROM moondap.md_visit_cookie
+    </select>
+
+    <select id="countVisitCookiesBefore" resultType="long">
+        SELECT COUNT(*) FROM moondap.md_visit_cookie
+        WHERE visit_date &lt; #{cutoffDate}
+    </select>
+
+    <delete id="deleteVisitCookiesBefore">
+        DELETE FROM moondap.md_visit_cookie
         WHERE visit_date &lt; #{cutoffDate}
     </delete>
 

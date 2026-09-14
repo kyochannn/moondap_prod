@@ -1,23 +1,31 @@
 package com.moondap.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.moondap.common.AnonymousIdentity;
+import com.moondap.common.TrafficSource;
+import com.moondap.dto.VisitContext;
 import com.moondap.service.StatService;
+
+import jakarta.servlet.http.Cookie;
 
 /**
  * 방문 집계 대상 판정.
@@ -42,7 +50,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/test/love-style", BROWSER, null));
 
         // 이 한 줄이 빠져 있어서 검색 유입이 통째로 누락됐다.
-        verify(statService).recordVisit(anyString(), eq("/test/love-style"), any());
+        assertThat(captureVisit().path()).isEqualTo("/test/love-style");
     }
 
     @Test
@@ -53,7 +61,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", "python-requests/2.31.0", null));
 
         // 사이트맵을 보고 들어오는 크롤러가 사람 수를 덮어버리면 지표가 무의미해진다.
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -67,7 +75,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
                 + "NAVER(inapp; search; 2000; 12.9.0)", null));
 
-        verify(statService, org.mockito.Mockito.times(3)).recordVisit(anyString(), anyString(), any());
+        verify(statService, org.mockito.Mockito.times(3)).recordVisit(any());
     }
 
     @Test
@@ -76,7 +84,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", "Mozilla/5.0 (compatible; Daum/4.1; +http://cs.daum.net/)", null));
         handle(request("GET", "/", "Daumoa/3.0", null));
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -85,7 +93,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/", null, null));
         handle(request("GET", "/", "", null));
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -94,7 +102,7 @@ class VisitLogInterceptorTest {
         // 한 화면에서 여러 번 나가므로 방문으로 치면 같은 사람이 여러 번 잡힌다.
         handle(request("GET", "/balanceGame/selectBalanceGameList", BROWSER, "XMLHttpRequest"));
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -102,7 +110,7 @@ class VisitLogInterceptorTest {
     void skipsNonGet() {
         handle(request("POST", "/balanceGame/vote", BROWSER, null));
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -116,7 +124,7 @@ class VisitLogInterceptorTest {
                 request("GET", "/assets/js/main.js", BROWSER, null),
                 new MockHttpServletResponse(), resourceHandler);
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -127,7 +135,7 @@ class VisitLogInterceptorTest {
         handle(request("GET", "/favicon.png", BROWSER, null));
         handle(request("GET", "/sitemap.xml", BROWSER, null));
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
@@ -136,14 +144,14 @@ class VisitLogInterceptorTest {
         // 운영자가 통계를 보러 들어온 것이 그 통계에 섞이면 안 된다.
         handle(request("GET", "/admin/stats", BROWSER, null));
 
-        verify(statService, never()).recordVisit(anyString(), anyString(), any());
+        verify(statService, never()).recordVisit(any());
     }
 
     @Test
     @DisplayName("집계가 실패해도 화면 요청은 계속 진행된다")
     void survivesFailure() {
         org.mockito.Mockito.doThrow(new RuntimeException("DB 장애"))
-                .when(statService).recordVisit(anyString(), anyString(), any());
+                .when(statService).recordVisit(any());
 
         // 예외가 밖으로 나가면 통계 한 건 때문에 페이지 전체가 오류가 된다.
         boolean proceeded = handle(request("GET", "/", BROWSER, null));
@@ -157,11 +165,10 @@ class VisitLogInterceptorTest {
         // 뒤 슬래시와 ;jsessionid 가 붙으면 같은 화면이 별개의 행으로 쌓여,
         // 실제로 가장 많이 열린 화면이 상위 목록에서 사라진다.
         handle(request("GET", "/test/love-style/", BROWSER, null));
-        verify(statService).recordVisit(anyString(), eq("/test/love-style"), any());
-
         handle(request("GET", "/test/love-style;jsessionid=ABC123", BROWSER, null));
-        verify(statService, org.mockito.Mockito.times(2))
-                .recordVisit(anyString(), eq("/test/love-style"), any());
+
+        assertThat(captureVisits()).extracting(VisitContext::path)
+                .containsExactly("/test/love-style", "/test/love-style");
     }
 
     @Test
@@ -175,7 +182,7 @@ class VisitLogInterceptorTest {
 
         handle(request);
 
-        verify(statService).recordVisit(anyString(), eq("/test/love-style"), isNull());
+        assertThat(captureVisit().trafficSource()).isNull();
     }
 
     @Test
@@ -187,7 +194,7 @@ class VisitLogInterceptorTest {
 
         handle(request);
 
-        verify(statService).recordVisit(anyString(), eq("/test/love-style"), eq("네이버"));
+        assertThat(captureVisit().trafficSource()).isEqualTo("네이버");
     }
 
     @Test
@@ -195,12 +202,93 @@ class VisitLogInterceptorTest {
     void recordsDirectEntry() {
         handle(request("GET", "/", BROWSER, null));
 
-        verify(statService).recordVisit(anyString(), eq("/"), eq(com.moondap.common.TrafficSource.DIRECT));
+        assertThat(captureVisit().trafficSource()).isEqualTo(TrafficSource.DIRECT);
+    }
+
+    // ── 익명 쿠키 기준 방문자 ────────────────────────────────
+
+    @Test
+    @DisplayName("[회귀] 방금 발급한 쿠키는 방문자로 세지 않는다")
+    void doesNotCountFreshlyIssuedCookie() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        // 쿠키를 저장하지 않는 클라이언트는 요청마다 새 UUID 를 받는다.
+        // 발급 시점에 세면 그 한 대가 하루 수백 명으로 둔갑한다.
+        handle(request("GET", "/", BROWSER, null), response);
+
+        assertThat(captureVisit().anonId()).isNull();
+        // 그래도 쿠키는 내려보낸다 — 다음 방문부터 같은 사람인지 알아야 한다.
+        assertThat(response.getHeader("Set-Cookie")).contains(AnonymousIdentity.COOKIE_NAME);
+    }
+
+    @Test
+    @DisplayName("되돌아온 쿠키는 방문자로 센다")
+    void countsReturningCookie() {
+        MockHttpServletRequest request = request("GET", "/", BROWSER, null);
+        request.setCookies(new Cookie(AnonymousIdentity.COOKIE_NAME, "anon-123"));
+
+        handle(request);
+
+        assertThat(captureVisit().anonId()).isEqualTo("anon-123");
+    }
+
+    // ── User-Agent 계측 ─────────────────────────────────────
+
+    @Test
+    @DisplayName("봇으로 걸러낸 요청도 User-Agent 는 남긴다")
+    void recordsFilteredUserAgent() {
+        // 남기지 않으면 "멀쩡한 브라우저를 봇으로 거르고 있지 않은가"를 확인할 길이 없다.
+        // 실제로 "daum" 조각 하나 때문에 다음 앱 방문자가 통째로 누락된 적이 있다.
+        handle(request("GET", "/", "Mozilla/5.0 (compatible; Googlebot/2.1)", null));
+
+        verify(statService).recordUserAgent(anyString(), eq(false));
+        verify(statService, never()).recordVisit(any());
+    }
+
+    @Test
+    @DisplayName("사람으로 센 요청은 counted 로 남는다")
+    void recordsCountedUserAgent() {
+        handle(request("GET", "/", BROWSER, null));
+
+        verify(statService).recordUserAgent(eq(BROWSER), eq(true));
+    }
+
+    @Test
+    @DisplayName("정적 리소스는 User-Agent 계측에도 넣지 않는다")
+    void doesNotMeasureStaticResources() {
+        // 화면 하나에 딸려 오는 js·css 까지 세면 목록이 그 브라우저 하나로 덮인다.
+        new VisitLogInterceptor(statService).preHandle(
+                request("GET", "/assets/js/main.js", BROWSER, null),
+                new MockHttpServletResponse(),
+                new org.springframework.web.servlet.resource.ResourceHttpRequestHandler());
+
+        verify(statService, never()).recordUserAgent(anyString(), org.mockito.ArgumentMatchers.anyBoolean());
+    }
+
+    /** 집계에 넘어간 방문 정보. 여러 번 호출됐다면 첫 번째. */
+    private VisitContext captureVisit() {
+        return captureVisits().get(0);
+    }
+
+    private java.util.List<VisitContext> captureVisits() {
+        ArgumentCaptor<VisitContext> captor = ArgumentCaptor.forClass(VisitContext.class);
+        verify(statService, org.mockito.Mockito.atLeastOnce()).recordVisit(captor.capture());
+        return captor.getAllValues();
     }
 
     private boolean handle(MockHttpServletRequest request) {
-        return new VisitLogInterceptor(statService)
-                .preHandle(request, new MockHttpServletResponse(), new Object());
+        return handle(request, new MockHttpServletResponse());
+    }
+
+    private boolean handle(MockHttpServletRequest request, MockHttpServletResponse response) {
+        // 운영에서는 RequestContextFilter 가 해 주는 일이다.
+        // AnonymousIdentity 가 RequestContextHolder 에서 요청을 꺼내 쿠키를 읽는다.
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        try {
+            return new VisitLogInterceptor(statService).preHandle(request, response, new Object());
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
     }
 
     private MockHttpServletRequest request(String method, String uri, String userAgent, String requestedWith) {

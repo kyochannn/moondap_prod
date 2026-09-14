@@ -54,7 +54,14 @@ public final class AnonymousIdentity {
     /**
      * 익명 토큰을 가져오되, 없으면 새로 발급하고 응답에 쿠키를 실어준다.
      *
-     * <p>댓글을 실제로 작성하는 시점에만 호출한다.
+     * <p>원래는 댓글·투표처럼 실제로 쓰기가 일어나는 시점에만 호출했다. 지금은
+     * 방문 집계({@code VisitLogInterceptor})에서도 호출하므로 <b>열람만 하는 방문자에게도
+     * 발급된다.</b> IP 만으로는 방문자 수가 두 방향으로 틀리는데(공유 IP 는 여러 명을
+     * 1명으로 합치고, 이동 중 모바일은 1명을 여러 명으로 가른다) 비교할 기준이 없으면
+     * 얼마나 틀리는지조차 알 수 없어서 내린 결정이다.
+     *
+     * <p>이 변경은 개인정보처리방침 제2조에 <b>방문자 수 집계</b> 목적으로 함께 고지돼 있다.
+     * 발급 범위를 다시 좁힌다면 그쪽 문구도 같이 되돌려야 한다.
      */
     public static String getOrCreate(HttpServletResponse response) {
         String existing = current();

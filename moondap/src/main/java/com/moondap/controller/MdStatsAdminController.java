@@ -54,6 +54,14 @@ public class MdStatsAdminController {
     private static final int TOP_LIMIT = 15;
 
     /**
+     * User-Agent 목록의 줄 수.
+     *
+     * <p>경로 표보다 넉넉히 잡는다. 오탐은 흔하지 않아서 목록 아래쪽에 있을 텐데,
+     * 15줄에서 끊으면 정작 찾으려는 것이 잘려 나간다.
+     */
+    private static final int AGENT_LIMIT = 50;
+
+    /**
      * 접속 기록을 파기할 수 있는 계정.
      *
      * <p>ADMIN 권한만으로는 부족하다고 보고 계정 하나로 좁혔다. 개인정보 파기는
@@ -91,6 +99,11 @@ public class MdStatsAdminController {
         model.addAttribute("topEntries", siteStatsQueryService.topEntryPages(PATH_DAYS, TOP_LIMIT));
         model.addAttribute("topReferrers", siteStatsQueryService.topReferrers(PATH_DAYS, TOP_LIMIT));
         model.addAttribute("pathDays", PATH_DAYS);
+
+        // 쿠키 기준 방문자를 함께 보여준다. IP 기준 하나만 있으면 그 숫자가
+        // 어느 방향으로 얼마나 틀리는지 알 수가 없다.
+        model.addAttribute("todayCookieCount", trend.isEmpty()
+                ? 0L : trend.get(trend.size() - 1).getCookieVisitorCount());
 
         // 접속 기록 보유 현황
         model.addAttribute("logStored", visitLogRetentionService.storedCount());
@@ -140,6 +153,25 @@ public class MdStatsAdminController {
         model.addAttribute("retentionDays", VisitLogRetentionService.RETENTION_DAYS);
 
         return "admin/stats/visitLogs";
+    }
+
+    /**
+     * 봇 판정 계측.
+     *
+     * <p>사람으로 센 것과 봇으로 걸러낸 것을 User-Agent 별로 보여준다. 걸러낸 목록에
+     * 멀쩡한 브라우저가 올라와 있으면 그것이 오탐이다 — 예전에 {@code "daum"} 이라는
+     * 조각 하나로 다음 앱 인앱 브라우저를 쓰는 방문자가 통째로 누락됐는데, 그때는
+     * 확인할 화면이 없어 사용자 제보로만 알 수 있었다.
+     *
+     * <p>접속 기록(IP) 화면과 분리한다. 여기에는 개인을 식별할 값이 없으므로 열람에
+     * 제약을 둘 이유가 없고, 섞어 두면 봇 판정을 확인할 때마다 IP 가 함께 노출된다.
+     */
+    @GetMapping("/agents")
+    public String agents(Model model) {
+        model.addAttribute("counted", siteStatsQueryService.countedUserAgents(PATH_DAYS, AGENT_LIMIT));
+        model.addAttribute("filtered", siteStatsQueryService.filteredUserAgents(PATH_DAYS, AGENT_LIMIT));
+        model.addAttribute("pathDays", PATH_DAYS);
+        return "admin/stats/userAgents";
     }
 
     /**

@@ -36,6 +36,17 @@
         .stat-diff.down { color: #f87171; }
         .stat-diff.flat { color: rgba(255, 255, 255, 0.4); }
 
+        /* 같은 질문에 대한 다른 답. 주 수치보다 작게 두되 읽히기는 해야 한다. */
+        .stat-sub {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.78rem;
+        }
+        .stat-sub strong { color: #fff; }
+        .stat-sub-note { display: block; color: rgba(255, 255, 255, 0.35); }
+
         .retention-box {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -110,6 +121,16 @@
                         <p class="text-white-50 mb-0 small">
                             방문자 수는 하루에 같은 IP 를 한 번만 셉니다. 봇과 관리자 화면은 제외합니다.
                         </p>
+                        <!--
+                          IP 기준의 한계를 여기서 한 번 말해 둔다. 숫자만 보면
+                          정확한 사람 수로 읽히는데, 실제로는 두 방향으로 틀린다.
+                        -->
+                        <p class="text-white-50 mb-0 small mt-1">
+                            <i class="bi bi-info-circle me-1"></i>
+                            IP 기준은 회사·학교처럼 여러 명이 한 회선을 쓰면 <strong>여러 명을 1명으로</strong> 합치고,
+                            이동 중 모바일은 IP 가 바뀌어 <strong>1명을 여러 명으로</strong> 셉니다.
+                            그래서 쿠키 기준 숫자를 나란히 둡니다.
+                        </p>
                     </div>
                 </div>
 
@@ -128,6 +149,16 @@
                                     ▼ 어제보다 <span th:text="${#numbers.formatInteger(-diff, 0, 'COMMA')}">0</span>명
                                 </div>
                                 <div th:case="*" class="stat-diff flat">어제와 같음</div>
+                            </div>
+                            <!--
+                              같은 타일 안에 둔다. 따로 떼어 놓으면 두 숫자가 같은 질문에
+                              대한 다른 답이라는 것이 드러나지 않고, 그냥 지표가 하나 더
+                              있는 것처럼 읽힌다.
+                            -->
+                            <div class="stat-sub">
+                                쿠키 기준
+                                <strong th:text="${#numbers.formatInteger(todayCookieCount, 0, 'COMMA')}">0</strong>명
+                                <span class="stat-sub-note">(첫 방문에 한 페이지만 본 사람은 빠짐)</span>
                             </div>
                         </div>
                     </div>
@@ -297,6 +328,14 @@
                     <a th:href="@{/admin/stats/logs}" class="btn btn-outline-light btn-sm mb-2">
                         <i class="bi bi-list-ul me-1"></i>접속 기록(IP) 보기
                     </a>
+                    <!--
+                      봇 판정 화면은 따로 둔다. 개인을 식별할 값이 없으므로 IP 화면처럼
+                      열람 자체를 조심할 필요가 없고, 섞어 두면 봇을 확인할 때마다
+                      IP 가 함께 노출된다.
+                    -->
+                    <a th:href="@{/admin/stats/agents}" class="btn btn-outline-light btn-sm mb-2 ms-1">
+                        <i class="bi bi-robot me-1"></i>봇 판정 확인
+                    </a>
 
                     <!-- 되돌릴 수 없는 작업이라 계정 하나로 제한한다. 서버에서도 같은 검사를 한다. -->
                     <form th:if="${canPurge}" th:action="@{/admin/stats/purge-logs}" method="post"
@@ -351,7 +390,13 @@
                 areaspline: { fillOpacity: 0.15, marker: { enabled: false } }
             },
             series: [
-                { name: '방문자', data: trend.map(d => d.visitCount), color: '#7d77ff' },
+                { name: '방문자 (IP 기준)', data: trend.map(d => d.visitCount), color: '#7d77ff' },
+                // 점선으로 둔다. 같은 것을 다르게 센 값이라, 실선 두 개면 서로 다른
+                // 지표로 읽힌다.
+                {
+                    name: '방문자 (쿠키 기준)', data: trend.map(d => d.cookieVisitorCount),
+                    color: '#4dd0e1', dashStyle: 'ShortDash'
+                },
                 { name: '콘텐츠 참여', data: trend.map(d => d.participationCount), color: '#ffc107' }
             ]
         }));

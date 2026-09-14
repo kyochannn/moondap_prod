@@ -15,6 +15,7 @@ import com.moondap.dto.DailyStatDTO;
 import com.moondap.dto.HourlyStatDTO;
 import com.moondap.dto.PagePathStatDTO;
 import com.moondap.dto.ReferrerStatDTO;
+import com.moondap.dto.UserAgentStatDTO;
 import com.moondap.mapper.SiteStatMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -56,7 +57,35 @@ public class SiteStatsQueryService {
             String key = d.format(DAY);
             filled.add(found.getOrDefault(key, emptyDay(key)));
         }
+
+        // 쿠키 기준 방문자는 별도 조회로 덧붙인다. 한 쿼리로 묶으면 md_visit_cookie 가
+        // 없는 서버(마이그레이션 전)에서 추이 그래프가 통째로 사라진다.
+        Map<String, Long> byCookie = new LinkedHashMap<>();
+        for (DailyStatDTO row : orEmpty("쿠키 기준 방문자",
+                () -> siteStatMapper.selectCookieVisitorStats(from.format(DAY), today.format(DAY)))) {
+            byCookie.put(row.getVisitDate(), row.getCookieVisitorCount());
+        }
+        for (DailyStatDTO row : filled) {
+            row.setCookieVisitorCount(byCookie.getOrDefault(row.getVisitDate(), 0L));
+        }
+
         return filled;
+    }
+
+    /** 최근 {@code days} 일 동안 사람으로 센 User-Agent. 많은 순. */
+    public List<UserAgentStatDTO> countedUserAgents(int days, int limit) {
+        return orEmpty("사람으로 센 User-Agent",
+                () -> siteStatMapper.selectUserAgents(from(days), today(), 1, limit));
+    }
+
+    /**
+     * 최근 {@code days} 일 동안 봇으로 걸러낸 User-Agent. 많은 순.
+     *
+     * <p>이 목록에 멀쩡한 브라우저가 올라와 있으면 그것이 오탐이다.
+     */
+    public List<UserAgentStatDTO> filteredUserAgents(int days, int limit) {
+        return orEmpty("걸러낸 User-Agent",
+                () -> siteStatMapper.selectUserAgents(from(days), today(), 0, limit));
     }
 
     /**
@@ -146,6 +175,7 @@ public class SiteStatsQueryService {
         DailyStatDTO dto = new DailyStatDTO();
         dto.setVisitDate(date);
         dto.setVisitCount(0);
+        dto.setCookieVisitorCount(0);
         dto.setParticipationCount(0);
         return dto;
     }

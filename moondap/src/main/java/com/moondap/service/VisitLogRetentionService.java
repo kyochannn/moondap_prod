@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.stereotype.Service;
 
 import com.moondap.dto.VisitLogDTO;
@@ -19,9 +20,13 @@ import lombok.extern.slf4j.Slf4j;
  * 로 고지했으므로 그 기간이 지난 기록은 파기해야 한다. 예전에는 지우는 코드가 아예 없어
  * 2026-05-03 부터의 기록이 그대로 쌓여 있었다.
  *
- * <p>파기 대상은 IP 가 담긴 md_visit_log 하나뿐이다. 일자별 집계(md_visit_daily)와
- * 시간대별 집계(md_pageview_hourly)는 날짜와 숫자만 있어 개인을 식별할 수 없으므로 남긴다.
- * 그래서 파기해도 과거 추이 그래프는 그대로다.
+ * <p>파기 대상은 식별자가 담긴 두 표다 — IP 가 있는 md_visit_log 와 익명 쿠키가 있는
+ * md_visit_cookie. 익명 쿠키도 처리방침에 고지한 식별자라, IP 만 지우고 이쪽을 남겨 두면
+ * "90일 뒤 파기" 고지와 실제가 어긋난다.
+ *
+ * <p>일자별 집계(md_visit_daily)·시간대별 집계(md_pageview_hourly)·경로별 집계
+ * (md_pageview_path, md_referrer_daily, md_user_agent_daily)는 날짜와 숫자·문자열만 있어
+ * 개인을 식별할 수 없으므로 남긴다. 그래서 파기해도 과거 추이 그래프는 그대로다.
  */
 @Slf4j
 @Service
@@ -46,14 +51,16 @@ public class VisitLogRetentionService {
 
     private final SiteStatMapper siteStatMapper;
 
-    /** 보관 중인 접속 기록 수. */
+    /** 보관 중인 접속 기록 수(IP + 익명 쿠키). */
     public long storedCount() {
-        return siteStatMapper.countVisitLogs();
+        return siteStatMapper.countVisitLogs() + orZero(siteStatMapper::countVisitCookies);
     }
 
     /** 보유기간이 지나 파기 대상인 기록 수. */
     public long expiredCount() {
-        return siteStatMapper.countVisitLogsBefore(cutoff().format(DAY));
+        String cutoffDate = cutoff().format(DAY);
+        return siteStatMapper.countVisitLogsBefore(cutoffDate)
+                + orZero(() -> siteStatMapper.countVisitCookiesBefore(cutoffDate));
     }
 
     /** 가장 오래된 기록의 날짜. 기록이 없으면 null. */
@@ -68,11 +75,42 @@ public class VisitLogRetentionService {
      */
     public int purgeExpired() {
         String cutoffDate = cutoff().format(DAY);
-        int deleted = siteStatMapper.deleteVisitLogsBefore(cutoffDate);
+
+        int ipDeleted = siteStatMapper.deleteVisitLogsBefore(cutoffDate);
+        // 쿠키 표는 나중에 추가됐다. 아직 없는 서버에서 IP 파기까지 막히면
+        // 고지한 보유기간을 지킬 수 없게 되므로, 이쪽 실패는 삼키고 계속 간다.
+        int cookieDeleted = orZeroInt(() -> siteStatMapper.deleteVisitCookiesBefore(cutoffDate));
 
         // 개인정보 파기는 되돌릴 수 없다. 언제 몇 건을 지웠는지 로그로 남겨 둔다.
-        log.info("접속 기록 파기: 기준일 {} 이전 {}건 삭제", cutoffDate, deleted);
-        return deleted;
+        log.info("접속 기록 파기: 기준일 {} 이전 IP {}건, 익명 쿠키 {}건 삭제",
+                cutoffDate, ipDeleted, cookieDeleted);
+        return ipDeleted + cookieDeleted;
+    }
+
+    /**
+     * 쿠키 표 조회가 실패하면 0 으로 본다.
+     *
+     * <p>md_visit_cookie 는 나중에 추가된 테이블이라 마이그레이션 전 서버에는 없다.
+     * 여기서 예외가 올라가면 보관 현황 때문에 통계 화면 전체가 500 이 된다.
+     */
+    private long orZero(java.util.function.Supplier<Long> query) {
+        try {
+            return query.get();
+        } catch (Exception e) {
+            log.warn("익명 쿠키 방문 기록 조회 실패 — 0 으로 본다. visit_quality.sql 을 적용했는지 확인할 것: {}",
+                    NestedExceptionUtils.getMostSpecificCause(e).getMessage());
+            return 0L;
+        }
+    }
+
+    private int orZeroInt(java.util.function.Supplier<Integer> query) {
+        try {
+            return query.get();
+        } catch (Exception e) {
+            log.warn("익명 쿠키 방문 기록 파기 실패 — 건너뛴다. visit_quality.sql 을 적용했는지 확인할 것: {}",
+                    NestedExceptionUtils.getMostSpecificCause(e).getMessage());
+            return 0;
+        }
     }
 
     /**

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/main_layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>봇 판정 확인 - 관리자</title>
+    <link th:href="@{/assets/css/test-admin-common.css}" rel="stylesheet">
+
+    <style>
+        .panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        /*
+          부트스트랩 .table 은 --bs-table-color 를 td 에 직접 적용한다.
+          클래스 선택자로 color 만 주면 그 변수(기본 검정)에 밀려 어두운 배경에
+          검은 글씨가 나온다. 변수 자체를 덮어야 한다.
+        */
+        .stat-table {
+            --bs-table-color: #fff;
+            --bs-table-bg: transparent;
+            --bs-table-hover-color: #fff;
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.06);
+            margin-bottom: 0;
+        }
+        .stat-table thead th {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .stat-table td, .stat-table th { border-color: rgba(255, 255, 255, 0.06); }
+        .stat-table td.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        /*
+          User-Agent 는 길다. 줄바꿈해서 전부 보여준다 — 잘라 버리면 뒤쪽에 있는
+          "DaumApps/6.9.41" 같은 조각이 안 보여서 오탐을 찾으려는 목적 자체가 사라진다.
+        */
+        .stat-table td.ua {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            word-break: break-all;
+            white-space: normal;
+        }
+
+        .empty-note {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            padding: 24px 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body layout:fragment="content">
+    <main class="main">
+        <section class="section">
+            <div class="container" data-aos="fade-up">
+
+                <div class="mb-4">
+                    <a th:href="@{/admin/stats}" class="btn btn-outline-light btn-sm mb-3">
+                        <i class="bi bi-arrow-left me-1"></i>접속 통계로
+                    </a>
+                    <h4 class="fw-bold text-white mb-1">🤖 봇 판정 확인</h4>
+                    <p class="text-white-50 mb-0 small">
+                        최근 <span th:text="${pathDays}">7</span>일. 방문자 수는 User-Agent 를 보고 봇을 걸러낸 뒤에 셉니다.
+                        <strong>걸러낸 목록에 멀쩡한 브라우저가 있으면 그것이 오탐</strong>이고,
+                        그만큼 실제 방문자가 통계에서 빠지고 있다는 뜻입니다.
+                    </p>
+                </div>
+
+                <!--
+                  걸러낸 쪽을 위에 둔다. 이 화면을 여는 이유가 "잘 세고 있나"가 아니라
+                  "사람을 봇으로 걸러내고 있지 않나" 하나이기 때문이다.
+                -->
+                <div class="panel mb-4">
+                    <h6 class="text-white fw-bold mb-1">
+                        <i class="bi bi-funnel me-1"></i>봇으로 걸러낸 것
+                    </h6>
+                    <p class="text-white-50 small mb-3">
+                        여기 있는 요청은 방문자 수에 포함되지 않았습니다.
+                    </p>
+                    <div th:if="${#lists.isEmpty(filtered)}" class="empty-note">
+                        아직 기록이 없습니다. 배포된 시점부터 쌓입니다.
+                    </div>
+                    <div th:unless="${#lists.isEmpty(filtered)}" class="table-responsive">
+                        <table class="table stat-table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>User-Agent</th>
+                                    <th style="width: 90px;" class="text-end">요청 수</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="ua, stat : ${filtered}">
+                                    <td class="num" th:text="${stat.index + 1}">1</td>
+                                    <td class="ua" th:text="${ua.userAgent}">-</td>
+                                    <td class="num"
+                                        th:text="${#numbers.formatInteger(ua.hitCount, 0, 'COMMA')}">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h6 class="text-white fw-bold mb-1">
+                        <i class="bi bi-person-check me-1"></i>사람으로 센 것
+                    </h6>
+                    <p class="text-white-50 small mb-3">
+                        반대로 이 목록에 크롤러가 섞여 있으면 방문자 수가 부풀려지고 있는 것입니다.
+                    </p>
+                    <div th:if="${#lists.isEmpty(counted)}" class="empty-note">
+                        아직 기록이 없습니다.
+                    </div>
+                    <div th:unless="${#lists.isEmpty(counted)}" class="table-responsive">
+                        <table class="table stat-table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>User-Agent</th>
+                                    <th style="width: 90px;" class="text-end">요청 수</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="ua, stat : ${counted}">
+                                    <td class="num" th:text="${stat.index + 1}">1</td>
+                                    <td class="ua" th:text="${ua.userAgent}">-</td>
+                                    <td class="num"
+                                        th:text="${#numbers.formatInteger(ua.hitCount, 0, 'COMMA')}">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+</body>
+</html>

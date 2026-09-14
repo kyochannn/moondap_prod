@@ -9,6 +9,7 @@ import com.moondap.dto.DailyStatDTO;
 import com.moondap.dto.HourlyStatDTO;
 import com.moondap.dto.PagePathStatDTO;
 import com.moondap.dto.ReferrerStatDTO;
+import com.moondap.dto.UserAgentStatDTO;
 import com.moondap.dto.VisitLogDTO;
 
 @Mapper
@@ -55,6 +56,22 @@ public interface SiteStatMapper {
     /** 유입 출처별 건수 +1. */
     int upsertReferrerVisit(@Param("visitDate") String visitDate, @Param("source") String source);
 
+    /**
+     * 쿠키 기준 방문 기록. 이미 있으면 아무 일도 하지 않는다.
+     *
+     * @return 그날 처음 본 쿠키면 1, 이미 센 쿠키면 0
+     */
+    int insertVisitCookie(@Param("visitDate") String visitDate, @Param("anonId") String anonId);
+
+    /**
+     * User-Agent 별 요청 수 +1.
+     *
+     * @param counted 사람으로 셌으면 1, 봇으로 걸렀으면 0
+     */
+    int upsertUserAgent(@Param("visitDate") String visitDate,
+                        @Param("userAgent") String userAgent,
+                        @Param("counted") int counted);
+
     // ── 관리자 통계 조회 ──────────────────────────────────────
 
     /**
@@ -69,6 +86,16 @@ public interface SiteStatMapper {
 
     /** 기간 내 순 방문자 합계. */
     long selectVisitSum(@Param("fromDate") String fromDate, @Param("toDate") String toDate);
+
+    /**
+     * 기간 내 쿠키 기준 일별 순 방문자. 값이 있는 날만 반환한다.
+     *
+     * <p>{@link #selectDailyStats} 와 합치지 않는다. md_visit_cookie 는 나중에 추가된
+     * 테이블이라 마이그레이션 전 서버에는 없는데, 한 쿼리로 묶으면 그런 서버에서
+     * 방문자 추이 그래프가 통째로 사라진다.
+     */
+    List<DailyStatDTO> selectCookieVisitorStats(@Param("fromDate") String fromDate,
+                                                @Param("toDate") String toDate);
 
     /** 기간 내 시간대별 접속 건수 합계. 0~23 중 값이 있는 시각만 반환한다. */
     List<HourlyStatDTO> selectHourlyStats(@Param("fromDate") String fromDate,
@@ -94,6 +121,16 @@ public interface SiteStatMapper {
                                              @Param("toDate") String toDate,
                                              @Param("limit") int limit);
 
+    /**
+     * 기간 내 User-Agent 별 요청 수. 많은 순.
+     *
+     * @param counted 1이면 사람으로 센 것, 0이면 봇으로 걸러낸 것
+     */
+    List<UserAgentStatDTO> selectUserAgents(@Param("fromDate") String fromDate,
+                                            @Param("toDate") String toDate,
+                                            @Param("counted") int counted,
+                                            @Param("limit") int limit);
+
     // ── 접속 기록 보유기간 관리 ────────────────────────────────
 
     /** 보관 중인 접속 기록 행 수. */
@@ -115,6 +152,22 @@ public interface SiteStatMapper {
      * @return 지워진 행 수
      */
     int deleteVisitLogsBefore(@Param("cutoffDate") String cutoffDate);
+
+    /** 보관 중인 쿠키 기준 방문 기록 행 수. */
+    long countVisitCookies();
+
+    /** 기준일보다 오래된 쿠키 기준 방문 기록 행 수. */
+    long countVisitCookiesBefore(@Param("cutoffDate") String cutoffDate);
+
+    /**
+     * 기준일보다 오래된 쿠키 기준 방문 기록 파기.
+     *
+     * <p>익명 쿠키도 처리방침에 고지한 식별자다. IP 만 지우고 이쪽을 남겨 두면
+     * "90일 뒤 파기" 고지와 실제가 어긋난다.
+     *
+     * @return 지워진 행 수
+     */
+    int deleteVisitCookiesBefore(@Param("cutoffDate") String cutoffDate);
 
     // ── 접속 기록 열람 ────────────────────────────────────────
 

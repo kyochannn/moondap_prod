@@ -91,8 +91,14 @@ Caffeine 기반. TTL 이 필요해서 Spring 기본 `ConcurrentMapCacheManager` 
 ### 익명 사용자 식별 (`common/AnonymousIdentity`)
 
 비로그인 사용자의 댓글·투표·결과 보관함은 `md_anon` 쿠키(UUID, HttpOnly, SameSite=Lax)로 묶인다.
-- `current()` 는 조회만 한다. 열람만 하는 방문자에게 식별자를 심지 않기 위해 발급하지 않는다.
-- 실제로 쓰기가 일어나는 시점에만 `getOrCreate(response)` 를 호출한다.
+- `current()` 는 조회만 한다. 발급하지 않는다.
+- `getOrCreate(response)` 는 쓰기 시점(댓글·투표)과 **방문 집계**(`VisitLogInterceptor`)에서 부른다.
+  후자 때문에 열람만 하는 방문자에게도 발급된다 — IP 만으로는 방문자 수가 두 방향으로
+  틀리는데(공유 회선은 여러 명을 1명으로, 모바일 IP 변동은 1명을 여러 명으로) 비교 기준이
+  없으면 얼마나 틀리는지조차 알 수 없어서 내린 결정이다. 개인정보처리방침 제2조에
+  "방문자 수 집계" 목적으로 고지돼 있으므로, 발급 범위를 바꾸면 그 문구도 함께 고친다.
+- 방문 집계는 **되돌아온 쿠키만** 센다. 방금 발급한 값을 세면 쿠키를 저장하지 않는
+  클라이언트 한 대가 하루 수백 명으로 둔갑한다.
 - `Cookie#setAttribute` 는 서블릿 6.0 API 라 운영 톰캣 10.0 에서 터진다. `Set-Cookie` 헤더를
   직접 만드는 현재 방식을 유지할 것.
 

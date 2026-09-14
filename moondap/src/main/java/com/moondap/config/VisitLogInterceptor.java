@@ -1,7 +1,9 @@
 package com.moondap.config;
 
+import com.moondap.common.AnonymousIdentity;
 import com.moondap.common.CommonUtil;
 import com.moondap.common.TrafficSource;
+import com.moondap.dto.VisitContext;
 import com.moondap.service.StatService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,17 +68,50 @@ public class VisitLogInterceptor implements HandlerInterceptor {
                              @NonNull HttpServletResponse response,
                              @NonNull Object handler) {
 
-        if (shouldCount(request, handler)) {
-            try {
-                statService.recordVisit(
+        if (!isPageRequest(request, handler)) {
+            return true;
+        }
+
+        String userAgent = request.getHeader("User-Agent");
+        boolean bot = isBot(userAgent);
+
+        try {
+            // 걸러낸 것도 남긴다. 그래야 "멀쩡한 브라우저를 봇으로 거르고 있지 않은가"를
+            // 나중에 확인할 수 있다. 예전에 "daum" 이라는 조각 하나 때문에 다음 앱
+            // 인앱 브라우저가 통째로 누락됐는데, 그때는 알아챌 방법이 없었다.
+            statService.recordUserAgent(userAgent, !bot);
+
+            if (!bot) {
+                statService.recordVisit(new VisitContext(
                         CommonUtil.getClientIp(request),
+                        returningAnonId(response),
                         normalizePath(request.getRequestURI()),
-                        TrafficSource.classify(request.getHeader("Referer"), request.getServerName()));
-            } catch (Exception e) {
-                log.error("방문 집계 실패: uri={}", request.getRequestURI(), e);
+                        TrafficSource.classify(request.getHeader("Referer"), request.getServerName())));
             }
+        } catch (Exception e) {
+            log.error("방문 집계 실패: uri={}", request.getRequestURI(), e);
         }
         return true;
+    }
+
+    /**
+     * 되돌아온 익명 쿠키 값. 이번 요청에서 새로 발급했다면 {@code null}.
+     *
+     * <p>쿠키는 없으면 발급한다 — 그래야 다음 방문부터 같은 사람인지 알 수 있다.
+     * 하지만 <b>방금 발급한 값은 집계에 쓰지 않는다.</b> 쿠키를 저장하지 않는
+     * 클라이언트(주로 자동화 도구)는 요청마다 새 UUID 를 받게 되는데, 발급 시점에
+     * 세면 그 한 대가 하루 수백 명으로 둔갑한다.
+     *
+     * <p>대신 '생애 첫 방문에 한 페이지만 보고 떠난 사람'은 이 지표에서 빠진다.
+     * 그쪽은 IP 기준이 잡으므로, 두 숫자를 나란히 보는 것이 이 구조의 목적이다.
+     */
+    private String returningAnonId(HttpServletResponse response) {
+        String existing = AnonymousIdentity.current();
+        if (existing != null) {
+            return existing;
+        }
+        AnonymousIdentity.getOrCreate(response);
+        return null;
     }
 
     /** md_pageview_path.path 컬럼 길이. */
@@ -112,7 +147,13 @@ public class VisitLogInterceptor implements HandlerInterceptor {
         return path.length() > MAX_PATH_LENGTH ? path.substring(0, MAX_PATH_LENGTH) : path;
     }
 
-    private boolean shouldCount(HttpServletRequest request, Object handler) {
+    /**
+     * 사람이 연 '화면' 요청인지.
+     *
+     * <p>봇 판정은 여기서 하지 않는다. 걸러낸 요청의 User-Agent 도 계측 대상이라,
+     * 봇이냐 아니냐를 이 단계에서 섞으면 무엇을 걸렀는지 기록할 기회가 사라진다.
+     */
+    private boolean isPageRequest(HttpServletRequest request, Object handler) {
         /*
          * 정적 리소스는 방문이 아니다.
          *
@@ -147,7 +188,7 @@ public class VisitLogInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        return !isBot(request.getHeader("User-Agent"));
+        return true;
     }
 
     private boolean isBot(String userAgent) {
