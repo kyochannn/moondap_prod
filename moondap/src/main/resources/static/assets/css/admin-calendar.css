@@ -1,0 +1,253 @@
+/* ── 관리자 캘린더 — FullCalendar 를 사이트 다크/글래스모피즘 톤에 맞춘다 ── */
+/* 버튼은 buttons.css 가 전역으로 담당하므로 여기서 새 버튼 색을 만들지 않고,
+   FullCalendar 자체 버튼(.fc-button)만 같은 토큰(--accent-color)으로 맞춘다. */
+
+/* header/footer 는 main_layout.html 에서 모든 페이지에 공통으로 끼워 넣는 th:replace 라
+   레이아웃 자체를 고치면 다른 페이지에도 영향을 준다. 이 CSS 는 캘린더 화면에만
+   로드되므로, 여기서만 숨겨서 범위를 좁힌다.
+   header 는 position:sticky 라 fixed 와 달리 숨겨도 아래 내용을 밀어낼 여백이
+   남지 않는다 — 별도 padding-top 보정이 필요 없다.
+   #header 에는 부트스트랩의 d-flex(display:flex !important) 가 붙어 있어서
+   !important 없이는 display:none 이 밀린다. */
+#header {
+    display: none !important;
+}
+
+#footer {
+    display: none;
+}
+
+.fc {
+    --fc-border-color: rgba(255, 255, 255, 0.1);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: rgba(255, 255, 255, 0.04);
+    --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.06);
+    --fc-today-bg-color: color-mix(in srgb, var(--accent-color), transparent 88%);
+    color: var(--default-color);
+    font-family: var(--default-font);
+}
+
+.fc .fc-toolbar-title {
+    color: #fff;
+    font-family: var(--heading-font);
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.fc .fc-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 50px;
+    box-shadow: none;
+    text-transform: capitalize;
+    padding: 6px 16px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fc .fc-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+    box-shadow: none;
+}
+
+.fc .fc-button:focus,
+.fc .fc-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent-color), transparent 65%);
+}
+
+.fc .fc-col-header-cell {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.fc .fc-col-header-cell-cushion {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 0;
+}
+
+.fc .fc-daygrid-day-number {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px;
+    font-size: 1.05rem;
+}
+
+/* 기본은 row-reverse 로 숫자를 오른쪽에 둔다. 왼쪽 상단에 보이도록 뒤집는다. */
+.fc .fc-daygrid-day-top {
+    flex-direction: row;
+}
+
+/* 공휴일 날짜 숫자 — 한국 달력 관례대로 빨간색으로 구분한다. */
+.fc-holiday-day-number {
+    color: #f87171;
+}
+
+/* 공휴일 이름 라벨("[공휴일] 설날"). 숫자 옆 좁은 박스 안에 이어 붙으므로
+   줄바꿈(block)해서 숫자와 겹치지 않게 다음 줄에 놓는다. */
+.fc-holiday-label {
+    display: block;
+    color: #f87171;
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 기념일 배지(JS dayCellDidMount 가 arg.el 에 직접 붙인다)의 위치 기준.
+   day-number 앵커 등 안쪽 요소를 기준으로 잡으면 그 요소의 좁은 박스
+   기준으로 위치가 잡혀 숫자 옆에 붙어버리므로, 셀의 진짜 루트에 기준을 둔다. */
+.fc .fc-daygrid-day {
+    position: relative;
+}
+
+/* 100일 단위 기념일 표시. 알약 배경 없이 글자만, 칸 오른쪽 하단에 고정해서
+   날짜 숫자(칸 왼쪽 상단)와 겹치지 않게 한다. */
+.fc-anniversary-badge {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    color: var(--accent-color);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    /* 클릭이 뚫고 지나가 날짜 클릭(dateClick)이 그대로 동작하게 둔다. */
+    pointer-events: none;
+}
+
+.fc .fc-day-today {
+    background: color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+    color: #fff;
+    font-weight: 700;
+}
+
+.fc-daygrid-day:hover .fc-daygrid-day-frame {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* 한 날짜에 일정이 2개 이상이면 바 사이가 붙어 보여서 간격을 띄운다.
+   margin-bottom 은 효과가 없었다 — 일정이 여러 줄이 되면 FullCalendar 는
+   harness 를 position:absolute 로 쌓고, 다음 줄의 top 좌표를 getBoundingClientRect
+   로 측정한 "테두리 상자" 높이로 계산한다. margin 은 그 측정에 안 잡히지만
+   padding 은 박스 자체를 키우므로 다음 줄도 그만큼 밀려 내려간다. */
+.fc-daygrid-event-harness {
+    padding-bottom: 10px;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    border-radius: 12px;
+    overflow: hidden;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 배경색은 이제 작성자별로 JS(eventDataTransform)가 인라인으로 지정한다.
+   여기서는 모양만 다룬다. */
+.fc-event {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+}
+
+/* 작성자 아바타 — eventContent 가 그리는 커스텀 이벤트 내용 */
+.fc-event-main-custom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+}
+
+.fc-event-avatar {
+    width: 18px;
+    height: 18px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    align-self: center;
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* 공통 일정 아이콘. .fc-event-avatar 의 크기/원형/보더는 그대로 쓰고
+   아이콘 전용 배경·중앙정렬만 더한다(아바타 <img> 와 달리 자체 배경이 없다). */
+.fc-event-shared-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.25);
+    font-size: 0.65rem;
+}
+
+.fc-event-title-custom {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-event-complete-checkbox {
+    flex-shrink: 0;
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* 완료 표시 — 체크하면 제목에 취소선, 아바타는 흐리게 */
+.fc-event-done .fc-event-title-custom {
+    text-decoration: line-through;
+    opacity: 0.65;
+}
+
+.fc-event-done .fc-event-avatar {
+    opacity: 0.55;
+}
+
+/* 일정 모달의 즐겨찾기 색 — 네이티브 색상 선택기를 열지 않고 한 번에 고를 수 있게 */
+.color-swatch-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.color-swatch-btn:hover {
+    transform: scale(1.15);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* 날짜 입력의 달력 아이콘은 브라우저 기본값이 어두운 색이라 모달의 어두운 배경 위에서
+   거의 안 보인다. modal-header .btn-close 와 같은 방식(invert)으로 밝게 뒤집는다. */
+.modal-body input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* "맨 위로" 버튼(전역 fragment)이 모달 하단 버튼들과 같은 위치에 겹친다.
+   부트스트랩은 모달이 열리면 body 에 modal-open 클래스를 자동으로 붙이므로,
+   이 페이지(admin-calendar.css 가 로드되는 캘린더 화면)에서만 그 동안 숨긴다. */
+body.modal-open .scroll-top {
+    display: none !important;
+}

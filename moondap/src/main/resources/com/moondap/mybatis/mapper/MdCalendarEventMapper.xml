@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moondap.mapper.MdCalendarEventMapper">
+
+    <!-- 작성자 프로필 사진을 캘린더에 함께 보여주기 위해 md_user 를 조인한다.
+         탈퇴 등으로 계정이 사라져도 일정 자체는 보여야 하므로 LEFT JOIN. -->
+    <sql id="eventColumns">
+        ce.id AS id,
+        ce.title AS title,
+        ce.description AS description,
+        ce.start_at AS start_at,
+        ce.end_at AS end_at,
+        ce.author_username AS author_username,
+        ce.color AS color,
+        ce.completed AS completed,
+        ce.shared AS shared,
+        ce.created_at AS created_at,
+        u.profile_image AS author_profile_image,
+        u.nickname AS author_nickname
+    </sql>
+
+    <select id="selectAllEvents" resultType="MdCalendarEventDTO">
+        SELECT <include refid="eventColumns"/>
+        FROM moondap.md_calendar_event ce
+        LEFT JOIN moondap.md_user u ON ce.author_username = u.username
+        ORDER BY ce.start_at
+    </select>
+
+    <select id="selectEventById" resultType="MdCalendarEventDTO">
+        SELECT <include refid="eventColumns"/>
+        FROM moondap.md_calendar_event ce
+        LEFT JOIN moondap.md_user u ON ce.author_username = u.username
+        WHERE ce.id = #{id}
+    </select>
+
+    <insert id="insertEvent" parameterType="MdCalendarEventDTO"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO moondap.md_calendar_event
+            (title, description, start_at, end_at, author_username, color, shared, completed)
+        VALUES
+            (#{title}, #{description}, #{startAt}, #{endAt}, #{authorUsername}, #{color}, #{shared}, #{completed})
+    </insert>
+
+    <update id="updateEvent" parameterType="MdCalendarEventDTO">
+        UPDATE moondap.md_calendar_event
+        SET title = #{title},
+            description = #{description},
+            start_at = #{startAt},
+            end_at = #{endAt},
+            color = #{color},
+            shared = #{shared},
+            completed = #{completed}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteEvent">
+        DELETE FROM moondap.md_calendar_event
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 캘린더 칸의 체크박스를 바로 클릭했을 때 쓰는 가벼운 토글. 모달을 열지
+         않고 한 번의 요청으로 끝내려는 용도라, 수정 폼(updateEvent)과는 별개로
+         계속 둔다 — 지금은 수정 폼에도 완료 체크박스가 생겼지만, 그걸 위해
+         모달 전체를 열어야 하는 건 번거로우므로 두 경로를 다 유지한다. -->
+    <update id="updateCompleted">
+        UPDATE moondap.md_calendar_event
+        SET completed = #{completed}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 드래그 이동/리사이즈 전용. updateEvent 를 그대로 쓰면 제목/설명/색상이
+         빠진 채로 덮어써 날아간다 — 완료 토글을 분리한 것과 같은 이유다. -->
+    <update id="updateSchedule">
+        UPDATE moondap.md_calendar_event
+        SET start_at = #{startAt},
+            end_at = #{endAt}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -147,7 +147,13 @@ public class SecurityConfig {
         http.formLogin(form -> form
             .loginPage("/loginView")
             .loginProcessingUrl("/loginProc")
-            .defaultSuccessUrl("/", true)
+            // alwaysUse=false: 보호된 주소(예: /admin/calendar)에 비로그인으로 들어오면
+            // 시큐리티가 그 주소를 세션에 저장해뒀다가 로그인 성공 시 그대로 돌려보낸다
+            // (SavedRequest). "/" 는 저장된 요청이 없을 때(로그인 화면에 직접 들어온 경우)만
+            // 쓰는 대체값이다. alwaysUse=true 로 두면 이 복귀 동작 자체가 무시되고
+            // 무조건 "/" 로 보내서, 보호된 링크로 들어온 사람이 로그인 후 다시
+            // 헤더 메뉴를 찾아 들어가야 했다.
+            .defaultSuccessUrl("/", false)
             .failureHandler(customAuthFailureHandler)
             .permitAll()
         );
